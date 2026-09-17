@@ -118,6 +118,7 @@ function abrirGmailUniversal(to, cc, subject, body){
     bodyCorto = bodyCorto.substring(0,1500) + "\n\n[INFORME COMPLETO EN PDF/TXT EN DESCARGAS]";
   }
 
+  const enc = (s) => encodeURIComponent(s).replace(/%0A/g, "%0D%0A");
   const esAndroid = /Android/i.test(navigator.userAgent);
 
   if(esAndroid){
@@ -125,7 +126,7 @@ function abrirGmailUniversal(to, cc, subject, body){
     const params = new URLSearchParams();
     if(cc) params.set("cc", cc);
     params.set("subject", subject);
-    params.set("body", bodyCorto);
+    params.set("body", enc(bodyCorto));
     const mailto = `mailto:${to}?${params.toString()}`;
     const intentUrl = `intent:${mailto}#Intent;action=android.intent.action.SENDTO;package=com.google.android.gm;end`;
     window.location.href = intentUrl;
