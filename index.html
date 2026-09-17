@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="description" content="Sistema de gestión técnica, conteo de impresiones e inventarios - ECOLOIMP">
+  <title>ECOLOIMP | Gestión Técnica e Inventarios</title>
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#bienvenido" class="brand" data-section="bienvenido" aria-label="ECOLOIMP - Inicio">
+        <img src="assets/logo.jpg" alt="ECOLOIMP - Ecología en Impresión S.A.">
+      </a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+      <nav class="main-nav" id="mainNav">
+        <a href="#bienvenido" data-section="bienvenido">Bienvenido</a>
+        <a href="#carga" data-section="carga">Carga de Archivos</a>
+        <a href="#visita" data-section="visita">Visita Técnica</a>
+        <a href="#conteo" data-section="conteo">Conteo de Impresiones</a>
+        <a href="#inventario" data-section="inventario">Toma de Inventarios</a>
+        <a href="#contacto" data-section="contacto">Contacto</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="bienvenido" class="page-section active">
+      <div class="hero">
+        <div>
+          <span class="eyebrow">ECOLOIMP</span>
+          <h1>Gestión técnica e inventarios</h1>
+          <p>Bienvenidos a nuestra plataforma de gestión. Aquí podrás consultar información, registrar visitas técnicas, gestionar conteos, toma de inventarios y encontrar nuestros datos de contacto</p>
+        </div>
+        <div class="hero-card">
+          <div class="hero-icon">🖨️</div>
+          <strong>Trabajo local</strong>
+          <span>Los TXT se procesan directamente en el navegador.</span>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="dataStats">
+        <div class="stat-card"><span> Clientes</span><strong id="statClientes">0</strong></div>
+        <div class="stat-card"><span>🖨️ Impresoras</span><strong id="statImpresoras">0</strong></div>
+        <div class="stat-card"><span>Técnicos</span><strong id="statTecnicos">0</strong></div>
+        <div class="stat-card"><span>Bodegas</span><strong id="statBodegas">0</strong></div>
+        <div class="stat-card"><span>Productos</span><strong id="statProductos">0</strong></div>
+        <div class="stat-card"><span>Inventarios</span><strong id="statInventarios">0</strong></div>
+      </div>
+
+      <div class="notice">
+        <strong>Importante:</strong> los archivos se pueden cargar desde la sección <b>Datos</b>. La aplicación usa punto y coma (<code>;</code>) como separador, según los archivos suministrados.
+      </div>
+    </section>
+
+    <section id="carga" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">CONFIGURACIÓN</span>
+          <h2>Carga de archivos TXT</h2>
+          <p>Carga o reemplaza los datos utilizados por el sistema.</p>
+        </div>
+      </div>
+      <div class="data-loader-grid">
+        <div class="loader-card"><label>Clientes <input type="file" accept=".txt" data-file-type="clientes"></label><span id="fileClientes">No cargado</span></div>
+        <div class="loader-card"><label>Impresoras <input type="file" accept=".txt" data-file-type="impresoras"></label><span id="fileImpresoras">No cargado</span></div>
+        <div class="loader-card"><label>Técnicos <input type="file" accept=".txt" data-file-type="tecnicos"></label><span id="fileTecnicos">No cargado</span></div>
+        <div class="loader-card"><label>Bodegas <input type="file" accept=".txt" data-file-type="bodegas"></label><span id="fileBodegas">No cargado</span></div>
+        <div class="loader-card"><label>Productos <input type="file" accept=".txt" data-file-type="productos"></label><span id="fileProductos">No cargado</span></div>
+        <div class="loader-card"><label>Inventarios <input type="file" accept=".txt" data-file-type="inventarios"></label><span id="fileInventarios">No cargado</span></div>
+      </div>
+      <div id="cargaMessage" class="message" hidden></div>
+      <div class="notice">
+        <strong>Formato detectado:</strong> clientes <code>código;nombre</code>, impresoras <code>cliente;código;modelo;serie;sede;ubicación;IP;bodega</code>, bodegas <code>bodega;cliente - nombre/sede</code>, inventarios <code>bodega;producto;nombre;cantidad</code> y productos <code>producto;nombre</code>.
+      </div>
+    </section>
+
+    <section id="visita" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">SERVICIO</span>
+          <h2>Visita Técnica</h2>
+          <p>Selecciona un cliente y únicamente sus impresoras estarán disponibles.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field span-2">
+          <label for="vtClienteFilter">Filtrar cliente</label>
+          <input id="vtClienteFilter" type="search" placeholder="Código o nombre del cliente">
+        </div>
+        <div class="field span-2">
+          <label for="vtCliente">Cliente</label>
+          <select id="vtCliente"></select>
+        </div>
+
+        <div class="field span-4 printer-selector-title">
+          <h3>Seleccionar impresora</h3>
+          <p>Después de seleccionar el cliente, aquí aparecerán únicamente sus impresoras.</p>
+        </div>
+        <div class="field span-4">
+          <label for="vtPrinterFilter">Filtrar impresoras del cliente</label>
+          <input id="vtPrinterFilter" type="search" placeholder="Modelo, serie, ubicación, IP o código">
+        </div>
+      </div>
+
+      <div class="table-wrap printer-selection-wrap">
+        <table class="data-table printer-selection-table">
+          <thead>
+            <tr>
+              <th>Seleccionar</th><th>Código</th><th>Modelo</th><th>Serie</th>
+              <th>Sucursal</th><th>Area</th><th>Ubicación</th><th>Bodega</th>
+            </tr>
+          </thead>
+          <tbody id="vtPrinterBody"></tbody>
+        </table>
+      </div>
+
+      <div class="printer-details-card">
+        <div class="printer-details-heading">
+          <h3>Datos de la impresora seleccionada</h3>
+          <span id="vtSelectedPrinterStatus">Ninguna impresora seleccionada</span>
+        </div>
+        <div id="vtPrinterDetails" class="printer-details-grid">
+          <div><small>Código</small><strong>-</strong></div>
+          <div><small>Modelo</small><strong>-</strong></div>
+          <div><small>Serie</small><strong>-</strong></div>
+          <div><small>Sucursal</small><strong>-</strong></div>
+          <div><small>Area</small><strong>-</strong></div>
+          <div><small>Ubicación</small><strong>-</strong></div>
+          <div><small>Bodega</small><strong>-</strong></div>
+          <div><small>Cliente</small><strong>-</strong></div>
+        </div>
+      </div>
+
+      <div class="form-grid visit-data-grid">
+        <div class="field">
+          <label for="vtTecnico">Técnico</label>
+          <select id="vtTecnico"></select>
+        </div>
+        <div class="field">
+          <label for="vtFecha">Fecha</label>
+          <input id="vtFecha" type="date">
+        </div>
+        <div class="field">
+          <label for="vtHora">Hora</label>
+          <input id="vtHora" type="time">
+        </div>
+        <div class="field span-2">
+          <label for="vtEmail">Email para envío</label>
+          <input id="vtEmail" type="email" placeholder="correo@cliente.com">
+        </div>
+        <div class="field">
+          <label for="vtTipo">Tipo de visita</label>
+          <select id="vtTipo">
+            <option>Preventiva</option><option>Correctiva</option><option>Instalación</option><option>Levantamiento</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="vtEstado">Estado</label>
+          <select id="vtEstado">
+            <option>Finalizada</option><option>Pendiente</option><option>Requiere seguimiento</option>
+          </select>
+        </div>
+        <div class="field span-4">
+          <label for="vtDetalle">Detalle / trabajo realizado</label>
+          <textarea id="vtDetalle" rows="4" placeholder="Describe el trabajo realizado, hallazgos, repuestos, recomendaciones, etc."></textarea>
+        </div>
+
+        <div class="field span-4">
+            <label>Firma del cliente / conformidad</label>
+            <div class="signature-wrap">
+                <canvas id="vtFirmaCanvas" width="600" height="220"></canvas>
+                <div class="signature-actions">
+                  <button type="button" class="btn ghost" id="btnFirmaLimpiar">Limpiar firma</button>
+                  <span id="firmaStatus">Sin firma</span>
+                </div>
+            </div>
+        </div>
+        <div class="field span-2">
+          <label for="vtNombreFirma">Nombre de quien firma</label>
+          <input id="vtNombreFirma" type="text" placeholder="Ej. Juan Perez - Jefe Sistemas">
+        </div>        
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnVisitaGuardar">Guardar TXT y enviar por Gmail</button>
+        <button class="btn secondary" id="btnVisitaGmail">Abrir Gmail</button>
+        <button class="btn ghost" id="btnVisitaLimpiar">Limpiar</button>
+      </div>
+      <div id="vtMessage" class="message" hidden></div>
+    </section>
+
+    <section id="conteo" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">LECTURAS</span>
+          <h2>Conteo de Impresiones</h2>
+          <p>Selecciona un cliente para mostrar sus impresoras y registrar los contadores.</p>
+        </div>
+      </div>
+
+      <div class="form-grid compact">
+        <div class="field span-2">
+          <label for="ctClienteFilter">Filtrar cliente</label>
+          <input id="ctClienteFilter" type="search" placeholder="Código o nombre">
+        </div>
+        <div class="field span-2">
+          <label for="ctCliente">Cliente</label>
+          <select id="ctCliente"></select>
+        </div>
+        <div class="field span-2">
+          <label for="ctPrinterFilter">Filtrar impresoras</label>
+          <input id="ctPrinterFilter" type="search" placeholder="Modelo, serie, ubicación">
+        </div>
+        <div class="field">
+          <label for="ctTecnico">Técnico</label>
+          <select id="ctTecnico"></select>
+        </div>
+        <div class="field">
+          <label for="ctFecha">Fecha</label>
+          <input id="ctFecha" type="date">
+        </div>
+        <div class="field span-2">
+          <label for="ctEmail">Email para envío</label>
+          <input id="ctEmail" type="email" placeholder="correo@cliente.com">
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Impresora</th><th>Modelo</th><th>Serie</th><th>Ubicación</th><th>Negro</th><th>Color</th><th>Escaneo</th><th>A3</th></tr>
+          </thead>
+          <tbody id="conteoBody"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btnConteoGuardar">Guardar TXT y enviar por Gmail</button>
+        <button class="btn secondary" id="btnConteoGmail">Abrir Gmail</button>
+      </div>
+      <div id="ctMessage" class="message" hidden></div>
+    </section>
+
+    <section id="inventario" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">BODEGA</span>
+          <h2>Toma de Inventarios</h2>
+          <p>Selecciona una bodega para ver sus productos con saldo. La búsqueda por código consulta productos.txt.</p>
+        </div>
+      </div>
+
+      <div class="form-grid compact">
+        <div class="field span-2">
+          <label for="ivClienteFilter">Filtrar cliente</label>
+          <input id="ivClienteFilter" type="search" placeholder="Código o nombre">
+        </div>
+        <div class="field span-2">
+          <label for="ivCliente">Cliente</label>
+          <select id="ivCliente"></select>
+        </div>
+        <div class="field span-2">
+          <label for="ivBodegaFilter">Filtrar bodega</label>
+          <input id="ivBodegaFilter" type="search" placeholder="Código, cliente o ubicación">
+        </div>
+        <div class="field span-2">
+          <label for="ivBodega">Bodega</label>
+          <select id="ivBodega"></select>
+        </div>
+        <div class="field span-2">
+          <label for="ivProductoFilter">Buscar producto</label>
+          <input id="ivProductoFilter" type="search" placeholder="Código o nombre">
+        </div>
+        <div class="field span-2">
+          <label for="ivProducto">Producto</label>
+          <select id="ivProducto"></select>
+        </div>
+        <div class="field">
+          <label for="ivCodigoNuevo">Código de producto</label>
+          <input id="ivCodigoNuevo" type="text" placeholder="Ej. 322345">
+        </div>
+        <div class="field">
+          <label for="ivCantidad">Cantidad</label>
+          <input id="ivCantidad" type="number" min="0" step="1" value="1">
+        </div>
+        <div class="field span-2">
+          <label>&nbsp;</label>
+          <button class="btn secondary full" id="btnAgregarProducto">Buscar código y agregar</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Código</th><th>Producto</th><th>Saldo</th><th>Conteo</th><th>Acción</th></tr></thead>
+          <tbody id="inventarioBody"></tbody>
+        </table>
+      </div>
+      <div class="grid-form">
+        <div class="field span-2">
+          <label for="ivEmail">Correo para enviar</label>
+          <input id="ivEmail" type="email" placeholder="correo@ejemplo.com">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btnInventarioGuardar">Guardar TXT y enviar por Gmail</button>
+        <button class="btn secondary" id="btnInventarioGmail">Abrir Gmail</button>
+        <button class="btn ghost" id="btnInventarioVaciar">Vaciar lista</button>
+      </div>
+      <div id="ivMessage" class="message" hidden></div>
+    </section>
+
+    <section id="contacto" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">CONTACTO</span>
+          <h2>Información de contacto</h2>
+        </div>
+      </div>
+      <div class="contact-card">
+        <p>Para obtener más información puedes comunicarte con nosotros a través de los siguientes medios.</p>
+        <div class="contact-grid">
+          <a href="mailto:dennistigreros@gmail.com"><span>✉</span><div><small>Email</small><strong>dennistigreros@gmail.com</strong></div></a>
+          <a href="tel:+593997696270"><span>☎</span><div><small>Teléfono</small><strong>+593 997 696 270</strong></div></a>
+          <div><span>⌖</span><div><small>Dirección</small><strong>Ecuador</strong></div></div>
+        </div>
+        <div id="contactoMessage" class="message" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>© <span id="year"></span> DT Soluciones Informaticas</span>
+      <input type="hidden" id="pgCorreo"></input>      
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
