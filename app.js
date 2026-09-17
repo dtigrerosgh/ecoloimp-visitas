@@ -289,6 +289,42 @@ function openVisitaGmail(text){ const to=$("pgCorreo")?.value.trim() || gcorreo;
 function openConteoGmail(text){ const to=$("ctEmail")?.value.trim(); if(!to) throw new Error("Ingrese el email."); const cc=$("pgCorreo")?.value.trim() || gcorreo; window.open(gmailUrl(to,cc,"ECOLOIMP - Conteo",text),"_blank"); }
 function openInventarioGmail(text){ const to=$("ivEmail")?.value.trim(); if(!to) throw new Error("Ingrese el email."); const cc=$("pgCorreo")?.value.trim() || gcorreo; window.open(gmailUrl(to,cc,"ECOLOIMP - Inventario",text),"_blank"); }
 
+function activateSection(id){ 
+  document.querySelectorAll(".page-section").forEach(s=>s.classList.toggle("active",s.id===id)); 
+  document.querySelectorAll(".main-nav a").forEach(a=>a.classList.toggle("active",a.dataset.section===id)); 
+  if(location.hash!=="#"+id) history.replaceState(null,"","#"+id); 
+  // Cierra el menu en celular al cambiar de seccion
+  if($("mainNav")) $("mainNav").classList.remove("open"); 
+  if($("menuToggle")) $("menuToggle").setAttribute("aria-expanded","false"); 
+}
+
+function setupNavigation(){ 
+  document.querySelectorAll("[data-section]").forEach(el=>{
+    el.addEventListener("click",e=>{
+      e.preventDefault();
+      activateSection(el.dataset.section);
+    });
+  }); 
+  // ESTO ES LO QUE FALTABA PARA CELULAR
+  $("menuToggle")?.addEventListener("click",()=>{
+    const nav = $("mainNav");
+    if(!nav) return;
+    const isOpen = nav.classList.toggle("open");
+    $("menuToggle").setAttribute("aria-expanded", isOpen ? "true" : "false");
+  });
+  
+  // Cierra el menu si tocas fuera
+  document.addEventListener("click", (e)=>{
+    const nav = $("mainNav");
+    const btn = $("menuToggle");
+    if(!nav || !btn) return;
+    if(!nav.contains(e.target) && !btn.contains(e.target)){
+      nav.classList.remove("open");
+      btn.setAttribute("aria-expanded","false");
+    }
+  });
+}
+
 async function init(){
   if($('pgCorreo')) $('pgCorreo').value = gcorreo;
   if($("year")) $("year").textContent=new Date().getFullYear();
