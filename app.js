@@ -51,7 +51,6 @@ function renderSelectedPrinter(){
 function showMessage(id,msg,error=false){ const el=$(id); if(!el) return; el.hidden=false; el.className="message"+(error?" error":""); el.textContent=msg; }
 
 // --- VISITA TEXTO CORREGIDO ---
-// --- VISITA TEXTO CORREGIDO ---
 function buildVisitaSis(){
   const c = selectedClient("vtCliente"); 
   const p = DB.visitaPrinter; 
@@ -95,7 +94,6 @@ function buildVisitaText(){
     "",
     "Generado desde el sistema web ECOLOIMP."
   ].join("\n");
-
 }
 
 function gmailUrl(to, cc, subject, body){
