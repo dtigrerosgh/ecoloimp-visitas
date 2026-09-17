@@ -1,5 +1,5 @@
 const DB = {
-  clientes: [], impresoras: [], tecnicos: [], bodegas: [], productos: [], inventarios: [],
+  clientes: [], impresoras: [], tecnicos: [], bodegas: [], productos: [], inventarios: [], trabajos: [],
   conteos: {}, inventarioTrabajo: [], visitaPrinter: null
 };
 const gcorreo ="administracion@ecoloimp.com, servicio@ecoloimp.com"
@@ -13,7 +13,8 @@ function splitLines(text){ return text.replace(/^\uFEFF/,"").replace(/\r/g,"").s
 function parse(text){ return splitLines(text).map(line => line.split(";").map(v=>v.trim())); }
 function parseClientes(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
 function parseImpresoras(text){ return parse(text).filter(r=>r.length>=2).map(r=>({ cliente:r[0],codigo:r[1]||"",modelo:r[2]||"",serie:r[3]||"",sede:r[4]||"",ubicacion:r[5]||"",ip:r[6]||"",bodega:r[7]||"" })); }
-function parseTecnicos(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
+function parseTenicos(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
+function parseTrabajos(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
 function parseBodegas(text){ return parse(text).filter(r=>r.length>=2).map(r=>{ const raw=r.slice(1).join(";"), m=raw.match(/^([A-Z0-9]+)\s*-\s*(.*)$/i); return {codigo:r[0],cliente:m?m[1]:"",nombre:m?m[2]:raw,raw}; }); }
 function parseProductos(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
 function parseInventarios(text){ return parse(text).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],nombre:r[2]||"",cantidad:Number((r[3]||"0").replace(",","."))||0})); }
@@ -196,7 +197,11 @@ async function guardarVisitaPDFCompleto(){
     let y=30; textoPlano.split("\n").forEach(l=>{
       const s=doc.splitTextToSize(l,190); if(y>270){doc.addPage(); y=15;} doc.text(s,10,y); y+=s.length*5;
     });
-    if(firmaData){ doc.addImage(firmaData,"PNG",10,y,80,30); }
+    if(firmaData){ 
+      doc.setFontSize(12); doc.text("FIRMA DE CONFORMIDAD", 50, 14);
+      let y=30; textoPlano.split("\n").forEach(l=>{  doc.addImage(firmaData,"PNG",10,y,80,30); 
+      doc.setFontSize(12); doc.text(firmaNombre, 50, 14);
+    }
     doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
   }
 }
