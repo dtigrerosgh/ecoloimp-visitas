@@ -184,66 +184,28 @@ async function getLogoBase64(){
 
 // --- PDF CON FIRMA ---
 async function guardarVisitaPDFCompleto(){
-  const c=selectedClient("vtCliente");
-  const p=DB.visitaPrinter;
-  if(!c||!p) throw new Error("Seleccione cliente e impresora");
+  const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
   const fechaFile = $("vtFecha")?.value || new Date().toISOString().slice(0,10);
-  const nombreSIS = `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`;
-  const nombreTXT = `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.txt`;
-  const nombrePDF = `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`;
-  const textoPlano = buildVisitaText();
+  const textoPlano = buildVisitaText(); 
   const textoSis = buildVisitaSis();
-  const firmaData = getFirmaData();
+  const firmaData = getFirmaData(); 
   const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64();
 
-  // 1. TXT primero - directo
-  saveText(textoPlano, nombreTXT);
-  saveText(textoSis, nombreSIS);
+  saveText(textoPlano, `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+  saveText(textoSis, `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`);
 
-  // 2. PDF con retraso para que no pregunte "permitir varios archivos"
-  setTimeout(()=>{
-    if(window.jspdf){
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      if(logoBase64){
-        try{ doc.addImage(logoBase64, "JPEG", 10, 8, 38, 15); }
-        catch{ try{ doc.addImage(logoBase64, "PNG", 10, 8, 38, 15); }catch(e){} }
-      }
-      doc.setFontSize(12); doc.setFont("helvetica","bold");
-      doc.text("ECOLOIMP - ECOLOGIA EN IMPRESION S.A.", logoBase64?52:10, 14);
-      doc.setFontSize(10); doc.text("REPORTE DE VISITA TECNICA", logoBase64?52:10, 20);
-      doc.setDrawColor(32, 229, 43); doc.setLineWidth(0.8); doc.line(10, 26, 200, 26);
-
-      doc.setFontSize(9); doc.setFont("helvetica","normal");
-      let y=34;
-      textoPlano.split("\n").forEach(l=>{
-        if(l.includes("ECOLOIMP - ECOLOGIA") || l.includes("REPORTE DE VISITA")) return;
-        const s = doc.splitTextToSize(l, 190);
-        if(y+s.length*5>270){ doc.addPage(); y=15; }
-        doc.text(s,10,y); y+=s.length*5;
-      });
-      if(firmaData){
-        if(y>210){ doc.addPage(); y=20; }
-        y+=5; doc.setFont("helvetica","bold"); doc.text("FIRMA DE CONFORMIDAD:",10,y); y+=8;
-        doc.addImage(firmaData,"PNG",10,y,80,30); y+=35;
-        doc.setFont("helvetica","normal"); doc.text(firmaNombre||"Cliente",10,y);
-      }
-      doc.save(nombrePDF); // <- ESTE ES EL QUE GRABA DIRECTO
-    }
-  }, 3000);
-
-  // 3. Gmail 1 segundo después (para que no bloquee la descarga)
-  setTimeout(()=>
-  const c = selectedClient("vtCliente");
-  const p = DB.visitaPrinter;
-  const fechaFile = $("vtFecha")?.value || "";
-  const to = $("pgCorreo")?.value.trim() || "administracion@ecoloimp.com";
-  const cc = $("vtEmail")?.value.trim();
-  const subject = `ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`;
-  
-  abrirGmailUniversal(to, cc, subject, buildVisitaText());
-  }, 1000);
+  // PDF
+  if(window.jspdf){
+    const { jsPDF } = window.jspdf; const doc = new jsPDF();
+    if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,38,15);}catch{} }
+    doc.setFontSize(12); doc.text("ECOLOIMP - ECOLOGIA EN IMPRESION S.A.", 50, 14);
+    let y=30; textoPlano.split("\n").forEach(l=>{
+      const s=doc.splitTextToSize(l,190); if(y>270){doc.addPage(); y=15;} doc.text(s,10,y); y+=s.length*5;
+    });
+    if(firmaData){ doc.addImage(firmaData,"PNG",10,y,80,30); }
+    doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
+  }
 }
 
 function buildConteoText(){ const c=selectedClient("ctCliente"); if(!c) throw new Error("Seleccione un cliente."); const t=DB.tecnicos.find(x=>x.codigo===$("ctTecnico")?.value); const rows=DB.impresoras.filter(p=>p.cliente===c.codigo && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(norm($("ctPrinterFilter")?.value || ""))); if(!rows.length) throw new Error("El cliente no tiene impresoras."); const lines=["ECOLOIMP - ECOLOGIA EN IMPRESION S.A.","CONTEO DE IMPRESIONES","========================================",`Fecha: ${$("ctFecha").value}`,`Cliente: ${c.codigo} - ${c.nombre}`,`Tecnico: ${t?t.codigo+" - "+t.nombre:""}`,"","IMPRESORA;MODELO;SERIE;UBICACION;NEGRO;COLOR;ESCANEO;A3"]; rows.forEach(p=>{ const key=p.serie, v=DB.conteos[key]||{}; lines.push([p.codigo,p.modelo,p.serie,p.ubicacion,v.negro||0,v.color||0,v.escaneo||0,v.a3||0].join(";")); }); return lines.join("\n"); }
@@ -294,14 +256,28 @@ function setupEvents(){
   $("btnInventarioVaciar")?.addEventListener("click",()=>{DB.inventarioTrabajo=[];renderInventarioProductos()});
 
   // BOTON PRINCIPAL CORREGIDO
-  $("btnVisitaGuardar")?.addEventListener("click",async()=>{
-    try{
-      const emailCliente = $("vtEmail")?.value.trim();
-      if(!emailCliente) throw new Error("Ingrese el email del cliente");
-      const r = await guardarVisitaPDFCompleto();
-      showMessage("vtMessage",r);
-    }catch(e){showMessage("vtMessage",e.message,true)}
-  });
+$("btnVisitaGuardar")?.addEventListener("click", async()=>{
+  try{
+    const emailCliente = $("vtEmail")?.value.trim();
+    if(!emailCliente) throw new Error("Ingrese el email del cliente");
+    
+    const c = selectedClient("vtCliente");
+    const p = DB.visitaPrinter;
+    if(!c||!p) throw new Error("Seleccione cliente e impresora");
+
+    // Guarda los 3 archivos primero (esto si puede ir con delay)
+    await guardarVisitaPDFCompleto(); // esta ya NO abre gmail
+
+    // ABRE GMAIL INMEDIATO - DENTRO DEL MISMO CLICK (si lo pones en setTimeout el celular lo bloquea)
+    const fechaFile = $("vtFecha")?.value || "";
+    const to = $("pgCorreo")?.value.trim() || "administracion@ecoloimp.com";
+    const cc = emailCliente;
+    const subject = `ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`;
+    abrirGmailUniversal(to, cc, subject, buildVisitaText());
+
+    showMessage("vtMessage","Archivos guardados. Gmail abierto.");
+  }catch(e){ showMessage("vtMessage", e.message, true); }
+});
 
   $("btnVisitaGmail")?.addEventListener("click",()=>{try{openVisitaGmail(buildVisitaText())}catch(e){showMessage("vtMessage",e.message,true)}});
   $("btnVisitaLimpiar")?.addEventListener("click",()=>{["vtDetalle","vtEmail","vtNombreFirma"].forEach(id=>{if($(id)) $(id).value=""}); const canvas=$("vtFirmaCanvas"); if(canvas){ canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height); firmaDibujada=false; } if($("firmaStatus")) $("firmaStatus").textContent="Sin firma"; DB.visitaPrinter=null;renderSelectedPrinter();if($("vtTecnico")) $("vtTecnico").value=""});
