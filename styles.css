@@ -120,3 +120,8 @@ code{background:#edf0f2;border-radius:5px;padding:1px 5px}
   .hero-actions,.actions{flex-direction:column}.btn{width:100%;justify-content:center}
   #vtFirmaCanvas{height:180px}
 }
+@media (max-width: 768px){
+  .main-nav{ display:none; position:absolute; top:60px; left:0; right:0; background:#fff; flex-direction:column; padding:10px; box-shadow:0 4px 10px rgba(0,0,0,.1); z-index:1000; }
+  .main-nav.open{ display:flex; }
+  #menuToggle{ display:block; }
+}
