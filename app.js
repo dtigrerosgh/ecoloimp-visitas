@@ -215,9 +215,44 @@ function productByCode(code){ return DB.productos.find(p=>norm(p.codigo)===norm(
 function addInventoryProduct(){ const code=$("ivCodigoNuevo")?.value.trim() || $("ivProducto")?.value; const b=$("ivBodega")?.value; if(!b) throw new Error("Seleccione una bodega."); if(!code) throw new Error("Ingrese o seleccione un código."); const prod=productByCode(code); if(!prod) throw new Error("El código no existe en productos.txt."); const qty=Number($("ivCantidad")?.value)||0; const found=DB.inventarioTrabajo.find(x=>norm(x.codigo)===norm(prod.codigo)); if(found) found.cantidad=qty; else DB.inventarioTrabajo.push({codigo:prod.codigo,nombre:prod.nombre,cantidad:qty}); if($("ivCodigoNuevo")) $("ivCodigoNuevo").value=""; if($("ivCantidad")) $("ivCantidad").value=1; renderInventarioProductos(); }
 function getInventarioRows(){ const b=$("ivBodega")?.value; const saldoRows=DB.inventarios.filter(x=>x.bodega===b && Number(x.cantidad)>=0); const rows=saldoRows.map(x=>{ const prod=productByCode(x.codigo); const work=DB.inventarioTrabajo.find(w=>norm(w.codigo)===norm(x.codigo)); return { codigo:prod?.codigo||x.codigo, nombre:prod?.nombre||x.nombre, saldo:Number(x.cantidad)||0, cantidad:work? Number(work.cantidad)||0 : Number(x.cantidad)||0 }; }); DB.inventarioTrabajo.forEach(w=>{ if(!rows.some(x=>norm(x.codigo)===norm(w.codigo))){ const prod=productByCode(w.codigo); rows.push({codigo:prod?.codigo||w.codigo,nombre:prod?.nombre||w.nombre,saldo:0,cantidad:Number(w.cantidad)||0,agregado:true}); } }); return rows; }
 function buildInventarioText(){ const c=selectedClient("ivCliente"), b=DB.bodegas.find(x=>x.codigo===$("ivBodega")?.value); if(!c||!b) throw new Error("Seleccione cliente y bodega."); const rows=getInventarioRows(); if(!rows.length) throw new Error("No hay productos."); const fecha=new Date(); const fechaTxt=fecha.toLocaleDateString("es-EC"); const horaTxt=fecha.toLocaleTimeString("es-EC",{hour:"2-digit",minute:"2-digit"}); const total=rows.reduce((s,x)=>s+(Number(x.cantidad)||0),0); const lines=["ECOLOIMP - ECOLOGIA EN IMPRESION S.A.","TOMA DE INVENTARIO","========================================",`Fecha: ${fechaTxt}`,`Hora: ${horaTxt}`,`Cliente: ${c.codigo} - ${c.nombre}`,`Bodega: ${b.codigo} - ${b.nombre}`,`Correo: ${$("ivEmail")?.value.trim()||"(No especificado)"}`,`Total de productos: ${rows.length}`,`Total unidades contadas: ${total}`,"","DETALLE DEL INVENTARIO","BODEGA;CODIGO;PRODUCTO;SALDO;CONTEO",...rows.map(x=>[b.codigo,x.codigo,x.nombre,x.saldo,x.cantidad].join(";")),"","Generado desde el sistema web ECOLOIMP."]; return lines.join("\n"); }
-function activateSection(id){ document.querySelectorAll(".page-section").forEach(s=>s.classList.toggle("active",s.id===id)); document.querySelectorAll(".main-nav a").forEach(a=>a.classList.toggle("active",a.dataset.section===id)); if(location.hash!=="#"+id) history.replaceState(null,"","#"+id); if($("mainNav")) $("mainNav").classList.remove("open"); if($("menuToggle")) $("menuToggle").setAttribute("aria-expanded","false"); }
-function setupNavigation(){ document.querySelectorAll("[data-section]").forEach(el=>el.addEventListener("click",e=>{e.preventDefault();activateSection(el.dataset.section)})); $("menuToggle")?.addEventListener("click",()=>{const open=$("mainNav").classList.toggle("open");$("menuToggle").setAttribute("aria-expanded",open)}); }
 function setupFileLoaders(){ const parsers={clientes:parseClientes,impresoras:parseImpresoras,tecnicos:parseTecnicos,bodegas:parseBodegas,productos:parseProductos,inventarios:parseInventarios}; document.querySelectorAll('input[type="file"][data-file-type]').forEach(input=>{ input.addEventListener("change",async e=>{ const file=e.target.files[0], type=input.dataset.fileType; if(!file)return; const buf=await file.arrayBuffer(), text=new TextDecoder("windows-1252").decode(buf); DB[type]=parsers[type](text); setFileStatus(type,file.name+" · "+DB[type].length+" registros"); refreshStats(); filterClientes("vtClienteFilter","vtCliente");filterClientes("ctClienteFilter","ctCliente");filterClientes("ivClienteFilter","ivCliente"); fillTecnicos("vtTecnico");fillTecnicos("ctTecnico"); DB.visitaPrinter=null;updatePrinterTable();renderConteo();updateBodegas(); }); }); }
+function activateSection(id){ 
+  document.querySelectorAll(".page-section").forEach(s=>s.classList.toggle("active",s.id===id)); 
+  document.querySelectorAll(".main-nav a").forEach(a=>a.classList.toggle("active",a.dataset.section===id)); 
+  if(location.hash!=="#"+id) history.replaceState(null,"","#"+id); 
+  // Cierra el menu en celular al cambiar de seccion
+  if($("mainNav")) $("mainNav").classList.remove("open"); 
+  if($("menuToggle")) $("menuToggle").setAttribute("aria-expanded","false"); 
+}
+
+function setupNavigation(){ 
+  document.querySelectorAll("[data-section]").forEach(el=>{
+    el.addEventListener("click",e=>{
+      e.preventDefault();
+      activateSection(el.dataset.section);
+    });
+  }); 
+  // ESTO ES LO QUE FALTABA PARA CELULAR
+  $("menuToggle")?.addEventListener("click",()=>{
+    const nav = $("mainNav");
+    if(!nav) return;
+    const isOpen = nav.classList.toggle("open");
+    $("menuToggle").setAttribute("aria-expanded", isOpen ? "true" : "false");
+  });
+  
+  // Cierra el menu si tocas fuera
+  document.addEventListener("click", (e)=>{
+    const nav = $("mainNav");
+    const btn = $("menuToggle");
+    if(!nav || !btn) return;
+    if(!nav.contains(e.target) && !btn.contains(e.target)){
+      nav.classList.remove("open");
+      btn.setAttribute("aria-expanded","false");
+    }
+  });
+}
+
+
 
 // FIRMA
 let firmaDibujada = false;
@@ -288,42 +323,6 @@ $("btnVisitaGuardar")?.addEventListener("click", async()=>{
 function openVisitaGmail(text){ const to=$("pgCorreo")?.value.trim() || gcorreo; const cc=$("vtEmail")?.value.trim() || ""; if(!cc) throw new Error("Ingrese el email."); window.open(gmailUrl(to,cc,"ECOLOIMP - Visita Técnica",text),"_blank"); }
 function openConteoGmail(text){ const to=$("ctEmail")?.value.trim(); if(!to) throw new Error("Ingrese el email."); const cc=$("pgCorreo")?.value.trim() || gcorreo; window.open(gmailUrl(to,cc,"ECOLOIMP - Conteo",text),"_blank"); }
 function openInventarioGmail(text){ const to=$("ivEmail")?.value.trim(); if(!to) throw new Error("Ingrese el email."); const cc=$("pgCorreo")?.value.trim() || gcorreo; window.open(gmailUrl(to,cc,"ECOLOIMP - Inventario",text),"_blank"); }
-
-function activateSection(id){ 
-  document.querySelectorAll(".page-section").forEach(s=>s.classList.toggle("active",s.id===id)); 
-  document.querySelectorAll(".main-nav a").forEach(a=>a.classList.toggle("active",a.dataset.section===id)); 
-  if(location.hash!=="#"+id) history.replaceState(null,"","#"+id); 
-  // Cierra el menu en celular al cambiar de seccion
-  if($("mainNav")) $("mainNav").classList.remove("open"); 
-  if($("menuToggle")) $("menuToggle").setAttribute("aria-expanded","false"); 
-}
-
-function setupNavigation(){ 
-  document.querySelectorAll("[data-section]").forEach(el=>{
-    el.addEventListener("click",e=>{
-      e.preventDefault();
-      activateSection(el.dataset.section);
-    });
-  }); 
-  // ESTO ES LO QUE FALTABA PARA CELULAR
-  $("menuToggle")?.addEventListener("click",()=>{
-    const nav = $("mainNav");
-    if(!nav) return;
-    const isOpen = nav.classList.toggle("open");
-    $("menuToggle").setAttribute("aria-expanded", isOpen ? "true" : "false");
-  });
-  
-  // Cierra el menu si tocas fuera
-  document.addEventListener("click", (e)=>{
-    const nav = $("mainNav");
-    const btn = $("menuToggle");
-    if(!nav || !btn) return;
-    if(!nav.contains(e.target) && !btn.contains(e.target)){
-      nav.classList.remove("open");
-      btn.setAttribute("aria-expanded","false");
-    }
-  });
-}
 
 async function init(){
   if($('pgCorreo')) $('pgCorreo').value = gcorreo;
