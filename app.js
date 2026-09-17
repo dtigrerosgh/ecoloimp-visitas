@@ -98,7 +98,34 @@ function buildVisitaText(){
 
 }
 
-function gmailUrl(to,cc,subject,body){ return "https://mail.google.com/mail/?view=cm&fs=1&to="+encodeURIComponent(to)+"&cc="+encodeURIComponent(cc)+"&su="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body); }
+function gmailUrl(to, cc, subject, body){
+  // Gmail no acepta más de 1900 caracteres en URL, cortamos el body
+  let bodyCorto = body;
+  if(bodyCorto.length > 1500){
+    bodyCorto = bodyCorto.substring(0, 1500) + "\n\n[Texto completo en el PDF y TXT adjunto]";
+  }
+  const params = new URLSearchParams({
+    to: to || "",
+    cc: cc || "",
+    su: subject || "",
+    body: bodyCorto
+  });
+  // Usa mail.google.com con view=cm que es el que si abre en celular
+  return `https://mail.google.com/mail/?view=cm&fs=1&${params.toString()}`;
+}
+
+function abrirGmail(to, cc, subject, body){
+  const url = gmailUrl(to, cc, subject, body);
+  // Truco para celular: crear un <a> y hacer click, no window.open directo
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>a.remove(), 1000);
+}
+
 
 // GUARDAR COMPATIBLE CON CELULAR
 // GUARDAR DIRECTO - SIN PREGUNTAR PERMISO
