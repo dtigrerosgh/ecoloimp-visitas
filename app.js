@@ -114,16 +114,34 @@ function gmailUrl(to, cc, subject, body){
   return `https://mail.google.com/mail/?view=cm&fs=1&${params.toString()}`;
 }
 
-function abrirGmail(to, cc, subject, body){
-  const url = gmailUrl(to, cc, subject, body);
-  // Truco para celular: crear un <a> y hacer click, no window.open directo
-  const a = document.createElement("a");
-  a.href = url;
-  a.target = "_blank";
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>a.remove(), 1000);
+function abrirGmailUniversal(to, cc, subject, body){
+  let bodyCorto = body;
+  if(bodyCorto.length > 1500){
+    bodyCorto = bodyCorto.substring(0,1500) + "\n\n[INFORME COMPLETO EN PDF/TXT EN DESCARGAS]";
+  }
+
+  const esAndroid = /Android/i.test(navigator.userAgent);
+
+  if(esAndroid){
+    // --- CELULAR: abre la APP de Gmail (como en tu foto, pero en Redactar) ---
+    const params = new URLSearchParams();
+    if(cc) params.set("cc", cc);
+    params.set("subject", subject);
+    params.set("body", bodyCorto);
+    const mailto = `mailto:${to}?${params.toString()}`;
+    const intentUrl = `intent:${mailto}#Intent;action=android.intent.action.SENDTO;package=com.google.android.gm;end`;
+    window.location.href = intentUrl;
+  }else{
+    // --- PC: abre Gmail en el navegador, SI funciona view=cm en PC ---
+    const params = new URLSearchParams({
+      to: to || "",
+      cc: cc || "",
+      su: subject,
+      body: bodyCorto
+    });
+    const url = `https://mail.google.com/mail/?view=cm&fs=1&${params.toString()}`;
+    window.open(url, "_blank");
+  }
 }
 
 
@@ -216,13 +234,16 @@ async function guardarVisitaPDFCompleto(){
   }, 3000);
 
   // 3. Gmail 1 segundo después (para que no bloquee la descarga)
-  setTimeout(()=>{
-    const to = $("pgCorreo")?.value.trim() || gcorreo || "tu_correo@gmail.com";
-    const cc = $("vtEmail")?.value.trim();
-    const subject = `ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`;
-    abrirGmail(to, cc, subject, textoPlano);
-  }, 3000);
-  return `Guardado directo: ${nombreTXT} y ${nombrePDF} sin preguntar. Gmail en 1 seg.`;
+  setTimeout(()=>
+  const c = selectedClient("vtCliente");
+  const p = DB.visitaPrinter;
+  const fechaFile = $("vtFecha")?.value || "";
+  const to = $("pgCorreo")?.value.trim() || "administracion@ecoloimp.com";
+  const cc = $("vtEmail")?.value.trim();
+  const subject = `ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`;
+  
+  abrirGmailUniversal(to, cc, subject, buildVisitaText());
+  }, 1000);
 }
 
 function buildConteoText(){ const c=selectedClient("ctCliente"); if(!c) throw new Error("Seleccione un cliente."); const t=DB.tecnicos.find(x=>x.codigo===$("ctTecnico")?.value); const rows=DB.impresoras.filter(p=>p.cliente===c.codigo && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(norm($("ctPrinterFilter")?.value || ""))); if(!rows.length) throw new Error("El cliente no tiene impresoras."); const lines=["ECOLOIMP - ECOLOGIA EN IMPRESION S.A.","CONTEO DE IMPRESIONES","========================================",`Fecha: ${$("ctFecha").value}`,`Cliente: ${c.codigo} - ${c.nombre}`,`Tecnico: ${t?t.codigo+" - "+t.nombre:""}`,"","IMPRESORA;MODELO;SERIE;UBICACION;NEGRO;COLOR;ESCANEO;A3"]; rows.forEach(p=>{ const key=p.serie, v=DB.conteos[key]||{}; lines.push([p.codigo,p.modelo,p.serie,p.ubicacion,v.negro||0,v.color||0,v.escaneo||0,v.a3||0].join(";")); }); return lines.join("\n"); }
