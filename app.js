@@ -215,13 +215,13 @@ async function guardarVisitaPDFCompleto(){
     }
   }, 3000);
 
-  // 3. Gmail 1 segundo después
+  // 3. Gmail 1 segundo después (para que no bloquee la descarga)
   setTimeout(()=>{
-    const to = $("pgCorreo")?.value.trim() || gcorreo;
+    const to = $("pgCorreo")?.value.trim() || gcorreo || "tu_correo@gmail.com";
     const cc = $("vtEmail")?.value.trim();
-    window.open(gmailUrl(to,cc,`ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`,textoPlano),"_blank");
+    const subject = `ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`;
+    abrirGmail(to, cc, subject, textoPlano);
   }, 3000);
-
   return `Guardado directo: ${nombreTXT} y ${nombrePDF} sin preguntar. Gmail en 1 seg.`;
 }
 
