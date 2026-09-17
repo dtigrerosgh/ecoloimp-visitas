@@ -114,32 +114,29 @@ function gmailUrl(to, cc, subject, body){
 
 function abrirGmailUniversal(to, cc, subject, body){
   let bodyCorto = body;
-  if(bodyCorto.length > 1500){
-    bodyCorto = bodyCorto.substring(0,1500) + "\n\n[INFORME COMPLETO EN PDF/TXT EN DESCARGAS]";
-  }
+  if(bodyCorto.length > 1000) bodyCorto = bodyCorto.substring(0,1000) + "\n\n[VER PDF Y TXT COMPLETO EN DESCARGAS]";
 
-  const enc = (s) => encodeURIComponent(s).replace(/%0A/g, "%0D%0A");
-  const esAndroid = /Android/i.test(navigator.userAgent);
+  const enc = (s) => encodeURIComponent(s || "");
+  const esPC = !/Android|iPhone|iPad/i.test(navigator.userAgent);
 
-  if(esAndroid){
-    // --- CELULAR: abre la APP de Gmail (como en tu foto, pero en Redactar) ---
-    const params = new URLSearchParams();
-    if(cc) params.set("cc", cc);
-    params.set("subject", subject);
-    params.set("body", enc(bodyCorto));
-    const mailto = `mailto:${to}?${params.toString()}`;
-    const intentUrl = `intent:${mailto}#Intent;action=android.intent.action.SENDTO;package=com.google.android.gm;end`;
-    window.location.href = intentUrl;
-  }else{
-    // --- PC: abre Gmail en el navegador, SI funciona view=cm en PC ---
-    const params = new URLSearchParams({
-      to: to || "",
-      cc: cc || "",
-      su: subject,
-      body: bodyCorto
-    });
-    const url = `https://mail.google.com/mail/?view=cm&fs=1&${params.toString()}`;
+  if(esPC){
+    // --- PC: Abre Gmail en el navegador ---
+    // Usamos encodeURIComponent para que no salgan + sino %20
+    const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${enc(to)}&cc=${enc(cc)}&su=${enc(subject)}&body=${enc(bodyCorto)}`;
     window.open(url, "_blank");
+  }else{
+    // --- CELULAR: Abre la APP de Gmail ---
+    // mailto con %0D%0A para saltos de linea bien formateados
+    const bodyMailto = enc(bodyCorto.replace(/\n/g, "\r\n"));
+    let mailto = `mailto:${enc(to)}?subject=${enc(subject)}&body=${bodyMailto}`;
+    if(cc) mailto += `&cc=${enc(cc)}`;
+
+    const a = document.createElement("a");
+    a.href = mailto;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>a.remove(), 3000);
   }
 }
 
