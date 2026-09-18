@@ -27,7 +27,16 @@ function selectedClient(id){return DB.clientes.find(c=>c.codigo===$(id)?.value)}
 let visitaPrinter=null;
 function updatePrinterTable(){const client=$("vtCliente")?.value;const q=norm($("vtPrinterFilter")?.value||"");const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie].join(" ")).includes(q));if($("vtPrinterBody")){$("vtPrinterBody").innerHTML=rows.map(p=>`<tr><td><button data-serial="${esc(p.serie)}">Seleccionar</button></td><td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td></tr>`).join("")}}
 function showMessage(id,msg,err){const el=$(id);if(!el)return;el.hidden=false;el.textContent=msg;el.style.background=err?"#fecaca":"#dcfce7"}
-function buildVisitaText(){const c=selectedClient("vtCliente");const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);if(!c)throw new Error("Seleccione cliente");if(!visitaPrinter)throw new Error("Seleccione impresora");if(!t)throw new Error("Seleccione técnico");if(!tr)throw new Error("Seleccione trabajo");return `ECOLOIMP\nFecha:${$("vtFecha").value}\nCliente:${c.codigo}-${c.nombre}\nSerie:${visitaPrinter.serie}\nTecnico:${t.nombre}\nTrabajo:${tr.codigo}-${tr.nombre}\nDetalle:${$("vtDetalle").value}`;}
+function buildVisitaText(){
+  const c=selectedClient("vtCliente");
+  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  if(!c)throw new Error("Seleccione cliente");
+  if(!visitaPrinter)throw new Error("Seleccione impresora");
+  if(!t)throw new Error("Seleccione técnico");
+  if(!tr)throw new Error("Seleccione trabajo");
+  return `ECOLOIMP\nFecha:${$("vtFecha").value}\nCliente:${c.codigo}-${c.nombre}\nSerie:${visitaPrinter.serie}\nTecnico:${t.nombre}\nTrabajo:${tr.codigo}-${tr.nombre}\nDetalle:${$("vtDetalle").value}`;}
+
 function abrirGmailUniversal(to,cc,subj,body){let b=body.substring(0,800);const isPC=!/(Android|iPhone|iPad)/i.test(navigator.userAgent);if(isPC){const enc=encodeURIComponent;window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${enc(to)}&cc=${enc(cc||"")}&su=${enc(subj)}&body=${enc(b)}`,"_blank")}else{let mailto=`mailto:${to}?subject=${subj}&body=${b}`;if(cc)mailto+=`&cc=${cc}`;const a=document.createElement("a");a.href=mailto;document.body.appendChild(a);a.click();a.remove()}}
 function saveText(text,file){const blob=new Blob([text],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=file;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),1000)}
 let firmaDibujada=false;
@@ -39,7 +48,14 @@ async function init(){
  $("vtCliente")?.addEventListener("change",updatePrinterTable);
  $("vtPrinterFilter")?.addEventListener("input",updatePrinterTable);
  $("vtPrinterBody")?.addEventListener("click",e=>{const s=e.target.dataset.serial;if(s){visitaPrinter=DB.impresoras.find(x=>x.serie===s);$("vtSelectedPrinterStatus").textContent="Seleccionada: "+s}});
- $("btnVisitaGuardar")?.addEventListener("click",()=>{try{const c=selectedClient("vtCliente");if(!c||!visitaPrinter)throw new Error("Seleccione cliente e impresora");const txt=buildVisitaText();saveText(txt,`VISITA ${c.codigo} ${visitaPrinter.serie}.txt`);abrirGmailUniversal(gcorreo,$("vtEmail").value,`Visita ${c.codigo} ${visitaPrinter.serie}`,txt);showMessage("vtMessage","Guardado y Gmail abierto")}catch(e){showMessage("vtMessage",e.message,true)}});
+ $("btnVisitaGuardar")?.addEventListener("click",()=>{
+   try{const c=selectedClient("vtCliente");
+       if(!c||!visitaPrinter)throw new Error("Seleccione cliente e impresora");
+       const txt=buildVisitaText();
+       saveText(txt,`VISITA ${c.codigo} ${visitaPrinter.serie}.txt`);
+       abrirGmailUniversal(gcorreo,$("vtEmail").value,`Visita ${c.codigo} ${visitaPrinter.serie}`,txt);
+       showMessage("vtMessage","Guardado y Gmail abierto")}catch(e){showMessage("vtMessage",e.message,true)}}
+  );
  $("btnVisitaGmail")?.addEventListener("click",()=>{try{abrirGmailUniversal(gcorreo,$("vtEmail").value,"Visita",buildVisitaText())}catch(e){showMessage("vtMessage",e.message,true)}});
  await Promise.all([loadDefaultFile("clientes","clientes.txt",parseClientes),loadDefaultFile("impresoras","impresoras.txt",parseImpresoras),loadDefaultFile("tecnicos","tecnicos.txt",parseTecnicos),loadDefaultFile("trabajos","trabajos.txt",parseTrabajos),loadDefaultFile("bodegas","bodegas.txt",parseBodegas),loadDefaultFile("productos","productos.txt",parseProductos),loadDefaultFile("inventarios","inventarios.txt",parseInventarios)]);
  filterClientes("vtClienteFilter","vtCliente");fillTecnicos("vtTecnico");fillTrabajos("vtTrabajo");if($("statClientes"))$("statClientes").textContent=DB.clientes.length;if($("statImpresoras"))$("statImpresoras").textContent=DB.impresoras.length;
