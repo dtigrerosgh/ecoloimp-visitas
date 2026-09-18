@@ -13,80 +13,78 @@ function splitLines(text){ return text.replace(/^\uFEFF/,"").replace(/\r/g,"").s
 function parse(text){ return splitLines(text).map(line => line.split(";").map(v=>v.trim())); }
 function parseClientes(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
 function parseImpresoras(text){ return parse(text).filter(r=>r.length>=2).map(r=>({ cliente:r[0],codigo:r[1]||"",modelo:r[2]||"",serie:r[3]||"",sede:r[4]||"",ubicacion:r[5]||"",ip:r[6]||"",bodega:r[7]||"" })); }
-function parseTenicos(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
+function parseTecnicos(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
 function parseTrabajos(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
 function parseBodegas(text){ return parse(text).filter(r=>r.length>=2).map(r=>{ const raw=r.slice(1).join(";"), m=raw.match(/^([A-Z0-9]+)\s*-\s*(.*)$/i); return {codigo:r[0],cliente:m?m[1]:"",nombre:m?m[2]:raw,raw}; }); }
 function parseProductos(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
 function parseInventarios(text){ return parse(text).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],nombre:r[2]||"",cantidad:Number((r[3]||"0").replace(",","."))||0})); }
 async function loadDefaultFile(type, filename, parser){ try{ const res=await fetch("data/"+filename); if(!res.ok) throw new Error(); const buf=await res.arrayBuffer(); const decoded=new TextDecoder("windows-1252").decode(buf); DB[type]=parser(decoded); setFileStatus(type, filename+" · "+DB[type].length+" registros"); }catch(e){ setFileStatus(type,"Seleccione el archivo"); } }
 function setFileStatus(type,msg){ const el = $("file"+type.charAt(0).toUpperCase()+type.slice(1)); if(el) el.textContent=msg; }
-function refreshStats(){ if($("statClientes")) $("statClientes").textContent=DB.clientes.length; if($("statImpresoras")) $("statImpresoras").textContent=DB.impresoras.length; if($("statTecnicos")) $("statTecnicos").textContent=DB.tecnicos.length; if($("statBodegas")) $("statBodegas").textContent=DB.bodegas.length; if($("statProductos")) $("statProductos").textContent=DB.productos.length; if($("statInventarios")) $("statInventarios").textContent=DB.inventarios.length; }
+function refreshStats(){ if($("statClientes")) $("statClientes").textContent=DB.clientes.length; if($("statImpresoras")) $("statImpresoras").textContent=DB.impresoras.length; if($("statTecnicos")) $("statTecnicos").textContent=DB.tecnicos.length; if($("statBodegas")) $("statBodegas").textContent=DB.bodegas.length; if($("statProductos")) $("statProductos").textContent=DB.productos.length; if($("statInventarios")) $("statInventarios").textContent=DB.inventarios.length; if($("statTrabajos")) $("statTrabajos").textContent=DB.trabajos.length;}
 function options(select, rows, placeholder="Seleccione..."){ if(!select) return; select.innerHTML=`<option value="">${placeholder}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join(""); }
 function filterClientes(inputId, selectId){ const q=norm($(inputId)?.value || ""); const rows=DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(q)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')); options($(selectId),rows.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})),"Seleccione cliente..."); }
 function fillTecnicos(selectId){ options($(selectId),DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label,'es')),"Seleccione técnico..."); }
+function fillTrabajos(selectId){ options($(selectId),DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label,'es')),"Seleccione trabajo..."); }
 function selectedClient(id){ return DB.clientes.find(c=>c.codigo===$(id)?.value); }
 
 function updatePrinterTable(){
   const client=$("vtCliente")?.value; const q=norm($("vtPrinterFilter")?.value || "");
   const rows=DB.impresoras.filter(p=> p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
   if($("vtPrinterBody")){
-    $("vtPrinterBody").innerHTML=rows.length? rows.map(p=>`<tr class="printer-row" data-serial="${esc(p.serie)}"><td><button type="button" class="select-printer-btn" data-select-printer="${esc(p.serie)}">Seleccionar</button></td><td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td><td>${esc(p.sede)}</td><td>${esc(p.ubicacion)}</td><td>${esc(p.ip)}</td><td>${esc(p.bodega)}</td></tr>`).join("") : `<tr><td colspan="8">Seleccione un cliente para mostrar sus impresoras.</td></tr>`;
+    $("vtPrinterBody").innerHTML=rows.length? rows.map(p=>`<tr class="printer-row" data-serial="${esc(p.serie)}"><td><button type="button" class="select-printer-btn" data-select-printer="${esc(p.serie)}">Seleccionar</button></td><td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td><td>${esc(p.sede)}</td><td>${esc(p.ubicacion)}</td><td>${esc(p.ip)}</td><td>${esc(p.bodega)}</td></tr>`).join("") : `<tr><td colspan="8">Seleccione un cliente.</td></tr>`;
   }
   if(DB.visitaPrinter &&!rows.some(p=>p.serie===DB.visitaPrinter.serie)) DB.visitaPrinter=null;
   renderSelectedPrinter();
 }
 function selectVisitaPrinter(serie){ const p=DB.impresoras.find(x=>x.serie===serie && x.cliente===$("vtCliente")?.value); if(!p) return; DB.visitaPrinter=p; renderSelectedPrinter(); }
-
 function renderSelectedPrinter(){
   const p = DB.visitaPrinter; const c = selectedClient("vtCliente");
-  document.querySelectorAll("#vtPrinterBody .printer-row").forEach(row=>{
-  const isSelected = !!p && row.dataset.serial === p.serie;
-  row.classList.toggle("selected", isSelected);
-  const btn = row.querySelector("[data-select-printer]");
-  if(btn) btn.textContent = isSelected ? "✓ Seleccionada" : "Seleccionar";
-});
+  document.querySelectorAll("#vtPrinterBody.printer-row").forEach(row=>{
+    const isSelected =!!p && row.dataset.serial === p.serie;
+    row.classList.toggle("selected", isSelected);
+    const btn = row.querySelector("[data-select-printer]");
+    if(btn) btn.textContent = isSelected? "✓ Seleccionada" : "Seleccionar";
+  });
   if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = p? "Impresora seleccionada: " + p.serie : "Ninguna impresora seleccionada";
-  if($("vtPrinterDetails")){ $("vtPrinterDetails").innerHTML = p? `<div><small>Código</small><strong>${esc(p.codigo)}</strong></div><div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div><div><small>Serie</small><strong>${esc(p.serie)}</strong></div><div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div><div><small>Area</small><strong>${esc(p.ubicacion)}</strong></div><div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div><div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div><div><small>Cliente</small><strong>${c? esc(c.codigo+" · "+c.nombre) : "-"}</strong></div>` : `<div><small>Código</small><strong>-</strong></div><div><small>Modelo</small><strong>-</strong></div><div><small>Serie</small><strong>-</strong></div><div><small>Sucursal</small><strong>-</strong></div><div><small>Area</small><strong>-</strong></div><div><small>Ubicación</small><strong>-</strong></div><div><small>Bodega</small><strong>-</strong></div><div><small>Cliente</small><strong>${c? esc(c.codigo+" · "+c.nombre) : "-"}</strong></div>`; }
+  if($("vtPrinterDetails")){ $("vtPrinterDetails").innerHTML = p? `<div><small>Código</small><strong>${esc(p.codigo)}</strong></div><div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div><div><small>Serie</small><strong>${esc(p.serie)}</strong></div><div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div><div><small>Area</small><strong>${esc(p.ubicacion)}</strong></div><div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div><div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div><div><small>Cliente</small><strong>${c? esc(c.codigo+" · "+c.nombre) : "-"}</strong></div>` : `<div><small>Cliente</small><strong>${c? esc(c.codigo+" · "+c.nombre) : "-"}</strong></div>`; }
 }
-
 function showMessage(id,msg,error=false){ const el=$(id); if(!el) return; el.hidden=false; el.className="message"+(error?" error":""); el.textContent=msg; }
 
-// --- VISITA TEXTO CORREGIDO ---
 function buildVisitaSis(){
   const c = selectedClient("vtCliente"); 
   const p = DB.visitaPrinter; 
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
-  if(!c||!p||!t) throw new Error("Seleccione cliente, impresora y técnico.");
-  
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  if(!c||!p||!t||!tr) throw new Error("Seleccione cliente, impresora , técnico y trabajo.");
   const firmaNombre = $("vtNombreFirma")?.value || "";
   const detalle = ($("vtDetalle").value || "").replace(/;/g, ",").replace(/\n/g, " ");
-
-  // Con backticks ` y con ${} AFUERA del texto
-  return `${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${$("vtEstado").value};${$("vtEmail")?.value||""};${firmaNombre};${detalle}`;
+  return `${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${$("vtTrabajo").value};${$("vtEstado").value};${$("vtEmail")?.value||""};${firmaNombre};${detalle}`;
 }
-
 function buildVisitaText(){
   const c=selectedClient("vtCliente"); 
   const p=DB.visitaPrinter; 
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
-  if(!c||!p||!t) throw new Error("Seleccione cliente, impresora y técnico.");
-  const firmaNombre = $("vtNombreFirma")?.value || "";
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  if(!c||!p||!t||!tr) throw new Error("Seleccione cliente, impresora , técnico y trabajo.");
   return [
-    "ECOLOIMP - ECOLOGIA EN IMPRESION S.A.","REPORTE DE VISITA TECNICA","",
-    `Fecha         : ${$("vtFecha").value}`,
-    `Hora          : ${$("vtHora").value}`,
-    `Cliente       : ${c.codigo} - ${c.nombre}`,
-    `Impresora     : ${p.codigo} - ${p.modelo}`,
-    `Serie         : ${p.serie}`,
-    `Sucursal      : ${p.sede}`,
-    `Area          : ${p.ubicacion}`,
-    `Ubicacion     : ${p.ip}`,
-    `Bodega        : ${p.bodega}`,
-    `Tecnico       : ${t.codigo} - ${t.nombre}`,
+    "ECOLOIMP - ECOLOGIA EN IMPRESION S.A.",
+    "REPORTE DE VISITA TECNICA",
+    "",
+    `Fecha : ${$("vtFecha").value}`,
+    `Hora : ${$("vtHora").value}`,
+    `Cliente : ${c.codigo} - ${c.nombre}`,
+    `Impresora : ${p.codigo} - ${p.modelo}`,
+    `Serie : ${p.serie}`,
+    `Sucursal : ${p.sede}`,
+    `Area : ${p.ubicacion}`,
+    `Ubicacion : ${p.ip}`,
+    `Bodega : ${p.bodega}`,
+    `Tecnico : ${t.codigo} - ${t.nombre}`,
     `Tipo de visita: ${$("vtTipo").value}`,
-    `Estado        : ${$("vtEstado").value}`,
+    `Tipo de trabajo: ${$("vtTrabajo").value}`,
+    `Estado : ${$("vtEstado").value}`,
     `Email cliente : ${$("vtEmail")?.value||""}`,
-    `Firmado por   : ${firmaNombre||"(Sin nombre)"}`,
+    `Firmado por : ${$("vtNombreFirma")?.value||"(Sin nombre)"}`,
     `Firma digital : ${firmaDibujada?"SI":"NO"}`,
     "",
     "DETALLE / TRABAJO REALIZADO",
@@ -94,167 +92,94 @@ function buildVisitaText(){
     $("vtDetalle").value || "(Sin detalle)",
     "",
     "Generado desde el sistema web ECOLOIMP."
-  ].join("\n");
+  ]
+  .join("\n");
 }
 
-function gmailUrl(to, cc, subject, body){
-  // Gmail no acepta más de 1900 caracteres en URL, cortamos el body
-  let bodyCorto = body;
-  if(bodyCorto.length > 1500){
-    bodyCorto = bodyCorto.substring(0, 1500) + "\n\n[Texto completo en el PDF y TXT adjunto]";
-  }
-  const params = new URLSearchParams({
-    to: to || "",
-    cc: cc || "",
-    su: subject || "",
-    body: bodyCorto
-  });
-  // Usa mail.google.com con view=cm que es el que si abre en celular
-  return `https://mail.google.com/mail/?view=cm&fs=1&${params.toString()}`;
-}
-
+// GMAIL FINAL SIN + Y SIN %20
 function abrirGmailUniversal(to, cc, subject, body){
   let bodyCorto = body;
-  if(bodyCorto.length > 800) bodyCorto = bodyCorto.substring(0,800) + "\n\n[PDF EN DESCARGAS]";
-
-  const esPC = !/Android|iPhone|iPad/i.test(navigator.userAgent);
-
+  if(bodyCorto.length > 800) bodyCorto = bodyCorto.substring(0,800) + "\n\n[PDF Y TXT EN DESCARGAS]";
+  const esPC =!/Android|iPhone|iPad/i.test(navigator.userAgent);
   if(esPC){
-    // PC: si lleva encode
     const enc = encodeURIComponent;
     const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${enc(to)}&cc=${enc(cc||"")}&su=${enc(subject)}&body=${enc(bodyCorto)}`;
     window.open(url, "_blank");
   }else{
-    // CELULAR: SIN encode - texto plano, por eso ya no sale + ni %20
     let mailto = `mailto:${to}?subject=${subject}&body=${bodyCorto}`;
     if(cc) mailto += `&cc=${cc}`;
-    
-    const a = document.createElement("a");
-    a.href = mailto;
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>a.remove(), 500);
+    const a = document.createElement("a"); a.href = mailto; a.style.display = "none";
+    document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(), 500);
   }
 }
-
-
-// GUARDAR COMPATIBLE CON CELULAR
-// GUARDAR DIRECTO - SIN PREGUNTAR PERMISO
 function saveText(text, filename){
   const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{
-    URL.revokeObjectURL(a.href);
-    a.remove();
-  }, 2000);
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename;
+  a.style.display = "none"; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
 }
-
-async function guardarYEnviarGmail(text, filename, subject, to, cc){
-  to=(to||'').trim(); cc=(cc||'').trim();
-  if(!to &&!cc) throw new Error('Ingrese el correo de destino.');
-  saveText(text,filename);
-  window.open(gmailUrl(to,cc,subject,text),'_blank');
-  return 'TXT guardado. Se abrió Gmail; adjunte el archivo antes de enviar.';
-}
-
-// Si no quieres convertir a base64, usa esta que carga directo de assets/
-// Pero la de base64 es 100% segura en celular
 async function getLogoBase64(){
-  // 1. Intenta cargar el base64 fijo
   if(LOGO_ECOLOIMP && LOGO_ECOLOIMP.length > 100) return LOGO_ECOLOIMP;
-  // 2. Si no, intenta cargar el archivo
-  try{
-    const r = await fetch("assets/logo.jpg");
-    const b = await r.blob();
-    return await new Promise(res=>{ const fr=new FileReader(); fr.onloadend=()=>res(fr.result); fr.readAsDataURL(b); });
-  }catch(e){ return null; }
+  try{ const r = await fetch("assets/logo.jpg"); const b = await r.blob(); return await new Promise(res=>{ const fr=new FileReader(); fr.onloadend=()=>res(fr.result); fr.readAsDataURL(b); }); }catch(e){ return null; }
 }
 
-// --- PDF CON FIRMA ---
+// PDF CORREGIDO - ESTE ERA EL ERROR
 async function guardarVisitaPDFCompleto(){
   const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
   const fechaFile = $("vtFecha")?.value || new Date().toISOString().slice(0,10);
   const textoPlano = buildVisitaText(); 
   const textoSis = buildVisitaSis();
-  const firmaData = getFirmaData(); 
-  const firmaNombre = $("vtNombreFirma")?.value || "";
+  const firmaData = getFirmaData(); const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64();
-
   saveText(textoPlano, `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
   saveText(textoSis, `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`);
-
-  // PDF
   if(window.jspdf){
     const { jsPDF } = window.jspdf; const doc = new jsPDF();
     if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,38,15);}catch{} }
     doc.setFontSize(12); doc.text("ECOLOIMP - ECOLOGIA EN IMPRESION S.A.", 50, 14);
-    let y=30; textoPlano.split("\n").forEach(l=>{
+    let y=30;
+    textoPlano.split("\n").forEach(l=>{
       const s=doc.splitTextToSize(l,190); if(y>270){doc.addPage(); y=15;} doc.text(s,10,y); y+=s.length*5;
     });
-    if(firmaData){ 
-      doc.setFontSize(12); doc.text("FIRMA DE CONFORMIDAD", 50, 14);
-      let y=30; textoPlano.split("\n").forEach(l=>{  doc.addImage(firmaData,"PNG",10,y,80,30); 
-      doc.setFontSize(12); doc.text(firmaNombre, 50, 14);
+    if(firmaData){
+      y+=10; if(y>250){ doc.addPage(); y=15; }
+      doc.text("FIRMA DE CONFORMIDAD: "+firmaNombre,10,y); y+=8;
+      try{ doc.addImage(firmaData,"PNG",10,y,80,30); }catch{}
     }
     doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
   }
 }
 
-function buildConteoText(){ const c=selectedClient("ctCliente"); if(!c) throw new Error("Seleccione un cliente."); const t=DB.tecnicos.find(x=>x.codigo===$("ctTecnico")?.value); const rows=DB.impresoras.filter(p=>p.cliente===c.codigo && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(norm($("ctPrinterFilter")?.value || ""))); if(!rows.length) throw new Error("El cliente no tiene impresoras."); const lines=["ECOLOIMP - ECOLOGIA EN IMPRESION S.A.","CONTEO DE IMPRESIONES","========================================",`Fecha: ${$("ctFecha").value}`,`Cliente: ${c.codigo} - ${c.nombre}`,`Tecnico: ${t?t.codigo+" - "+t.nombre:""}`,"","IMPRESORA;MODELO;SERIE;UBICACION;NEGRO;COLOR;ESCANEO;A3"]; rows.forEach(p=>{ const key=p.serie, v=DB.conteos[key]||{}; lines.push([p.codigo,p.modelo,p.serie,p.ubicacion,v.negro||0,v.color||0,v.escaneo||0,v.a3||0].join(";")); }); return lines.join("\n"); }
-function renderConteo(){ const client=$("ctCliente")?.value; const q=norm($("ctPrinterFilter")?.value || ""); const rows=DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip].join(" ")).includes(q)); if($("conteoBody")){ $("conteoBody").innerHTML=rows.length?rows.map(p=>{ const v=DB.conteos[p.serie]||{}; return `<tr><td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td><td>${esc(p.ubicacion)}</td>${["negro","color","escaneo","a3"].map(k=>`<td><input type="number" min="0" step="1" value="${Number(v[k]||0)}" data-serial="${esc(p.serie)}" data-count="${k}"></td>`).join("")}</tr>`; }).join(""):`<tr><td colspan="8">Seleccione un cliente para mostrar sus impresoras.</td></tr>`; } }
-function captureConteos(){ document.querySelectorAll("#conteoBody input[data-count]").forEach(i=>{ DB.conteos[i.dataset.serial]=DB.conteos[i.dataset.serial]||{}; DB.conteos[i.dataset.serial][i.dataset.count]=i.value; }); }
-function updateBodegas(){ const client=$("ivCliente")?.value; const q=norm($("ivBodegaFilter")?.value || ""); const rows=DB.bodegas.filter(b=>(!client || b.cliente===client) && norm([b.codigo,b.cliente,b.nombre,b.raw].join(" ")).includes(q)); options($("ivBodega"),rows.map(b=>({value:b.codigo,label:`${b.codigo} · ${b.nombre}`})),"Seleccione bodega..."); renderInventarioProductos(); }
-function renderInventarioProductos(){ const b=$("ivBodega")?.value; const q=norm($("ivProductoFilter")?.value || ""); const saldoRows=DB.inventarios.filter(x=>x.bodega===b && Number(x.cantidad)>0); const baseRows=saldoRows.map(x=>{ const prod=productByCode(x.codigo); const work=DB.inventarioTrabajo.find(w=>norm(w.codigo)===norm(x.codigo)); return {codigo:prod?.codigo||x.codigo,nombre:prod?.nombre||x.nombre,saldo:Number(x.cantidad)||0,cantidad:work?Number(work.cantidad)||0:Number(x.cantidad)||0}; }); DB.inventarioTrabajo.forEach(w=>{ if(!baseRows.some(x=>norm(x.codigo)===norm(w.codigo))){ const prod=productByCode(w.codigo); baseRows.push({codigo:prod?.codigo||w.codigo,nombre:prod?.nombre||w.nombre,saldo:0,cantidad:Number(w.cantidad)||0,agregado:true}); } }); const filtered=baseRows.filter(x=>norm([x.codigo,x.nombre].join(" ")).includes(q)); if($("inventarioBody")){ $("inventarioBody").innerHTML=filtered.length?filtered.map(x=>`<tr><td>${esc(x.codigo)}</td><td>${esc(x.nombre)}${x.agregado?'<span class="badge-added"> Agregado</span>':''}</td><td class="saldo">${x.saldo}</td><td><input type="number" min="0" step="1" value="${x.cantidad}" data-inv-qty-code="${esc(x.codigo)}"></td><td><button class="btn ghost" data-remove-inv-code="${esc(x.codigo)}">Eliminar</button></td></tr>`).join(""):`<tr><td colspan="5">${b?"No hay productos.":"Seleccione una bodega."}</td></tr>`; } options($("ivProducto"),filtered.map(x=>({value:x.codigo,label:`${x.codigo} · ${x.nombre} · Saldo: ${x.saldo}`})),"Seleccione producto..."); }
-function productByCode(code){ return DB.productos.find(p=>norm(p.codigo)===norm(code)); }
-function addInventoryProduct(){ const code=$("ivCodigoNuevo")?.value.trim() || $("ivProducto")?.value; const b=$("ivBodega")?.value; if(!b) throw new Error("Seleccione una bodega."); if(!code) throw new Error("Ingrese o seleccione un código."); const prod=productByCode(code); if(!prod) throw new Error("El código no existe en productos.txt."); const qty=Number($("ivCantidad")?.value)||0; const found=DB.inventarioTrabajo.find(x=>norm(x.codigo)===norm(prod.codigo)); if(found) found.cantidad=qty; else DB.inventarioTrabajo.push({codigo:prod.codigo,nombre:prod.nombre,cantidad:qty}); if($("ivCodigoNuevo")) $("ivCodigoNuevo").value=""; if($("ivCantidad")) $("ivCantidad").value=1; renderInventarioProductos(); }
-function getInventarioRows(){ const b=$("ivBodega")?.value; const saldoRows=DB.inventarios.filter(x=>x.bodega===b && Number(x.cantidad)>=0); const rows=saldoRows.map(x=>{ const prod=productByCode(x.codigo); const work=DB.inventarioTrabajo.find(w=>norm(w.codigo)===norm(x.codigo)); return { codigo:prod?.codigo||x.codigo, nombre:prod?.nombre||x.nombre, saldo:Number(x.cantidad)||0, cantidad:work? Number(work.cantidad)||0 : Number(x.cantidad)||0 }; }); DB.inventarioTrabajo.forEach(w=>{ if(!rows.some(x=>norm(x.codigo)===norm(w.codigo))){ const prod=productByCode(w.codigo); rows.push({codigo:prod?.codigo||w.codigo,nombre:prod?.nombre||w.nombre,saldo:0,cantidad:Number(w.cantidad)||0,agregado:true}); } }); return rows; }
-function buildInventarioText(){ const c=selectedClient("ivCliente"), b=DB.bodegas.find(x=>x.codigo===$("ivBodega")?.value); if(!c||!b) throw new Error("Seleccione cliente y bodega."); const rows=getInventarioRows(); if(!rows.length) throw new Error("No hay productos."); const fecha=new Date(); const fechaTxt=fecha.toLocaleDateString("es-EC"); const horaTxt=fecha.toLocaleTimeString("es-EC",{hour:"2-digit",minute:"2-digit"}); const total=rows.reduce((s,x)=>s+(Number(x.cantidad)||0),0); const lines=["ECOLOIMP - ECOLOGIA EN IMPRESION S.A.","TOMA DE INVENTARIO","========================================",`Fecha: ${fechaTxt}`,`Hora: ${horaTxt}`,`Cliente: ${c.codigo} - ${c.nombre}`,`Bodega: ${b.codigo} - ${b.nombre}`,`Correo: ${$("ivEmail")?.value.trim()||"(No especificado)"}`,`Total de productos: ${rows.length}`,`Total unidades contadas: ${total}`,"","DETALLE DEL INVENTARIO","BODEGA;CODIGO;PRODUCTO;SALDO;CONTEO",...rows.map(x=>[b.codigo,x.codigo,x.nombre,x.saldo,x.cantidad].join(";")),"","Generado desde el sistema web ECOLOIMP."]; return lines.join("\n"); }
-function setupFileLoaders(){ const parsers={clientes:parseClientes,impresoras:parseImpresoras,tecnicos:parseTecnicos,bodegas:parseBodegas,productos:parseProductos,inventarios:parseInventarios}; document.querySelectorAll('input[type="file"][data-file-type]').forEach(input=>{ input.addEventListener("change",async e=>{ const file=e.target.files[0], type=input.dataset.fileType; if(!file)return; const buf=await file.arrayBuffer(), text=new TextDecoder("windows-1252").decode(buf); DB[type]=parsers[type](text); setFileStatus(type,file.name+" · "+DB[type].length+" registros"); refreshStats(); filterClientes("vtClienteFilter","vtCliente");filterClientes("ctClienteFilter","ctCliente");filterClientes("ivClienteFilter","ivCliente"); fillTecnicos("vtTecnico");fillTecnicos("ctTecnico"); DB.visitaPrinter=null;updatePrinterTable();renderConteo();updateBodegas(); }); }); }
-function activateSection(id){ 
-  document.querySelectorAll(".page-section").forEach(s=>s.classList.toggle("active",s.id===id)); 
-  document.querySelectorAll(".main-nav a").forEach(a=>a.classList.toggle("active",a.dataset.section===id)); 
-  if(location.hash!=="#"+id) history.replaceState(null,"","#"+id); 
-  // Cierra el menu en celular al cambiar de seccion
-  if($("mainNav")) $("mainNav").classList.remove("open"); 
-  if($("menuToggle")) $("menuToggle").setAttribute("aria-expanded","false"); 
-}
+function setupFileLoaders(){ const parsers={clientes:parseClientes,impresoras:parseImpresoras,tecnicos:parseTecnicos,bodegas:parseBodegas,productos:parseProductos,inventarios:parseInventarios,trabajos:parseTrabajos}; document.querySelectorAll('input[type="file"][data-file-type]').forEach(input=>{ input.addEventListener("change",async e=>{ const file=e.target.files[0], type=input.dataset.fileType; if(!file)return; const buf=await file.arrayBuffer(), text=new TextDecoder("windows-1252").decode(buf); DB[type]=parsers[type](text); setFileStatus(type,file.name+" · "+DB[type].length+" registros"); refreshStats(); filterClientes("vtClienteFilter","vtCliente");filterClientes("ctClienteFilter","ctCliente");filterClientes("ivClienteFilter","ivCliente"); fillTrabajos("vtTrabajo"); fillTecnicos("vtTecnico");fillTecnicos("ctTecnico"); DB.visitaPrinter=null;updatePrinterTable(); }); }); }
 
-function setupNavigation(){ 
+function activateSection(id){
+  document.querySelectorAll(".page-section").forEach(s=>s.classList.toggle("active",s.id===id));
+  document.querySelectorAll(".main-nav a").forEach(a=>a.classList.toggle("active",a.dataset.section===id));
+  if(location.hash!=="#"+id) history.replaceState(null,"","#"+id);
+  $("mainNav")?.classList.remove("open");
+  $("menuToggle")?.setAttribute("aria-expanded","false");
+  const btn=$("menuToggle"); if(btn) btn.textContent="☰";
+}
+function setupNavigation(){
   document.querySelectorAll("[data-section]").forEach(el=>{
-    el.addEventListener("click",e=>{
-      e.preventDefault();
-      activateSection(el.dataset.section);
-    });
-  }); 
-  // ESTO ES LO QUE FALTABA PARA CELULAR
-  $("menuToggle")?.addEventListener("click",()=>{
-    const nav = $("mainNav");
-    if(!nav) return;
-    const isOpen = nav.classList.toggle("open");
-    $("menuToggle").setAttribute("aria-expanded", isOpen ? "true" : "false");
+    el.addEventListener("click",e=>{ e.preventDefault(); activateSection(el.dataset.section); });
   });
-  
-  // Cierra el menu si tocas fuera
+  $("menuToggle")?.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    const nav = $("mainNav"); if(!nav) return;
+    const isOpen = nav.classList.toggle("open");
+    $("menuToggle").setAttribute("aria-expanded", isOpen? "true" : "false");
+    $("menuToggle").textContent = isOpen? "✕" : "☰";
+  });
   document.addEventListener("click", (e)=>{
-    const nav = $("mainNav");
-    const btn = $("menuToggle");
-    if(!nav || !btn) return;
-    if(!nav.contains(e.target) && !btn.contains(e.target)){
-      nav.classList.remove("open");
-      btn.setAttribute("aria-expanded","false");
+    const nav = $("mainNav"); const btn = $("menuToggle");
+    if(!nav ||!btn) return;
+    if(!nav.contains(e.target) &&!btn.contains(e.target)){
+      nav.classList.remove("open"); btn.setAttribute("aria-expanded","false"); btn.textContent="☰";
     }
   });
 }
 
-
-
-// FIRMA
 let firmaDibujada = false;
 function initFirma(){
   const canvas = $("vtFirmaCanvas"); if(!canvas) return;
@@ -262,76 +187,58 @@ function initFirma(){
   let dibujando = false; let last = {x:0,y:0};
   function pos(e){ const r = canvas.getBoundingClientRect(); const t = e.touches? e.touches[0] : e; return { x: (t.clientX - r.left) * (canvas.width / r.width), y: (t.clientY - r.top) * (canvas.height / r.height) }; }
   function start(e){ dibujando=true; last=pos(e); e.preventDefault(); }
-  function move(e){ if(!dibujando) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); last=p; firmaDibujada=true; canvas.classList.add("has-signature"); if($("firmaStatus")) $("firmaStatus").textContent="Firma capturada ✓"; e.preventDefault(); }
+  function move(e){ if(!dibujando) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); last=p; firmaDibujada=true; if($("firmaStatus")) $("firmaStatus").textContent="Firma capturada ✓"; e.preventDefault(); }
   function end(){ dibujando=false; }
-  canvas.addEventListener("mousedown", start); canvas.addEventListener("mousemove", move); canvas.addEventListener("mouseup", end); canvas.addEventListener("mouseleave", end);
+  canvas.addEventListener("mousedown", start); canvas.addEventListener("mousemove", move); canvas.addEventListener("mouseup", end);
   canvas.addEventListener("touchstart", start, {passive:false}); canvas.addEventListener("touchmove", move, {passive:false}); canvas.addEventListener("touchend", end);
-  $("btnFirmaLimpiar")?.addEventListener("click", ()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); firmaDibujada=false; canvas.classList.remove("has-signature"); if($("firmaStatus")) $("firmaStatus").textContent="Sin firma"; });
+  $("btnFirmaLimpiar")?.addEventListener("click", ()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); firmaDibujada=false; if($("firmaStatus")) $("firmaStatus").textContent="Sin firma"; });
 }
 function getFirmaData(){ const canvas = $("vtFirmaCanvas"); if(!canvas ||!firmaDibujada) return null; return canvas.toDataURL("image/png"); }
 
 function setupEvents(){
-  ["vtClienteFilter","ctClienteFilter","ivClienteFilter"].forEach(id=>{ const el=$(id); if(!el) return; el.addEventListener("input",()=>{ const map={vtClienteFilter:"vtCliente",ctClienteFilter:"ctCliente",ivClienteFilter:"ivCliente"}; filterClientes(id,map[id]); if(id==="vtClienteFilter")updatePrinterTable(); if(id==="ctClienteFilter")renderConteo(); if(id==="ivClienteFilter")updateBodegas(); }); });
+  ["vtClienteFilter"].forEach(id=>{ const el=$(id); if(el) el.addEventListener("input",()=>filterClientes(id,"vtCliente")); });
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updatePrinterTable()});
   $("vtPrinterFilter")?.addEventListener("input",updatePrinterTable);
-  $("ctCliente")?.addEventListener("change",renderConteo);
-  $("ctPrinterFilter")?.addEventListener("input",renderConteo);
-  $("conteoBody")?.addEventListener("input",captureConteos);
   $("vtPrinterBody")?.addEventListener("click",e=>{ const serie=e.target.dataset.selectPrinter; if(serie) selectVisitaPrinter(serie); });
-  $("ivCliente")?.addEventListener("change",updateBodegas);
-  $("ivBodegaFilter")?.addEventListener("input",updateBodegas);
-  $("ivBodega")?.addEventListener("change",()=>{DB.inventarioTrabajo=[];renderInventarioProductos()});
-  $("ivProductoFilter")?.addEventListener("input",renderInventarioProductos);
-  $("ivProducto")?.addEventListener("change",()=>{if($("ivProducto") && $("ivCodigoNuevo")) $("ivCodigoNuevo").value=$("ivProducto").value});
-  $("btnAgregarProducto")?.addEventListener("click",()=>{try{addInventoryProduct();showMessage("ivMessage","Producto agregado correctamente.");}catch(e){showMessage("ivMessage",e.message,true)}});
-  $("inventarioBody")?.addEventListener("click",e=>{ const code=e.target.dataset.removeInvCode; if(code!==undefined){ DB.inventarioTrabajo=DB.inventarioTrabajo.filter(x=>norm(x.codigo)!==norm(code)); renderInventarioProductos(); } });
-  $("inventarioBody")?.addEventListener("input",e=>{ const code=e.target.dataset.invQtyCode; if(code!==undefined){ const row=DB.inventarioTrabajo.find(x=>norm(x.codigo)===norm(code)); const qty=Number(e.target.value)||0; if(row) row.cantidad=qty; else { const prod=productByCode(code) || DB.inventarios.find(x=>norm(x.codigo)===norm(code)); if(prod) DB.inventarioTrabajo.push({codigo:prod.codigo,nombre:prod.nombre,cantidad:qty}); } } });
-  $("btnInventarioVaciar")?.addEventListener("click",()=>{DB.inventarioTrabajo=[];renderInventarioProductos()});
-
-  // BOTON PRINCIPAL CORREGIDO
-$("btnVisitaGuardar")?.addEventListener("click", async()=>{
-  try{
-    const emailCliente = $("vtEmail")?.value.trim();
-    if(!emailCliente) throw new Error("Ingrese el email del cliente");
-    
-    const c = selectedClient("vtCliente");
-    const p = DB.visitaPrinter;
-    if(!c||!p) throw new Error("Seleccione cliente e impresora");
-
-    // Guarda los 3 archivos primero (esto si puede ir con delay)
-    await guardarVisitaPDFCompleto(); // esta ya NO abre gmail
-
-    // ABRE GMAIL INMEDIATO - DENTRO DEL MISMO CLICK (si lo pones en setTimeout el celular lo bloquea)
-    const fechaFile = $("vtFecha")?.value || "";
-    const to = $("pgCorreo")?.value.trim() || "administracion@ecoloimp.com";
-    const cc = emailCliente;
-    const subject = `ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`;
-    abrirGmailUniversal(to, cc, subject, buildVisitaText());
-
-    showMessage("vtMessage","Archivos guardados. Gmail abierto.");
-  }catch(e){ showMessage("vtMessage", e.message, true); }
-});
-
-  $("btnVisitaGmail")?.addEventListener("click",()=>{try{openVisitaGmail(buildVisitaText())}catch(e){showMessage("vtMessage",e.message,true)}});
-  $("btnVisitaLimpiar")?.addEventListener("click",()=>{["vtDetalle","vtEmail","vtNombreFirma"].forEach(id=>{if($(id)) $(id).value=""}); const canvas=$("vtFirmaCanvas"); if(canvas){ canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height); firmaDibujada=false; } if($("firmaStatus")) $("firmaStatus").textContent="Sin firma"; DB.visitaPrinter=null;renderSelectedPrinter();if($("vtTecnico")) $("vtTecnico").value=""});
-
-  $("btnConteoGuardar")?.addEventListener("click",async()=>{ try{ captureConteos();const text=buildConteoText(), name=`conteo_impresiones_${$("ctFecha")?.value||"sin_fecha"}.txt`, to=$("ctEmail")?.value.trim(); if(!to) throw new Error("Ingrese email"); const cc = $("pgCorreo")?.value.trim() || gcorreo; const r=await guardarYEnviarGmail(text,name,'ECOLOIMP - Conteo',to,cc); showMessage("ctMessage",r); }catch(e){showMessage("ctMessage",e.message,true)} });
-  $("btnConteoGmail")?.addEventListener("click",()=>{try{captureConteos();openConteoGmail(buildConteoText())}catch(e){showMessage("ctMessage",e.message,true)}});
-  $("btnInventarioGuardar")?.addEventListener("click",async()=>{ try{ const text=buildInventarioText(), to=$("ivEmail")?.value.trim(); if(!to) throw new Error("Ingrese email"); const cc = $("pgCorreo")?.value.trim() || gcorreo; const r=await guardarYEnviarGmail(text,`inventario_${$("ivBodega")?.value||"bodega"}.txt`,'ECOLOIMP - Inventario',to,cc); showMessage("ivMessage",r); }catch(e){showMessage("ivMessage",e.message,true)} });
-  $("btnInventarioGmail")?.addEventListener("click",()=>{ try{openInventarioGmail(buildInventarioText())} catch(e){showMessage("ivMessage",e.message,true)} });
+  $("btnVisitaGuardar")?.addEventListener("click", async()=>{
+    try{
+      const emailCliente = $("vtEmail")?.value.trim(); if(!emailCliente) throw new Error("Ingrese el email del cliente");
+      const c = selectedClient("vtCliente"); const p = DB.visitaPrinter; if(!c||!p) throw new Error("Seleccione cliente e impresora");
+      const fechaFile = $("vtFecha")?.value || ""; 
+      const textoPlano = buildVisitaText();
+      saveText(textoPlano, `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+      saveText(buildVisitaSis(), `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+      const to = $("pgCorreo")?.value.trim() || gcorreo;
+      abrirGmailUniversal(to, emailCliente, `ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`, textoPlano);
+      setTimeout(()=>guardarVisitaPDFCompleto(), 500);
+      showMessage("vtMessage","Guardado. Abriendo Gmail...");
+    }catch(e){ showMessage("vtMessage", e.message, true); }
+  });
+  $("btnVisitaGmail")?.addEventListener("click",()=>{
+    try{
+      const c=selectedClient("vtCliente"); const p=DB.visitaPrinter; const fechaFile=$("vtFecha")?.value||"";
+      const to=$("pgCorreo")?.value.trim()||gcorreo; const cc=$("vtEmail")?.value.trim(); if(!cc) throw new Error("Ingrese email");
+      abrirGmailUniversal(to,cc,`ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`,buildVisitaText());
+    }catch(e){ showMessage("vtMessage", e.message, true); }
+  });
 }
-function openVisitaGmail(text){ const to=$("pgCorreo")?.value.trim() || gcorreo; const cc=$("vtEmail")?.value.trim() || ""; if(!cc) throw new Error("Ingrese el email."); window.open(gmailUrl(to,cc,"ECOLOIMP - Visita Técnica",text),"_blank"); }
-function openConteoGmail(text){ const to=$("ctEmail")?.value.trim(); if(!to) throw new Error("Ingrese el email."); const cc=$("pgCorreo")?.value.trim() || gcorreo; window.open(gmailUrl(to,cc,"ECOLOIMP - Conteo",text),"_blank"); }
-function openInventarioGmail(text){ const to=$("ivEmail")?.value.trim(); if(!to) throw new Error("Ingrese el email."); const cc=$("pgCorreo")?.value.trim() || gcorreo; window.open(gmailUrl(to,cc,"ECOLOIMP - Inventario",text),"_blank"); }
-
 async function init(){
   if($('pgCorreo')) $('pgCorreo').value = gcorreo;
   if($("year")) $("year").textContent=new Date().getFullYear();
-  setupNavigation();setupFileLoaders();
+  setupNavigation(); setupFileLoaders();
   const ahora = new Date(); const fecha = ahora.toISOString().split("T")[0]; const hora = ahora.toTimeString().slice(0, 5);
-  if ($("vtFecha")) $("vtFecha").value = fecha; if ($("vtHora")) $("vtHora").value = hora; if ($("ctFecha")) $("ctFecha").value = fecha;
+  if ($("vtFecha")) $("vtFecha").value = fecha; if ($("vtHora")) $("vtHora").value = hora;
   setupEvents();
-  await Promise.all([ loadDefaultFile("clientes","clientes.txt",parseClientes), loadDefaultFile("impresoras","impresoras.txt",parseImpresoras), loadDefaultFile("tecnicos","tecnicos.txt",parseTecnicos), loadDefaultFile("bodegas","bodegas.txt",parseBodegas), loadDefaultFile("productos","productos.txt",parseProductos), loadDefaultFile("inventarios","inventarios.txt",parseInventarios) ]);
-  refreshStats(); filterClientes("vtClienteFilter","vtCliente");filterClientes("ctClienteFilter","ctCliente");filterClientes("ivClienteFilter","ivCliente"); fillTecnicos("vtTecnico");fillTecnicos("ctTecnico"); updatePrinterTable();renderConteo();updateBodegas(); const id=(location.hash||"#bienvenido").slice(1);activateSection(document.getElementById(id)?id:"bienvenido"); initFirma();
+  await Promise.all([
+    loadDefaultFile("clientes","clientes.txt",parseClientes),
+    loadDefaultFile("impresoras","impresoras.txt",parseImpresoras),
+    loadDefaultFile("tecnicos","tecnicos.txt",parseTecnicos),
+    loadDefaultFile("bodegas","bodegas.txt",parseBodegas),
+    loadDefaultFile("productos","productos.txt",parseProductos),
+    loadDefaultFile("inventarios","inventarios.txt",parseInventarios),
+    loadDefaultFile("trabajos","trabajos.txt",parseTrabajos)
+   ]);
+  refreshStats(); filterClientes("vtClienteFilter","vtCliente"); fillTecnicos("vtTecnico"); updatePrinterTable();
+  const id=(location.hash||"#bienvenido").slice(1); activateSection(document.getElementById(id)?id:"bienvenido"); initFirma();
 }
 init();
