@@ -7,26 +7,14 @@
   <title>ECOLOIMP | Gestión Técnica e Inventarios</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* FIX MENU CELULAR - OBLIGATORIO */
-    .menu-toggle{ display:none; font-size:28px; background:none; border:none; cursor:pointer; line-height:1; }
-    @media (max-width: 900px){
-      .menu-toggle{ display:block !important; }
-      #mainNav{
-        display:none !important;
-        position:fixed !important;
-        top:60px; left:0; right:0;
-        background:#fff !important;
-        flex-direction:column !important;
-        padding:20px !important;
-        gap:10px !important;
-        box-shadow:0 10px 20px rgba(0,0,0,.15) !important;
-        z-index:99999 !important;
-        border-top:1px solid #eee;
-      }
-      #mainNav.open{ display:flex !important; }
-      #mainNav a{ padding:12px 10px; border-radius:8px; }
-      #mainNav a:active{ background:#f1f5f9; }
+    /* MENU MOVIL FORZADO */
+    #menuToggle{ display:none; font-size:28px; background:none; border:none; cursor:pointer; z-index:100000; }
+    @media(max-width:900px){
+      #menuToggle{ display:block!important; }
+      #mainNav{ display:none!important; position:fixed!important; top:60px; left:0; right:0; background:#fff!important; flex-direction:column!important; padding:20px!important; box-shadow:0 10px 30px rgba(0,0,0,.2)!important; z-index:99999!important; }
+      #mainNav.open{ display:flex!important; }
     }
+   .page-section{ display:none; }.page-section.active{ display:block; }
   </style>
 </head>
 <body>
