@@ -68,7 +68,31 @@ function buildVisitaText(){
   if(!p) throw new Error("Seleccione impresora");
   if(!t) throw new Error("Seleccione técnico");
   if(!tr) throw new Error("Seleccione trabajo");
-  return ["ECOLOIMP - ECOLOGIA EN IMPRESION S.A.","REPORTE DE VISITA TECNICA","",`Fecha : ${$("vtFecha").value}`,`Hora : ${$("vtHora").value}`,`Cliente : ${c.codigo} - ${c.nombre}`,`Impresora : ${p.codigo} - ${p.modelo}`,`Serie : ${p.serie}`,`Sucursal : ${p.sede}`,`Area : ${p.ubicacion}`,`Ubicacion : ${p.ip}`,`Bodega : ${p.bodega}`,`Tecnico : ${t.codigo} - ${t.nombre}`,`Tipo de visita: ${$("vtTipo").value}`,`Tipo de trabajo: ${tr.codigo} - ${tr.nombre}`,`Estado : ${$("vtEstado").value}`,`Email cliente : ${$("vtEmail")?.value||""}`,`Firmado por : ${$("vtNombreFirma")?.value||"(Sin nombre)"}`,`Firma digital : ${firmaDibujada?"SI":"NO"}`,"","DETALLE / TRABAJO REALIZADO","----------------------------------------",$("vtDetalle").value || "(Sin detalle)","","Generado desde el sistema web ECOLOIMP."].join("\n");
+  return [
+    "REPORTE DE VISITA TECNICA",
+    "",
+    `Fecha : ${$("vtFecha").value}`,
+    `Hora : ${$("vtHora").value}`,
+    `Cliente : ${c.codigo} - ${c.nombre}`,
+    `Impresora : ${p.codigo} - ${p.modelo}`,
+    `Serie : ${p.serie}`,
+    `Sucursal : ${p.sede}`,
+    `Area : ${p.ubicacion}`,
+    `Ubicacion : ${p.ip}`,
+    `Bodega : ${p.bodega}`,
+    `Tecnico : ${t.codigo} - ${t.nombre}`,
+    `Tipo de visita: ${$("vtTipo").value}`,
+    `Tipo de trabajo: ${tr.codigo} - ${tr.nombre}`,
+    `Estado : ${$("vtEstado").value}`,
+    `Email cliente : ${$("vtEmail")?.value||""}`,
+    `Firmado por : ${$("vtNombreFirma")?.value||"(Sin nombre)"}`,
+    `Firma digital : ${firmaDibujada?"SI":"NO"}`,
+    "",
+    "DETALLE / TRABAJO REALIZADO",
+    "----------------------------------------",
+    $("vtDetalle").value || "(Sin detalle)",
+    "",
+    "Generado desde el sistema web ECOLOIMP."].join("\n");
 }
 function abrirGmailUniversal(to, cc, subject, body){
   let bodyCorto = body;
@@ -98,8 +122,10 @@ async function getLogoBase64(){
 async function guardarVisitaPDFCompleto(){
   const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
   const fechaFile = $("vtFecha")?.value || new Date().toISOString().slice(0,10);
-  const textoPlano = buildVisitaText(); const textoSis = buildVisitaSis();
-  const firmaData = getFirmaData(); const firmaNombre = $("vtNombreFirma")?.value || "";
+  const textoPlano = buildVisitaText(); 
+  const textoSis = buildVisitaSis();
+  const firmaData = getFirmaData(); 
+  const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64();
   saveText(textoPlano, `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
   saveText(textoSis, `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`);
