@@ -24,7 +24,7 @@ function refreshStats(){ if($("statClientes")) $("statClientes").textContent=DB.
 function options(select, rows, placeholder="Seleccione..."){ if(!select) return; select.innerHTML=`<option value="">${placeholder}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join(""); }
 function filterClientes(inputId, selectId){ const q=norm($(inputId)?.value || ""); const rows=DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(q)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')); options($(selectId),rows.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})),"Seleccione cliente..."); }
 function fillTecnicos(selectId){ options($(selectId),DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label,'es')),"Seleccione técnico..."); }
-function fillTrabajos(selectId){ options($(selectId),DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label,'es')),"Seleccione trabajo..."); }
+function fillTrabajos(selectId){ options($(selectId),DB.trabajos.map(tr=>({value:tr.codigo,label:`${tr.codigo} · ${tr.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label,'es')),"Seleccione trabajo..."); }
 function selectedClient(id){ return DB.clientes.find(c=>c.codigo===$(id)?.value); }
 
 function updatePrinterTable(){
