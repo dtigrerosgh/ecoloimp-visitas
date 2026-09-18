@@ -105,8 +105,7 @@ async function guardarVisitaPDFCompleto(){
   saveText(textoSis, `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`);
   if(window.jspdf){
     const { jsPDF } = window.jspdf; const doc = new jsPDF();
-    if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,38,15);}catch{} }
-    doc.setFontSize(12); doc.text("ECOLOIMP - ECOLOGIA EN IMPRESION S.A.", 50, 14);
+    if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,60,25);}catch{} }
     let y=30;
     textoPlano.split("\n").forEach(l=>{
       const s=doc.splitTextToSize(l,190); if(y>270){doc.addPage(); y=15;} doc.text(s,10,y); y+=s.length*5;
