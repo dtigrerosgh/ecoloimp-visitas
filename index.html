@@ -8,6 +8,29 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<!-- LOGIN -->
+<div id="loginScreen" style="position:fixed;inset:0;background:#f1f5f9;z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;width:100%;max-width:380px;padding:30px;border-radius:18px;box-shadow:0 15px 40px rgba(0,0,0,.2);text-align:center">
+    <img src="assets/logo.jpg" onerror="this.style.display='none'" style="height:70px"><h2>ECOLOIMP</h2>
+    <p style="font-size:13px;color:#64748b">Ecología en Impresión S.A.</p>
+    <div id="loginForm">
+      <input id="loginUser" placeholder="Usuario" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:10px">
+      <input id="loginPass" type="password" placeholder="Contraseña" style="width:100%;padding:12px;margin-bottom:15px;border:1px solid #ddd;border-radius:10px">
+      <button id="btnLogin" style="width:100%;padding:12px;background:#0f172a;color:#fff;border:0;border-radius:10px">Entrar</button>
+      <p style="font-size:13px;margin-top:12px"><a href="#" id="showRegister">Crear cuenta nueva</a></p>
+      <small style="color:#94a3b8">admin / admin</small>
+    </div>
+    <div id="registerForm" style="display:none">
+      <input id="regUser" placeholder="Nuevo usuario" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:10px">
+      <input id="regPass" type="password" placeholder="Contraseña" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:10px">
+      <input id="regPass2" type="password" placeholder="Repetir" style="width:100%;padding:12px;margin-bottom:15px;border:1px solid #ddd;border-radius:10px">
+      <button id="btnRegister" style="width:100%;padding:12px;background:#16a34a;color:#fff;border:0;border-radius:10px">Registrarme</button>
+      <p style="font-size:13px;margin-top:12px"><a href="#" id="showLogin">Ya tengo cuenta</a></p>
+    </div>
+    <div id="loginMsg" style="display:none;margin-top:12px;font-size:13px;color:#dc2626"></div>
+  </div>
+</div>
+  
   <header class="site-header">
     <div class="header-inner">
       <a href="#bienvenido" class="brand" data-section="bienvenido" aria-label="ECOLOIMP - Inicio">
