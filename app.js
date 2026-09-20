@@ -60,6 +60,7 @@ function buildVisitaSis(){
   const detalle = ($("vtDetalle").value || "").replace(/;/g, ",").replace(/\n/g, " ");
   return `${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${firmaNombre};${detalle}`;
 }
+
 function buildVisitaText(){
   const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
@@ -94,6 +95,7 @@ function buildVisitaText(){
     "",
     "Generado desde el sistema web ECOLOIMP."].join("\n");
 }
+
 function abrirGmailUniversal(to, cc, subject, body){
   let bodyCorto = body;
   if(bodyCorto.length > 800) bodyCorto = bodyCorto.substring(0,800) + "\n\n[PDF Y TXT EN DESCARGAS]";
@@ -139,9 +141,11 @@ async function guardarVisitaPDFCompleto(){
     });
     if(firmaData){
       y+=10; if(y>250){ doc.addPage(); y=15; }
-      doc.text("FIRMA DE CONFORMIDAD: "+firmaNombre,10,y); y+=8;
-      try{ doc.addImage(firmaData,"PNG",10,y,80,30);
-           y+=2;
+      doc.text("FIRMA DE CONFORMIDAD: ",10,y); 
+      y+=8;
+      try{ 
+           doc.addImage(firmaData,"PNG",10,y,80,30);
+           y+=10;
            doc.text(firmaNombre,10,y);
          }
       catch{}
@@ -196,6 +200,7 @@ function setupEvents(){
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updatePrinterTable()});
   $("vtPrinterFilter")?.addEventListener("input",updatePrinterTable);
   $("vtPrinterBody")?.addEventListener("click",e=>{ const serie=e.target.dataset.selectPrinter; if(serie) selectVisitaPrinter(serie); });
+  
   $("btnVisitaGuardar")?.addEventListener("click", async()=>{
     try{
       const emailCliente = $("vtEmail")?.value.trim(); if(!emailCliente) throw new Error("Ingrese el email del cliente");
@@ -208,6 +213,7 @@ function setupEvents(){
       showMessage("vtMessage","Guardado. Abriendo Gmail y descargando PDF...");
     }catch(e){ showMessage("vtMessage", e.message, true); }
   });
+  
   $("btnVisitaGmail")?.addEventListener("click",()=>{
     try{
       const c=selectedClient("vtCliente"); const p=DB.visitaPrinter; const fechaFile=$("vtFecha")?.value||"";
