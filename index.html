@@ -7,6 +7,80 @@
   <title>ECOLOIMP | Gestión Técnica e Inventarios</title>
   <link rel="stylesheet" href="styles.css">
 </head>
+<script>
+// LOGIN ECOLOIMP - GitHub Pages sin servidor
+(function(){
+  const LS_USERS = 'ecoloimp_users';
+  const LS_SESSION = 'ecoloimp_session';
+  
+  function getUsers(){
+    const d = localStorage.getItem(LS_USERS);
+    if(!d){
+      const def = [{user:'admin', pass:'admin'}];
+      localStorage.setItem(LS_USERS, JSON.stringify(def));
+      return def;
+    }
+    return JSON.parse(d);
+  }
+  function saveUsers(u){ localStorage.setItem(LS_USERS, JSON.stringify(u)); }
+  
+  const loginScreen = document.getElementById('loginScreen');
+  if(localStorage.getItem(LS_SESSION)){
+    loginScreen.style.display='none';
+  }
+
+  function msg(t, ok){
+    const el=document.getElementById('loginMsg');
+    el.style.display='block'; el.textContent=t;
+    el.style.color= ok ? '#16a34a' : '#dc2626';
+  }
+
+  document.getElementById('showRegister')?.addEventListener('click', e=>{
+    e.preventDefault(); document.getElementById('loginForm').style.display='none';
+    document.getElementById('registerForm').style.display='block';
+    document.getElementById('loginMsg').style.display='none';
+  });
+  document.getElementById('showLogin')?.addEventListener('click', e=>{
+    e.preventDefault(); document.getElementById('registerForm').style.display='none';
+    document.getElementById('loginForm').style.display='block';
+    document.getElementById('loginMsg').style.display='none';
+  });
+
+  document.getElementById('btnLogin')?.addEventListener('click', ()=>{
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    if(!u||!p){ msg('Ingrese usuario y contraseña'); return; }
+    const users = getUsers();
+    const found = users.find(x=> x.user.toLowerCase()===u.toLowerCase() && x.pass===p);
+    if(found){
+      localStorage.setItem(LS_SESSION, found.user);
+      loginScreen.style.display='none';
+    }else{
+      msg('Usuario o contraseña incorrecto');
+    }
+  });
+
+  document.getElementById('btnRegister')?.addEventListener('click', ()=>{
+    const u = document.getElementById('regUser').value.trim();
+    const p = document.getElementById('regPass').value.trim();
+    const p2 = document.getElementById('regPass2').value.trim();
+    if(!u||!p){ msg('Complete todos los campos'); return; }
+    if(p!==p2){ msg('Las contraseñas no coinciden'); return; }
+    let users = getUsers();
+    if(users.some(x=> x.user.toLowerCase()===u.toLowerCase())){ msg('Ese usuario ya existe'); return; }
+    users.push({user:u, pass:p});
+    saveUsers(users);
+    msg('Cuenta creada. Ahora inicie sesión', true);
+    setTimeout(()=>{
+      document.getElementById('registerForm').style.display='none';
+      document.getElementById('loginForm').style.display='block';
+    },1000);
+  });
+
+  // Enter para login
+  document.getElementById('loginPass')?.addEventListener('keypress', e=>{ if(e.key==='Enter') document.getElementById('btnLogin').click(); });
+})();
+</script>  
 <body>
 <!-- LOGIN -->
 <div id="loginScreen" style="position:fixed;inset:0;background:#f1f5f9;z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px">
