@@ -206,7 +206,7 @@ async function guardarVisitaPDFCompleto(){
   // Logo
   if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,35,14);}catch{} }
   doc.setFontSize(14); doc.setFont(undefined,'bold');
-  doc.text("ECOLOIMP - REPORTE DE VISITA TECNICA", 50, 15);
+  doc.text("REPORTE DE VISITA TECNICA", 50, 15);
   doc.setLineWidth(0.6); doc.setDrawColor(15,23,42);
   doc.line(10, 24, 200, 24); // linea separacion principal con canvas
 
@@ -215,10 +215,13 @@ async function guardarVisitaPDFCompleto(){
   let rows1 = [
     ["FECHA", $("vtFecha").value + "  " + $("vtHora").value],
     ["CLIENTE", `${c.codigo} - ${c.nombre}`],
-    ["EQUIPO", `${p.codigo} - ${p.modelo} | Serie: ${p.serie}`],
-    ["SUCURSAL / AREA", `${p.sede} / ${p.ubicacion} - ${p.ip}`],
+    ["EQUIPO", `${p.codigo} - ${p.modelo}`],
+    ["SERIE", `${p.serie}`],
+    ["SUCURSAL", `${p.sede}`],
+    ["AREA", `${p.ubicacion}`],
+    ["UBICACION", `${p.ip}`],
   ];
-  y = drawTable(10, y, 35, 145, 8, rows1) + 6;
+  y = drawTable(10, y, 35, 145, 8, rows1) + 8;
 
   // Tabla 2
   let rows2 = [
@@ -241,8 +244,12 @@ async function guardarVisitaPDFCompleto(){
   // Firma con linea canvas
   doc.setDrawColor(15,23,42); doc.setLineWidth(0.4);
   doc.line(10, y+15, 80, y+15); // linea para firma
-  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
-  doc.text(firmaNombre || "Firma cliente", 10, y+20);
+  if(firmaData){ 
+    try{ 
+      doc.addImage(firmaData,"PNG",10,y+16,70,25);
+    }
+    catch{} }
+  doc.text(firmaNombre || "Firma cliente", 10, y+21);
   doc.text(`Firma digital: ${firmaDibujada?"SI":"NO"}`, 100, y+20);
 
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
