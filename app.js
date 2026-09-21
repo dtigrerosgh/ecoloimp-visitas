@@ -161,6 +161,7 @@ function activateSection(id){
   $("mainNav")?.classList.remove("open");
   const btn=$("menuToggle"); if(btn){ btn.setAttribute("aria-expanded","false"); btn.textContent="☰"; if(window.innerWidth<=900) $("mainNav").style.display="none"; }
 }
+
 function setupNavigation(){
   document.querySelectorAll("[data-section]").forEach(el=>{
     el.addEventListener("click",e=>{ e.preventDefault(); activateSection(el.dataset.section); });
@@ -173,6 +174,7 @@ function setupNavigation(){
     $("menuToggle").setAttribute("aria-expanded", isOpen? "true" : "false");
     $("menuToggle").textContent = isOpen? "✕" : "☰";
   });
+  
   document.addEventListener("click", (e)=>{
     const nav = $("mainNav"); const btn = $("menuToggle");
     if(!nav ||!btn) return;
@@ -239,6 +241,7 @@ async function init(){
     loadDefaultFile("trabajos","trabajos.txt",parseTrabajos)
    ]);
   refreshStats(); filterClientes("vtClienteFilter","vtCliente"); fillTecnicos("vtTecnico"); fillTrabajos("vtTrabajo"); updatePrinterTable();
-  const id=(location.hash||"#bienvenido").slice(1); activateSection(document.getElementById(id)?id:"bienvenido"); initFirma();
+  const id=(location.hash||"#bienvenido").slice(1); activateSection(document.getElementById(id)?id:"bienvenido"); 
+  initFirma();
 }
 init();
