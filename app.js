@@ -102,7 +102,6 @@ function buildVisitaText(){
   }
 
   let txt = "";
-  txt += " ECOLOIMP - ECOLOGIA EN IMPRESION S.A.\n";
   txt += " REPORTE DE VISITA TECNICA\n";
   txt += linea();
   txt += fila("Fecha", fecha);
@@ -125,19 +124,18 @@ function buildVisitaText(){
   txt += fila("Firmado por", firmaNombre);
   txt += fila("Firma digital", firmaEstado);
   txt += linea();
-  txt += `| DETALLE / TRABAJO REALIZADO                                          |\n`;
+  txt += ` DETALLE / TRABAJO REALIZADO                                          \n`;
   txt += linea();
   detalle.split("\n").forEach(l=>{
     let line = l;
-    while(line.length > 70){
-      txt += `| ${line.substring(0,70).padEnd(70)} |\n`;
-      line = line.substring(70);
+    while(line.length > 90){
+      txt += `${line.substring(0,90).padEnd(90)} \n`;
+      line = line.substring(90);
     }
-    txt += `| ${line.padEnd(70)} |\n`;
+    txt += `${line.padEnd(90)} \n`;
   });
   txt += linea();
   txt += ` Generado desde sistema web ECOLOIMP - ${fecha} ${hora}\n`;
-
   return txt;
 }
 
@@ -172,8 +170,10 @@ async function guardarVisitaPDFCompleto(){
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
   const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
-  const textoPlano = buildVisitaText(); const textoSis = buildVisitaSis();
-  const firmaData = getFirmaData(); const firmaNombre = $("vtNombreFirma")?.value || "";
+  const textoPlano = buildVisitaText(); 
+  const textoSis = buildVisitaSis();
+  const firmaData = getFirmaData(); 
+  const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64();
 
   // TXT
