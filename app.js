@@ -62,38 +62,87 @@ function buildVisitaSis(){
 }
  
 function buildVisitaText(){
-  const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
-  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
-  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  const c = selectedClient("vtCliente");
+  const p = DB.visitaPrinter;
+  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
   if(!c) throw new Error("Seleccione cliente");
   if(!p) throw new Error("Seleccione impresora");
   if(!t) throw new Error("Seleccione técnico");
   if(!tr) throw new Error("Seleccione trabajo");
-  return [
-    "REPORTE DE VISITA TECNICA",
-    "",
-    `Fecha : ${$("vtFecha").value}`,
-    `Hora : ${$("vtHora").value}`,
-    `Cliente : ${c.codigo} - ${c.nombre}`,
-    `Impresora : ${p.codigo} - ${p.modelo}`,
-    `Serie : ${p.serie}`,
-    `Sucursal : ${p.sede}`,
-    `Area : ${p.ubicacion}`,
-    `Ubicacion : ${p.ip}`,
-    `Bodega : ${p.bodega}`,
-    `Tecnico : ${t.codigo} - ${t.nombre}`,
-    `Tipo de visita: ${$("vtTipo").value}`,
-    `Tipo de trabajo: ${tr.codigo} - ${tr.nombre}`,
-    `Estado : ${$("vtEstado").value}`,
-    `Email cliente : ${$("vtEmail")?.value||""}`,
-    `Firmado por : ${$("vtNombreFirma")?.value||"(Sin nombre)"}`,
-    `Firma digital : ${firmaDibujada?"SI":"NO"}`,
-    "",
-    "DETALLE / TRABAJO REALIZADO",
-    "----------------------------------------",
-    $("vtDetalle").value || "(Sin detalle)",
-    "",
-    "Generado desde el sistema web ECOLOIMP."].join("\n");
+
+  const W1 = 22; // ancho campo
+  const W2 = 54; // ancho valor
+  const LINE = "┌" + "─".repeat(W1+2) + "┬" + "─".repeat(W2+2) + "┐\n";
+  const MID  = "├" + "─".repeat(W1+2) + "┼" + "─".repeat(W2+2) + "┤\n";
+  const BOT  = "└" + "─".repeat(W1+2) + "┴" + "─".repeat(W2+2) + "┘\n";
+  const SEP_FULL = "├" + "─".repeat(W1+W2+5) + "┤\n";
+
+  function row(k,v){
+    v = (v||"-").toString().replace(/\t/g," ");
+    let out = "";
+    let first = true;
+    while(v.length > W2){
+      let part = v.substring(0,W2);
+      v = v.substring(W2);
+      if(first){ out += `│ ${k.padEnd(W1)} │ ${part.padEnd(W2)} │\n`; k=""; first=false; }
+      else { out += `│ ${"".padEnd(W1)} │ ${part.padEnd(W2)} │\n`; }
+    }
+    if(first) out += `│ ${k.padEnd(W1)} │ ${v.padEnd(W2)} │\n`;
+    else if(v) out += `│ ${"".padEnd(W1)} │ ${v.padEnd(W2)} │\n`;
+    return out;
+  }
+
+  function titleRow(t){
+    let txt = t.toUpperCase();
+    return `│ ${txt.padEnd(W1+W2+3)} │\n`;
+  }
+
+  let txt = "";
+  txt += "  ECOLOIMP S.A. - ECOLOGIA EN IMPRESION\n";
+  txt += "  REPORTE DE VISITA TECNICA\n\n";
+  txt += LINE;
+  txt += `│ ${"DATOS GENERALES".padEnd(W1+W2+3)} │\n`;
+  txt += MID;
+  txt += row("Fecha", $("vtFecha").value);
+  txt += row("Hora", $("vtHora").value);
+  txt += row("N° Reporte", `VT-${c.codigo}-${p.serie}-${($("vtFecha").value||"").replace(/-/g,"")}`);
+  txt += MID;
+  txt += `│ ${"CLIENTE / EQUIPO".padEnd(W1+W2+3)} │\n`;
+  txt += MID;
+  txt += row("Cliente", `${c.codigo} - ${c.nombre}`);
+  txt += row("Impresora", `${p.codigo} - ${p.modelo}`);
+  txt += row("N° Serie", p.serie);
+  txt += row("Sucursal", p.sede);
+  txt += row("Área", p.ubicacion);
+  txt += row("Ubicación", p.ip);
+  txt += row("Bodega", p.bodega);
+  txt += MID;
+  txt += `│ ${"DETALLE DEL SERVICIO".padEnd(W1+W2+3)} │\n`;
+  txt += MID;
+  txt += row("Técnico", `${t.codigo} - ${t.nombre}`);
+  txt += row("Tipo Visita", $("vtTipo").value);
+  txt += row("Trabajo", `${tr.codigo} - ${tr.nombre}`);
+  txt += row("Estado", $("vtEstado").value);
+  txt += row("Email Cliente", $("vtEmail")?.value || "-");
+  txt += row("Firma", `${$("vtNombreFirma")?.value || "-"} [${firmaDibujada?"CON FIRMA":"SIN FIRMA"}]`);
+  txt += SEP_FULL;
+  txt += `│ ${"TRABAJO REALIZADO / OBSERVACIONES".padEnd(W1+W2+3)} │\n`;
+  txt += MID;
+  const detalle = ($("vtDetalle").value || "Sin observaciones.").split("\n");
+  detalle.forEach(par=>{
+    let line = par || " ";
+    while(line.length > 0){
+      let chunk = line.substring(0, W1+W2+3);
+      line = line.substring(W1+W2+3);
+      txt += `│ ${chunk.padEnd(W1+W2+3)} │\n`;
+    }
+  });
+  txt += BOT;
+  txt += `\nDocumento generado automáticamente desde plataforma web ECOLOIMP\n`;
+  txt += `Fecha impresión: ${new Date().toLocaleString("es-EC")} - Usuario: ${localStorage.getItem("ecoloimp_session")||"admin"}\n`;
+
+  return txt;
 }
 
 function abrirGmailUniversal(to, cc, subject, body){
