@@ -229,7 +229,8 @@ async function guardarVisitaPDFCompleto(){
     ["TIPO VISITA", $("vtTipo").value],
     ["TRABAJO", `${tr.codigo} - ${tr.nombre}`],
     ["ESTADO", $("vtEstado").value],
-    ["EMAIL", $("vtEmail")?.value || "-"],
+    ["EMAIL CLIENTE", $("vtEmail")?.value || "-"],
+    ["FIRMA DIGITAL", `${firmaDibujada?"SI":"NO"}`],
   ];
   y = drawTable(10, y, 35, 145, 8, rows2) + 6;
 
@@ -241,7 +242,9 @@ async function guardarVisitaPDFCompleto(){
   doc.text(detLines, 12, y+6);
   y += 32;
 
+
   // Firma con linea canvas
+  doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD", 10, y); y+=4;
   doc.setDrawColor(15,23,42); doc.setLineWidth(0.4);
   doc.line(10, y+15, 80, y+15); // linea para firma
   if(firmaData){ 
@@ -250,7 +253,6 @@ async function guardarVisitaPDFCompleto(){
     }
     catch{} }
   doc.text(firmaNombre || "Firma cliente", 10, y+21);
-  doc.text(`Firma digital: ${firmaDibujada?"SI":"NO"}`, 100, y+20);
 
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
