@@ -77,6 +77,7 @@ function buildVisitaText(){
   const firmaEstado = firmaDibujada ? "SI" : "NO";
 
   function linea(){ return "+----------------------+----------------------------------------------------+\n"; }
+  
   function fila(campo, valor){
     // corta valor en lineas de 50 chars para que no se rompa la tabla
     let v = (valor||"").toString();
@@ -165,38 +166,88 @@ async function getLogoBase64(){
   if(LOGO_ECOLOIMP && LOGO_ECOLOIMP.length > 100) return LOGO_ECOLOIMP;
   try{ const r = await fetch("assets/logo.jpg"); const b = await r.blob(); return await new Promise(res=>{ const fr=new FileReader(); fr.onloadend=()=>res(fr.result); fr.readAsDataURL(b); }); }catch(e){ return null; }
 }
+
 async function guardarVisitaPDFCompleto(){
   const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
-  const fechaFile = $("vtFecha")?.value || new Date().toISOString().slice(0,10);
-  const textoPlano = buildVisitaText(); 
-  const textoSis = buildVisitaSis();
-  const firmaData = getFirmaData(); 
-  const firmaNombre = $("vtNombreFirma")?.value || "";
+  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
+  const textoPlano = buildVisitaText(); const textoSis = buildVisitaSis();
+  const firmaData = getFirmaData(); const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64();
+
+  // TXT
   saveText(textoPlano, `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
   saveText(textoSis, `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`);
-  if(window.jspdf){
-    const { jsPDF } = window.jspdf; const doc = new jsPDF();
-    if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,60,25);}catch{} }
-    let y=30;
-    doc.setFontSize(12);
-    textoPlano.split("\n").forEach(l=>{
-      const s=doc.splitTextToSize(l,190); if(y>270){doc.addPage(); y=15;} doc.text(s,10,y); y+=s.length*5;
+
+  if(!window.jspdf) return;
+  const { jsPDF } = window.jspdf; const doc = new jsPDF();
+  
+  // --- CANVAS = DIBUJO DE LINEAS ---
+  function drawTable(x,y,w1,w2,h, rows){
+    doc.setDrawColor(180); doc.setLineWidth(0.3);
+    // bordes externos con canvas
+    doc.rect(x, y, w1+w2, h*rows.length);
+    let cy = y;
+    rows.forEach((r,i)=>{
+      if(i>0){ doc.line(x, cy, x+w1+w2, cy); } // linea separacion
+      doc.line(x+w1, cy, x+w1, cy+h); // linea vertical medio
+      doc.setFontSize(9); doc.setFont(undefined,'bold');
+      doc.text(r[0], x+2, cy+5);
+      doc.setFont(undefined,'normal');
+      let lines = doc.splitTextToSize(r[1], w2-4);
+      doc.text(lines, x+w1+2, cy+5);
+      let lh = Math.max(h, lines.length*5+2);
+      cy += lh;
     });
-    if(firmaData){
-      y+=10; if(y>250){ doc.addPage(); y=15; }
-      doc.text("FIRMA DE CONFORMIDAD: ",10,y); 
-      y+=8;
-      try{ 
-           doc.addImage(firmaData,"PNG",10,y,80,30);
-           y+=10;
-           doc.text(firmaNombre,10,y);
-         }
-      catch{}
-    }
-    doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
+    return cy;
   }
+
+  // Logo
+  if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,35,14);}catch{} }
+  doc.setFontSize(14); doc.setFont(undefined,'bold');
+  doc.text("ECOLOIMP - REPORTE DE VISITA TECNICA", 50, 15);
+  doc.setLineWidth(0.6); doc.setDrawColor(15,23,42);
+  doc.line(10, 24, 200, 24); // linea separacion principal con canvas
+
+  let y = 30;
+  // Tabla 1
+  let rows1 = [
+    ["FECHA", $("vtFecha").value + "  " + $("vtHora").value],
+    ["CLIENTE", `${c.codigo} - ${c.nombre}`],
+    ["EQUIPO", `${p.codigo} - ${p.modelo} | Serie: ${p.serie}`],
+    ["SUCURSAL / AREA", `${p.sede} / ${p.ubicacion} - ${p.ip}`],
+  ];
+  y = drawTable(10, y, 35, 145, 8, rows1) + 6;
+
+  // Tabla 2
+  let rows2 = [
+    ["TECNICO", `${t.codigo} - ${t.nombre}`],
+    ["TIPO VISITA", $("vtTipo").value],
+    ["TRABAJO", `${tr.codigo} - ${tr.nombre}`],
+    ["ESTADO", $("vtEstado").value],
+    ["EMAIL", $("vtEmail")?.value || "-"],
+  ];
+  y = drawTable(10, y, 35, 145, 8, rows2) + 6;
+
+  // Detalle con lineas canvas
+  doc.setFont(undefined,'bold'); doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=4;
+  doc.setDrawColor(180); doc.rect(10, y, 180, 30);
+  doc.setFont(undefined,'normal'); doc.setFontSize(9);
+  let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
+  doc.text(detLines, 12, y+6);
+  y += 32;
+
+  // Firma con linea canvas
+  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4);
+  doc.line(10, y+15, 80, y+15); // linea para firma
+  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
+  doc.text(firmaNombre || "Firma cliente", 10, y+20);
+  doc.text(`Firma digital: ${firmaDibujada?"SI":"NO"}`, 100, y+20);
+
+  doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
+
 function setupFileLoaders(){ const parsers={clientes:parseClientes,impresoras:parseImpresoras,tecnicos:parseTecnicos,bodegas:parseBodegas,productos:parseProductos,inventarios:parseInventarios,trabajos:parseTrabajos}; document.querySelectorAll('input[type="file"][data-file-type]').forEach(input=>{ input.addEventListener("change",async e=>{ const file=e.target.files[0], type=input.dataset.fileType; if(!file)return; const buf=await file.arrayBuffer(), text=new TextDecoder("windows-1252").decode(buf); DB[type]=parsers[type](text); setFileStatus(type,file.name+" · "+DB[type].length+" registros"); refreshStats(); filterClientes("vtClienteFilter","vtCliente"); fillTrabajos("vtTrabajo"); fillTecnicos("vtTecnico"); DB.visitaPrinter=null;updatePrinterTable(); }); }); }
 function activateSection(id){
   document.querySelectorAll(".page-section").forEach(s=>s.classList.toggle("active",s.id===id));
@@ -240,7 +291,9 @@ function initFirma(){
   canvas.addEventListener("touchstart", start, {passive:false}); canvas.addEventListener("touchmove", move, {passive:false}); canvas.addEventListener("touchend", end);
   $("btnFirmaLimpiar")?.addEventListener("click", ()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.beginPath(); firmaDibujada=false; if($("firmaStatus")) $("firmaStatus").textContent="Sin firma"; });
 }
+
 function getFirmaData(){ const canvas = $("vtFirmaCanvas"); if(!canvas ||!firmaDibujada) return null; return canvas.toDataURL("image/png"); }
+
 function setupEvents(){
   ["vtClienteFilter"].forEach(id=>{ const el=$(id); if(el) el.addEventListener("input",()=>filterClientes(id,"vtCliente")); });
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updatePrinterTable()});
