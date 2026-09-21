@@ -60,87 +60,82 @@ function buildVisitaSis(){
   const detalle = ($("vtDetalle").value || "").replace(/;/g, ",").replace(/\n/g, " ");
   return `${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${firmaNombre};${detalle}`;
 }
- 
+
 function buildVisitaText(){
-  const c = selectedClient("vtCliente");
-  const p = DB.visitaPrinter;
-  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
-  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
+  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
   if(!c) throw new Error("Seleccione cliente");
   if(!p) throw new Error("Seleccione impresora");
   if(!t) throw new Error("Seleccione técnico");
   if(!tr) throw new Error("Seleccione trabajo");
 
-  const W1 = 22; // ancho campo
-  const W2 = 54; // ancho valor
-  const LINE = "┌" + "─".repeat(W1+2) + "┬" + "─".repeat(W2+2) + "┐\n";
-  const MID  = "├" + "─".repeat(W1+2) + "┼" + "─".repeat(W2+2) + "┤\n";
-  const BOT  = "└" + "─".repeat(W1+2) + "┴" + "─".repeat(W2+2) + "┘\n";
-  const SEP_FULL = "├" + "─".repeat(W1+W2+5) + "┤\n";
+  const fecha = $("vtFecha").value || "";
+  const hora = $("vtHora").value || "";
+  const detalle = ($("vtDetalle").value || "(Sin detalle)").replace(/\r/g,"");
+  const firmaNombre = $("vtNombreFirma")?.value || "(Sin nombre)";
+  const firmaEstado = firmaDibujada ? "SI" : "NO";
 
-  function row(k,v){
-    v = (v||"-").toString().replace(/\t/g," ");
-    let out = "";
-    let first = true;
-    while(v.length > W2){
-      let part = v.substring(0,W2);
-      v = v.substring(W2);
-      if(first){ out += `│ ${k.padEnd(W1)} │ ${part.padEnd(W2)} │\n`; k=""; first=false; }
-      else { out += `│ ${"".padEnd(W1)} │ ${part.padEnd(W2)} │\n`; }
+  function linea(){ return "+----------------------+----------------------------------------------------+\n"; }
+  function fila(campo, valor){
+    // corta valor en lineas de 50 chars para que no se rompa la tabla
+    let v = (valor||"").toString();
+    let res = "";
+    let primera = true;
+    while(v.length > 50){
+      let chunk = v.substring(0,50);
+      v = v.substring(50);
+      if(primera){
+        res += `| ${campo.padEnd(20)} | ${chunk.padEnd(50)} |\n`;
+        campo = ""; primera = false;
+      }else{
+        res += `| ${"".padEnd(20)} | ${chunk.padEnd(50)} |\n`;
+      }
     }
-    if(first) out += `│ ${k.padEnd(W1)} │ ${v.padEnd(W2)} │\n`;
-    else if(v) out += `│ ${"".padEnd(W1)} │ ${v.padEnd(W2)} │\n`;
-    return out;
-  }
-
-  function titleRow(t){
-    let txt = t.toUpperCase();
-    return `│ ${txt.padEnd(W1+W2+3)} │\n`;
+    if(primera){
+      res += `| ${campo.padEnd(20)} | ${v.padEnd(50)} |\n`;
+    }else if(v){
+      res += `| ${"".padEnd(20)} | ${v.padEnd(50)} |\n`;
+    }
+    return res;
   }
 
   let txt = "";
-  txt += "  ECOLOIMP S.A. - ECOLOGIA EN IMPRESION\n";
-  txt += "  REPORTE DE VISITA TECNICA\n\n";
-  txt += LINE;
-  txt += `│ ${"DATOS GENERALES".padEnd(W1+W2+3)} │\n`;
-  txt += MID;
-  txt += row("Fecha", $("vtFecha").value);
-  txt += row("Hora", $("vtHora").value);
-  txt += row("N° Reporte", `VT-${c.codigo}-${p.serie}-${($("vtFecha").value||"").replace(/-/g,"")}`);
-  txt += MID;
-  txt += `│ ${"CLIENTE / EQUIPO".padEnd(W1+W2+3)} │\n`;
-  txt += MID;
-  txt += row("Cliente", `${c.codigo} - ${c.nombre}`);
-  txt += row("Impresora", `${p.codigo} - ${p.modelo}`);
-  txt += row("N° Serie", p.serie);
-  txt += row("Sucursal", p.sede);
-  txt += row("Área", p.ubicacion);
-  txt += row("Ubicación", p.ip);
-  txt += row("Bodega", p.bodega);
-  txt += MID;
-  txt += `│ ${"DETALLE DEL SERVICIO".padEnd(W1+W2+3)} │\n`;
-  txt += MID;
-  txt += row("Técnico", `${t.codigo} - ${t.nombre}`);
-  txt += row("Tipo Visita", $("vtTipo").value);
-  txt += row("Trabajo", `${tr.codigo} - ${tr.nombre}`);
-  txt += row("Estado", $("vtEstado").value);
-  txt += row("Email Cliente", $("vtEmail")?.value || "-");
-  txt += row("Firma", `${$("vtNombreFirma")?.value || "-"} [${firmaDibujada?"CON FIRMA":"SIN FIRMA"}]`);
-  txt += SEP_FULL;
-  txt += `│ ${"TRABAJO REALIZADO / OBSERVACIONES".padEnd(W1+W2+3)} │\n`;
-  txt += MID;
-  const detalle = ($("vtDetalle").value || "Sin observaciones.").split("\n");
-  detalle.forEach(par=>{
-    let line = par || " ";
-    while(line.length > 0){
-      let chunk = line.substring(0, W1+W2+3);
-      line = line.substring(W1+W2+3);
-      txt += `│ ${chunk.padEnd(W1+W2+3)} │\n`;
+  txt += " ECOLOIMP - ECOLOGIA EN IMPRESION S.A.\n";
+  txt += " REPORTE DE VISITA TECNICA\n";
+  txt += linea();
+  txt += fila("Fecha", fecha);
+  txt += fila("Hora", hora);
+  txt += linea();
+  txt += fila("Cliente", `${c.codigo} - ${c.nombre}`);
+  txt += fila("Impresora", `${p.codigo} - ${p.modelo}`);
+  txt += fila("Serie", p.serie);
+  txt += fila("Sucursal", p.sede);
+  txt += fila("Area", p.ubicacion);
+  txt += fila("Ubicacion", p.ip);
+  txt += fila("Bodega", p.bodega);
+  txt += linea();
+  txt += fila("Tecnico", `${t.codigo} - ${t.nombre}`);
+  txt += fila("Tipo Visita", $("vtTipo").value);
+  txt += fila("Trabajo", `${tr.codigo} - ${tr.nombre}`);
+  txt += fila("Estado", $("vtEstado").value);
+  txt += fila("Email Cliente", $("vtEmail")?.value || "");
+  txt += linea();
+  txt += fila("Firmado por", firmaNombre);
+  txt += fila("Firma digital", firmaEstado);
+  txt += linea();
+  txt += `| DETALLE / TRABAJO REALIZADO                                          |\n`;
+  txt += linea();
+  detalle.split("\n").forEach(l=>{
+    let line = l;
+    while(line.length > 70){
+      txt += `| ${line.substring(0,70).padEnd(70)} |\n`;
+      line = line.substring(70);
     }
+    txt += `| ${line.padEnd(70)} |\n`;
   });
-  txt += BOT;
-  txt += `\nDocumento generado automáticamente desde plataforma web ECOLOIMP\n`;
-  txt += `Fecha impresión: ${new Date().toLocaleString("es-EC")} - Usuario: ${localStorage.getItem("ecoloimp_session")||"admin"}\n`;
+  txt += linea();
+  txt += ` Generado desde sistema web ECOLOIMP - ${fecha} ${hora}\n`;
 
   return txt;
 }
