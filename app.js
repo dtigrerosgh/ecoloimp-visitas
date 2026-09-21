@@ -60,7 +60,7 @@ function buildVisitaSis(){
   const detalle = ($("vtDetalle").value || "").replace(/;/g, ",").replace(/\n/g, " ");
   return `${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${firmaNombre};${detalle}`;
 }
-
+ 
 function buildVisitaText(){
   const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
