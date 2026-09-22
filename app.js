@@ -18,7 +18,20 @@ function parseTrabajos(text){ return parse(text).filter(r=>r.length>=2).map(r=>(
 function parseBodegas(text){ return parse(text).filter(r=>r.length>=2).map(r=>{ const raw=r.slice(1).join(";"), m=raw.match(/^([A-Z0-9]+)\s*-\s*(.*)$/i); return {codigo:r[0],cliente:m?m[1]:"",nombre:m?m[2]:raw,raw}; }); }
 function parseProductos(text){ return parse(text).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")})); }
 function parseInventarios(text){ return parse(text).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],nombre:r[2]||"",cantidad:Number((r[3]||"0").replace(",","."))||0})); }
-async function loadDefaultFile(type, filename, parser){ try{ const res=await fetch("data/"+filename); if(!res.ok) throw new Error(); const buf=await res.arrayBuffer(); const decoded=new TextDecoder("windows-1252").decode(buf); DB[type]=parser(decoded); setFileStatus(type, filename+" · "+DB[type].length+" registros"); }catch(e){ setFileStatus(type,"Seleccione el archivo"); } }
+
+async function loadDefaultFile(type, filename, parser){ 
+  try{ 
+    const res=await fetch("data/"+filename); if(!res.ok) throw new Error(); 
+    const buf=await res.arrayBuffer(); 
+    const decoded=new TextDecoder("windows-1252").decode(buf); 
+    DB[type]=parser(decoded); setFileStatus(type, filename+" · "+DB[type].length+" registros"); 
+  }
+  catch(e)
+  { 
+    setFileStatus(type,"Seleccione el archivo"); 
+  } 
+}
+
 function setFileStatus(type,msg){ const el = $("file"+type.charAt(0).toUpperCase()+type.slice(1)); if(el) el.textContent=msg; }
 function refreshStats(){ if($("statClientes")) $("statClientes").textContent=DB.clientes.length; if($("statImpresoras")) $("statImpresoras").textContent=DB.impresoras.length; if($("statTecnicos")) $("statTecnicos").textContent=DB.tecnicos.length; if($("statBodegas")) $("statBodegas").textContent=DB.bodegas.length; if($("statProductos")) $("statProductos").textContent=DB.productos.length; if($("statInventarios")) $("statInventarios").textContent=DB.inventarios.length; if($("statTrabajos")) $("statTrabajos").textContent=DB.trabajos.length;}
 function options(select, rows, placeholder="Seleccione..."){ if(!select) return; select.innerHTML=`<option value="">${placeholder}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join(""); }
