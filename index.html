@@ -360,24 +360,83 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="app.js"></script>
 <script>
-// LOGIN + MENU - FUNCIONA AUNQUE app.js FALLE
+// LOGIN CON TXT Y CLAVE CIFRADA
 (function(){
-  const USERS='ecoloimp_users', SESS='ecoloimp_session';
-  function getUsers(){ let d=localStorage.getItem(USERS); if(!d){ let def=[{user:'admin',pass:'admin'}]; localStorage.setItem(USERS,JSON.stringify(def)); return def;} return JSON.parse(d); }
+  const SESS='ecoloimp_session';
+  let usuariosTXT = []; // del archivo txt
+
+  async function cargarUsuariosTXT(){
+    try{
+      const res = await fetch('data/usuarios.txt?v='+Date.now());
+      if(!res.ok) throw new Error();
+      const text = await res.text();
+      usuariosTXT = text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
+        let [u,p] = l.split(";"); return {user:u.trim(), pass: p.trim()}; // pass ya cifrado
+      });
+      console.log("Usuarios cargados:", usuariosTXT.length);
+    }catch(e){
+      // si no existe el txt, usa admin por defecto cifrado
+      usuariosTXT = [{user:'admin', pass:'YWRtaW4='}];
+    }
+  }
+
+  function cifrar(clave){ return btoa(clave); } // clave cifrada
+
   const scr=document.getElementById('loginScreen');
-  if(localStorage.getItem(SESS)) scr.style.display='none';
-  function showMsg(t,ok){ let el=document.getElementById('loginMsg'); el.style.display='block'; el.textContent=t; el.style.color=ok?'#16a34a':'#dc2626'; }
+  function showMsg(t,ok){ const el=document.getElementById('loginMsg'); el.style.display='block'; el.textContent=t; el.style.color=ok?'#16a34a':'#dc2626'; }
+
+  // Si ya inició sesión
+  if(localStorage.getItem(SESS)){
+    scr.style.display='none';
+  }
+
+  // Cargar txt al inicio
+  cargarUsuariosTXT();
+
   document.getElementById('showRegister').onclick=e=>{e.preventDefault();document.getElementById('loginForm').style.display='none';document.getElementById('registerForm').style.display='block';document.getElementById('loginMsg').style.display='none';};
   document.getElementById('showLogin').onclick=e=>{e.preventDefault();document.getElementById('registerForm').style.display='none';document.getElementById('loginForm').style.display='block';document.getElementById('loginMsg').style.display='none';};
-  document.getElementById('btnLogin').onclick=()=>{ let u=document.getElementById('loginUser').value.trim(), p=document.getElementById('loginPass').value.trim(); if(!u||!p){showMsg('Ingrese usuario y clave');return;} let f=getUsers().find(x=>x.user.toLowerCase()===u.toLowerCase()&&x.pass===p); if(f){localStorage.setItem(SESS,f.user);scr.style.display='none';}else showMsg('Usuario o clave incorrecta'); };
-  document.getElementById('btnRegister').onclick=()=>{ let u=document.getElementById('regUser').value.trim(), p=document.getElementById('regPass').value.trim(), p2=document.getElementById('regPass2').value.trim(); if(!u||!p){showMsg('Complete todo');return;} if(p!==p2){showMsg('Claves no coinciden');return;} let users=getUsers(); if(users.some(x=>x.user.toLowerCase()===u.toLowerCase())){showMsg('Usuario ya existe');return;} users.push({user:u,pass:p}); localStorage.setItem(USERS,JSON.stringify(users)); showMsg('Cuenta creada, inicie sesion',true); setTimeout(()=>{document.getElementById('registerForm').style.display='none';document.getElementById('loginForm').style.display='block';},800); };
+
+  // LOGIN
+  document.getElementById('btnLogin').onclick=async()=>{
+    await cargarUsuariosTXT(); // recarga por si subiste nuevo txt
+    let u=document.getElementById('loginUser').value.trim();
+    let p=document.getElementById('loginPass').value.trim();
+    if(!u||!p){ showMsg('Ingrese usuario y clave'); return; }
+
+    let pCifrada = cifrar(p);
+    let localUsers = JSON.parse(localStorage.getItem('ecoloimp_users')||'[]');
+    let todos = [...usuariosTXT, ...localUsers];
+
+    let found = todos.find(x=> x.user.toLowerCase()===u.toLowerCase() && x.pass===pCifrada);
+    
+    if(found){
+      localStorage.setItem(SESS, found.user);
+      scr.style.display='none';
+    }else{
+      showMsg('Usuario no existe o clave incorrecta');
+    }
+  };
+
+  // REGISTRO - guarda cifrado en localStorage
+  document.getElementById('btnRegister').onclick=()=>{
+    let u=document.getElementById('regUser').value.trim();
+    let p=document.getElementById('regPass').value.trim();
+    let p2=document.getElementById('regPass2').value.trim();
+    if(!u||!p){ showMsg('Complete todo'); return; }
+    if(p!==p2){ showMsg('Claves no coinciden'); return; }
+    
+    let users = JSON.parse(localStorage.getItem('ecoloimp_users')||'[]');
+    if(usuariosTXT.some(x=>x.user.toLowerCase()===u.toLowerCase()) || users.some(x=>x.user.toLowerCase()===u.toLowerCase())){
+      showMsg('Ese usuario ya existe en el txt'); return;
+    }
+    users.push({user:u, pass:cifrar(p)});
+    localStorage.setItem('ecoloimp_users', JSON.stringify(users));
+    showMsg('Cuenta creada cifrada. Ahora inicie sesión', true);
+    setTimeout(()=>{document.getElementById('registerForm').style.display='none';document.getElementById('loginForm').style.display='block';},800);
+  };
+
   document.getElementById('btnLogout').onclick=e=>{e.preventDefault();localStorage.removeItem(SESS);location.reload();};
-  // MENU
-  const btn=document.getElementById('menuToggle'), nav=document.getElementById('mainNav');
-  btn.onclick=e=>{e.stopPropagation(); let o=nav.classList.toggle('open'); if(innerWidth<=900) nav.style.display=o?'flex':'none'; btn.textContent=o?'✕':'☰';};
-  document.querySelectorAll('[data-section]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();let id=a.dataset.section;document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');nav.classList.remove('open');if(innerWidth<=900)nav.style.display='none';btn.textContent='☰';}));
-  document.addEventListener('click',e=>{ if(!nav.contains(e.target)&&e.target!==btn&&innerWidth<=900){nav.classList.remove('open');nav.style.display='none';btn.textContent='☰';} });
 })();
-</script>  
+</script> 
 </body>
 </html>
