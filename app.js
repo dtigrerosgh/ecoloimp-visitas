@@ -344,7 +344,7 @@ function setupEvents(){
   });
 }
 
-// FUNCION UNIVERSAL ANTI-CACHE PARA TODOS LOS TXT
+// FUNCION UNIVERSAL ANTI-CACHE - VERSIÓN CORREGIDA
 async function cargarTXT(ruta){
   const res = await fetch(ruta + '?v=' + Date.now(), { cache: 'no-store' });
   if(!res.ok) throw new Error('No se pudo cargar ' + ruta);
@@ -361,35 +361,40 @@ async function cargarDB(){
       cargarTXT('data/usuarios.txt')
     ]);
 
+    // Clientes
     DB.clientes = clientes.split("\n").filter(Boolean).map(l=>{
-      let [codigo,nombre] = l.split(";"); return {codigo:codigo.trim(), nombre:nombre.trim()};
+      let [codigo,nombre] = l.split(";"); return {codigo:codigo?.trim(), nombre:nombre?.trim()};
     });
+    // Impresoras
     DB.impresoras = impresoras.split("\n").filter(Boolean).map(l=>{
-      let [codigo,modelo,serie,sede,ubicacion,ip] = l.split(";"); 
-      return {codigo:codigo.trim(), modelo:modelo.trim(), serie:serie.trim(), sede:sede.trim(), ubicacion:ubicacion.trim(), ip:ip.trim()};
+      let p=l.split(";"); return {codigo:p[0]?.trim(), modelo:p[1]?.trim(), serie:p[2]?.trim(), sede:p[3]?.trim(), ubicacion:p[4]?.trim(), ip:p[5]?.trim()};
     });
+    // Técnicos
     DB.tecnicos = tecnicos.split("\n").filter(Boolean).map(l=>{
-      let [codigo,nombre] = l.split(";"); return {codigo:codigo.trim(), nombre:nombre.trim()};
+      let [codigo,nombre]=l.split(";"); return {codigo:codigo?.trim(), nombre:nombre?.trim()};
     });
+    // Trabajos
     DB.trabajos = trabajos.split("\n").filter(Boolean).map(l=>{
-      let [codigo,nombre] = l.split(";"); return {codigo:codigo.trim(), nombre:nombre.trim()};
+      let [codigo,nombre]=l.split(";"); return {codigo:codigo?.trim(), nombre:nombre?.trim()};
     });
+    // Usuarios
     usuariosTXT = usuarios.split("\n").filter(Boolean).map(l=>{
-      let [u,p] = l.split(";"); return {user:u.trim(), pass:p.trim().toLowerCase()};
+      let [u,p]=l.split(";"); return {user:u?.trim(), pass:p?.trim().toLowerCase()};
     });
 
-    console.log("DB actualizada SIN CACHE");
-    renderTodo();
+    console.log("TXT cargados:", DB.clientes.length, DB.impresoras.length);
+
+    // --- SOLO LLAMA FUNCIONES SI EXISTEN, PARA NO DAR ERROR ---
+    if(typeof window.cargarSelectClientes === 'function') window.cargarSelectClientes();
+    if(typeof window.cargarSelectImpresoras === 'function') window.cargarSelectImpresoras();
+    if(typeof window.cargarSelectTecnicos === 'function') window.cargarSelectTecnicos();
+    if(typeof window.cargarSelectTrabajos === 'function') window.cargarSelectTrabajos();
+    if(typeof window.actualizarUI === 'function') window.actualizarUI();
+    if(typeof window.llenarCombos === 'function') window.llenarCombos();
+
   }catch(e){
-    console.error(e); alert("Error cargando txt: " + e.message);
+    console.error(e);
   }
-}
-
-
-// Cuando crees un cliente/tecnico etc, recarga
-async function guardarYRecargar(){
-  // ... tu logica de guardar ...
-  await cargarDB(); // recarga fresca
 }
 
 async function init(){
