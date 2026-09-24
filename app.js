@@ -406,6 +406,7 @@ public byte[] cifra(String sinCifrar) throws Exception {
 	final byte[] bytes = sinCifrar.getBytes("UTF-8");
 	final Cipher aes = obtieneCipher(true);
 	final byte[] cifrado = aes.doFinal(bytes);
+	alert(cifrado);
 	return cifrado;
 }
 
