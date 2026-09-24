@@ -388,15 +388,6 @@ async function cargarDB(){
     });
 
     console.log("TXT cargados:", DB.clientes.length, DB.impresoras.length);
-
-    // --- SOLO LLAMA FUNCIONES SI EXISTEN, PARA NO DAR ERROR ---
-    if(typeof window.cargarSelectClientes === 'function') window.cargarSelectClientes();
-    if(typeof window.cargarSelectImpresoras === 'function') window.cargarSelectImpresoras();
-    if(typeof window.cargarSelectTecnicos === 'function') window.cargarSelectTecnicos();
-    if(typeof window.cargarSelectTrabajos === 'function') window.cargarSelectTrabajos();
-    if(typeof window.actualizarUI === 'function') window.actualizarUI();
-    if(typeof window.llenarCombos === 'function') window.llenarCombos();
-
   }catch(e){
     console.error(e);
   }
