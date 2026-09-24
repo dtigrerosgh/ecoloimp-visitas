@@ -406,7 +406,7 @@ async function cargarUsuariosTXT(){
     if(!u||!p){ showMsg('Ingrese usuario y clave'); return; }
 
     let pCifrada = cifrar(p);
-    alert(pCifrada);
+  
     let localUsers = JSON.parse(localStorage.getItem('ecoloimp_users')||'[]');
     let todos = [...usuariosTXT, ...localUsers];
 
