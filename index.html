@@ -365,20 +365,22 @@
   const SESS='ecoloimp_session';
   let usuariosTXT = []; // del archivo txt
 
-  async function cargarUsuariosTXT(){
-    try{
-      const res = await fetch('data/usuarios.txt?v='+Date.now());
-      if(!res.ok) throw new Error();
-      const text = await res.text();
-      usuariosTXT = text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
-        let [u,p] = l.split(";"); return {user:u.trim(), pass: p.trim()}; // pass ya cifrado
-      });
-      console.log("Usuarios cargados:", usuariosTXT.length);
-    }catch(e){
-      // si no existe el txt, usa admin por defecto cifrado
-      usuariosTXT = [{user:'admin', pass:'YWRtaW4='}];
-    }
+async function cargarUsuariosTXT(){
+  try{
+    // ?v= Date.now() + no-store obliga a descargar el nuevo
+    const res = await fetch('data/usuarios.txt?v='+Date.now(), { cache: 'no-store' });
+    if(!res.ok) throw new Error();
+    const text = await res.text();
+    usuariosTXT = text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
+      let [u,p] = l.split(";"); 
+      return {user:u.trim(), pass:p.trim().toLowerCase()};
+    });
+    console.log("TXT actualizado:", usuariosTXT.length, "usuarios");
+  }catch(e){
+    console.error("No se pudo leer usuarios.txt", e);
+    usuariosTXT = [{user:'admin', pass:'8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'}];
   }
+}
 
   function cifrar(clave){ return btoa(clave); } // clave cifrada
 
