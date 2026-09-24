@@ -1,3 +1,3 @@
-admin;admin
+admin;djtm
 dtigreros;123456
 ecoloimp;ecoloimp2026
