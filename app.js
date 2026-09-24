@@ -343,6 +343,55 @@ function setupEvents(){
     }catch(e){ showMessage("vtMessage", e.message, true); }
   });
 }
+
+// FUNCION UNIVERSAL ANTI-CACHE PARA TODOS LOS TXT
+async function cargarTXT(ruta){
+  const res = await fetch(ruta + '?v=' + Date.now(), { cache: 'no-store' });
+  if(!res.ok) throw new Error('No se pudo cargar ' + ruta);
+  return await res.text();
+}
+
+async function cargarDB(){
+  try{
+    const [clientes, impresoras, tecnicos, trabajos, usuarios] = await Promise.all([
+      cargarTXT('data/clientes.txt'),
+      cargarTXT('data/impresoras.txt'),
+      cargarTXT('data/tecnicos.txt'),
+      cargarTXT('data/trabajos.txt'),
+      cargarTXT('data/usuarios.txt')
+    ]);
+
+    DB.clientes = clientes.split("\n").filter(Boolean).map(l=>{
+      let [codigo,nombre] = l.split(";"); return {codigo:codigo.trim(), nombre:nombre.trim()};
+    });
+    DB.impresoras = impresoras.split("\n").filter(Boolean).map(l=>{
+      let [codigo,modelo,serie,sede,ubicacion,ip] = l.split(";"); 
+      return {codigo:codigo.trim(), modelo:modelo.trim(), serie:serie.trim(), sede:sede.trim(), ubicacion:ubicacion.trim(), ip:ip.trim()};
+    });
+    DB.tecnicos = tecnicos.split("\n").filter(Boolean).map(l=>{
+      let [codigo,nombre] = l.split(";"); return {codigo:codigo.trim(), nombre:nombre.trim()};
+    });
+    DB.trabajos = trabajos.split("\n").filter(Boolean).map(l=>{
+      let [codigo,nombre] = l.split(";"); return {codigo:codigo.trim(), nombre:nombre.trim()};
+    });
+    usuariosTXT = usuarios.split("\n").filter(Boolean).map(l=>{
+      let [u,p] = l.split(";"); return {user:u.trim(), pass:p.trim().toLowerCase()};
+    });
+
+    console.log("DB actualizada SIN CACHE");
+    renderTodo();
+  }catch(e){
+    console.error(e); alert("Error cargando txt: " + e.message);
+  }
+}
+
+
+// Cuando crees un cliente/tecnico etc, recarga
+async function guardarYRecargar(){
+  // ... tu logica de guardar ...
+  await cargarDB(); // recarga fresca
+}
+
 async function init(){
   if($('pgCorreo')) $('pgCorreo').value = gcorreo;
   if($("year")) $("year").textContent=new Date().getFullYear();
@@ -361,6 +410,8 @@ async function init(){
    ]);
   refreshStats(); filterClientes("vtClienteFilter","vtCliente"); fillTecnicos("vtTecnico"); fillTrabajos("vtTrabajo"); updatePrinterTable();
   const id=(location.hash||"#bienvenido").slice(1); activateSection(document.getElementById(id)?id:"bienvenido"); 
+  // Llama esto al iniciar y cada vez que guardes
+  cargarDB();
   initFirma();
 } 
 init();
