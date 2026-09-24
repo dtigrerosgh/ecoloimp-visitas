@@ -359,59 +359,65 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="app.js"></script>
-<script>
-// LOGIN CON TXT Y CLAVE CIFRADA
+
+  <script>
+// LOGIN NORMAL - BUSCA EN TXT SIN CIFRAR
 (function(){
   const SESS='ecoloimp_session';
-  let usuariosTXT = []; // del archivo txt
+  let usuariosTXT = [];
 
-async function cargarUsuariosTXT(){
-  try{
-    // ?v= Date.now() + no-store obliga a descargar el nuevo
-    const res = await fetch('data/usuarios.txt?v='+Date.now(), { cache: 'no-store' });
-    if(!res.ok) throw new Error();
-    const text = await res.text();
-    usuariosTXT = text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
-      let [u,p] = l.split(";"); 
-      return {user:u.trim(), pass:p.trim().toLowerCase()};
-    });
-    console.log("TXT actualizado:", usuariosTXT.length, "usuarios");
-  }catch(e){
-    console.error("No se pudo leer usuarios.txt", e);
-    usuariosTXT = [{user:'admin', pass:'8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'}];
-  }
-}
-
-   // function cifrar(clave){ return btoa(clave); } // clave cifrada
-
-  const scr=document.getElementById('loginScreen');
-  function showMsg(t,ok){ const el=document.getElementById('loginMsg'); el.style.display='block'; el.textContent=t; el.style.color=ok?'#16a34a':'#dc2626'; }
-
-  // Si ya inició sesión
-  if(localStorage.getItem(SESS)){
-    scr.style.display='none';
+  async function cargarTXT(ruta){
+    let res = await fetch(ruta + '?v=' + Date.now(), { cache: 'no-store' });
+    return await res.text();
   }
 
-  // Cargar txt al inicio
+  async function cargarUsuariosTXT(){
+    try{
+      let txt = await cargarTXT('data/usuarios.txt');
+      usuariosTXT = txt.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
+        let [u,p] = l.split(";");
+        return {user: u.trim(), pass: p.trim()};
+      });
+      console.log("Usuarios cargados:", usuariosTXT.length);
+    }catch(e){
+      usuariosTXT = [{user:'admin', pass:'admin'}];
+    }
+  }
+
+  const scr = document.getElementById('loginScreen');
+  if(localStorage.getItem(SESS)) scr.style.display='none';
+
+  function showMsg(t,ok){
+    let el=document.getElementById('loginMsg');
+    el.style.display='block'; el.textContent=t;
+    el.style.color= ok?'#16a34a':'#dc2626';
+  }
+
   cargarUsuariosTXT();
 
-  document.getElementById('showRegister').onclick=e=>{e.preventDefault();document.getElementById('loginForm').style.display='none';document.getElementById('registerForm').style.display='block';document.getElementById('loginMsg').style.display='none';};
-  document.getElementById('showLogin').onclick=e=>{e.preventDefault();document.getElementById('registerForm').style.display='none';document.getElementById('loginForm').style.display='block';document.getElementById('loginMsg').style.display='none';};
+  document.getElementById('showRegister').onclick = e=>{
+    e.preventDefault();
+    document.getElementById('loginForm').style.display='none';
+    document.getElementById('registerForm').style.display='block';
+  };
+  document.getElementById('showLogin').onclick = e=>{
+    e.preventDefault();
+    document.getElementById('registerForm').style.display='none';
+    document.getElementById('loginForm').style.display='block';
+  };
 
   // LOGIN
-  document.getElementById('btnLogin').onclick=async()=>{
-    await cargarUsuariosTXT(); // recarga por si subiste nuevo txt
-    let u=document.getElementById('loginUser').value.trim();
-    let p=document.getElementById('loginPass').value.trim();
+  document.getElementById('btnLogin').onclick = async()=>{
+    await cargarUsuariosTXT();
+    let u = document.getElementById('loginUser').value.trim();
+    let p = document.getElementById('loginPass').value.trim();
     if(!u||!p){ showMsg('Ingrese usuario y clave'); return; }
 
-    let pCifrada = cifrar(p);
-  
     let localUsers = JSON.parse(localStorage.getItem('ecoloimp_users')||'[]');
-    let todos = [...usuariosTXT, ...localUsers];
+    let todos = [...usuariosTXT,...localUsers];
 
-    let found = todos.find(x=> x.user.toLowerCase()===u.toLowerCase() && x.pass===pCifrada);
-    
+    let found = todos.find(x=> x.user.toLowerCase()===u.toLowerCase() && x.pass===p);
+
     if(found){
       localStorage.setItem(SESS, found.user);
       scr.style.display='none';
@@ -420,26 +426,43 @@ async function cargarUsuariosTXT(){
     }
   };
 
-  // REGISTRO - guarda cifrado en localStorage
-  document.getElementById('btnRegister').onclick=()=>{
-    let u=document.getElementById('regUser').value.trim();
-    let p=document.getElementById('regPass').value.trim();
-    let p2=document.getElementById('regPass2').value.trim();
+  // REGISTRO - GRABA EN usuarios.txt (descarga)
+  document.getElementById('btnRegister').onclick = ()=>{
+    let u = document.getElementById('regUser').value.trim();
+    let p = document.getElementById('regPass').value.trim();
+    let p2 = document.getElementById('regPass2').value.trim();
     if(!u||!p){ showMsg('Complete todo'); return; }
     if(p!==p2){ showMsg('Claves no coinciden'); return; }
-    
+
     let users = JSON.parse(localStorage.getItem('ecoloimp_users')||'[]');
-    if(usuariosTXT.some(x=>x.user.toLowerCase()===u.toLowerCase()) || users.some(x=>x.user.toLowerCase()===u.toLowerCase())){
-      showMsg('Ese usuario ya existe en el txt'); return;
+    if(usuariosTXT.some(x=>x.user.toLowerCase()===u.toLowerCase())){
+      showMsg('Usuario ya existe en usuarios.txt'); return;
     }
-    users.push({user:u, pass:cifrar(p)});
+
+    users.push({user:u, pass:p});
     localStorage.setItem('ecoloimp_users', JSON.stringify(users));
-    showMsg('Cuenta creada cifrada. Ahora inicie sesión', true);
-    setTimeout(()=>{document.getElementById('registerForm').style.display='none';document.getElementById('loginForm').style.display='block';},800);
+
+    // genera nuevo usuarios.txt para subir a GitHub
+    let todos = [...usuariosTXT,...users];
+    let txt = todos.map(o=>`${o.user};${o.pass}`).join("\n");
+    let blob = new Blob([txt], {type:'text/plain'});
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'usuarios.txt';
+    a.click();
+
+    showMsg('Usuario creado. Sube el archivo usuarios.txt a GitHub/data/', true);
+    setTimeout(()=>{
+      document.getElementById('registerForm').style.display='none';
+      document.getElementById('loginForm').style.display='block';
+    },1200);
   };
 
-  document.getElementById('btnLogout').onclick=e=>{e.preventDefault();localStorage.removeItem(SESS);location.reload();};
+  document.getElementById('btnLogout').onclick = e=>{
+    e.preventDefault(); localStorage.removeItem(SESS); location.reload();
+  };
 })();
-</script> 
+</script>
+  
 </body>
 </html>
