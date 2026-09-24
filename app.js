@@ -451,7 +451,7 @@ async function init(){
   refreshStats(); filterClientes("vtClienteFilter","vtCliente"); fillTecnicos("vtTecnico"); fillTrabajos("vtTrabajo"); updatePrinterTable();
   const id=(location.hash||"#bienvenido").slice(1); activateSection(document.getElementById(id)?id:"bienvenido"); 
   // Llama esto al iniciar y cada vez que guardes
-  cargarDB();
   initFirma();
 } 
 init();
+cargarDB();
