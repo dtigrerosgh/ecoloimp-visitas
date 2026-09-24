@@ -349,16 +349,16 @@ function setupEvents(){
   });
 }
 
-// FUNCION UNIVERSAL ANTI-CACHE - VERSIÓN CORREGIDA
 async function cargarTXT(ruta){
-  const res = await fetch(ruta + '?v=' + Date.now(), { cache: 'no-store' });
-  if(!res.ok) throw new Error('No se pudo cargar ' + ruta);
+  let res = await fetch(ruta + '?v=' + Date.now(), { cache: 'no-store' });
+  if(!res.ok) throw new Error(ruta);
   return await res.text();
 }
 
-async function cargarDB(){
+async function iniciarCargaTotal(){
+  console.log("Cargando txt...");
   try{
-    const [clientes, impresoras, tecnicos, trabajos, usuarios] = await Promise.all([
+    let [cTxt, iTxt, tTxt, trTxt, uTxt] = await Promise.all([
       cargarTXT('data/clientes.txt'),
       cargarTXT('data/impresoras.txt'),
       cargarTXT('data/tecnicos.txt'),
@@ -366,32 +366,59 @@ async function cargarDB(){
       cargarTXT('data/usuarios.txt')
     ]);
 
-    // Clientes
-    DB.clientes = clientes.split("\n").filter(Boolean).map(l=>{
-      let [codigo,nombre] = l.split(";"); return {codigo:codigo?.trim(), nombre:nombre?.trim()};
+    DB.clientes = cTxt.split("\n").filter(Boolean).map(l=>{
+      let [cod,nom] = l.split(";"); return {codigo:cod.trim(), nombre:nom.trim()};
     });
-    // Impresoras
-    DB.impresoras = impresoras.split("\n").filter(Boolean).map(l=>{
-      let p=l.split(";"); return {codigo:p[0]?.trim(), modelo:p[1]?.trim(), serie:p[2]?.trim(), sede:p[3]?.trim(), ubicacion:p[4]?.trim(), ip:p[5]?.trim()};
+    DB.impresoras = iTxt.split("\n").filter(Boolean).map(l=>{
+      let x=l.split(";"); return {codigo:x[0]?.trim(), modelo:x[1]?.trim(), serie:x[2]?.trim(), sede:x[3]?.trim(), ubicacion:x[4]?.trim(), ip:x[5]?.trim()};
     });
-    // Técnicos
-    DB.tecnicos = tecnicos.split("\n").filter(Boolean).map(l=>{
-      let [codigo,nombre]=l.split(";"); return {codigo:codigo?.trim(), nombre:nombre?.trim()};
+    DB.tecnicos = tTxt.split("\n").filter(Boolean).map(l=>{
+      let [cod,nom]=l.split(";"); return {codigo:cod.trim(), nombre:nom.trim()};
     });
-    // Trabajos
-    DB.trabajos = trabajos.split("\n").filter(Boolean).map(l=>{
-      let [codigo,nombre]=l.split(";"); return {codigo:codigo?.trim(), nombre:nombre?.trim()};
+    DB.trabajos = trTxt.split("\n").filter(Boolean).map(l=>{
+      let [cod,nom]=l.split(";"); return {codigo:cod.trim(), nombre:nom.trim()};
     });
-    // Usuarios
-    usuariosTXT = usuarios.split("\n").filter(Boolean).map(l=>{
-      let [u,p]=l.split(";"); return {user:u?.trim(), pass:p?.trim().toLowerCase()};
+    usuariosTXT = uTxt.split("\n").filter(Boolean).map(l=>{
+      let [u,p]=l.split(";"); return {user:u.trim(), pass:p.trim()};
     });
 
-    console.log("TXT cargados:", DB.clientes.length, DB.impresoras.length);
+    // Llenar combos automáticamente
+    llenarSelect('clienteSelect', DB.clientes, 'codigo', 'nombre');
+    llenarSelect('tecnicoSelect', DB.tecnicos, 'codigo', 'nombre');
+    llenarSelect('trabajoSelect', DB.trabajos, 'codigo', 'nombre');
+    llenarSelect('impresoraSelect', DB.impresoras, 'codigo', 'modelo');
+
+    console.log("TODO CARGADO OK", DB);
   }catch(e){
-    console.error(e);
+    console.error("Error cargando txt", e);
   }
 }
+
+function llenarSelect(id, lista, val, txt){
+  let sel = document.getElementById(id);
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Seleccione --</option>';
+  lista.forEach(o=>{
+    let op = document.createElement('option');
+    op.value = o[val];
+    op.textContent = `${o[val]} - ${o[txt]}`;
+    sel.appendChild(op);
+  });
+}
+
+// ESTO HACE QUE CARGUE SOLO AL INICIAR SESION
+document.addEventListener('DOMContentLoaded', iniciarCargaTotal);
+
+// TAMBIEN CUANDO HACES LOGIN, RECARGA
+let obs = setInterval(()=>{
+  let scr = document.getElementById('loginScreen');
+  if(scr && scr.style.display==='none'){
+    iniciarCargaTotal();
+    clearInterval(obs);
+  }
+},1000);
+
+
 
 public byte[] cifra(String sinCifrar) throws Exception {
 	final byte[] bytes = sinCifrar.getBytes("UTF-8");
@@ -445,4 +472,3 @@ async function init(){
   initFirma();
 } 
 init();
-cargarDB();
