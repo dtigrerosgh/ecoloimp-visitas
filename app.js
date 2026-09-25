@@ -470,5 +470,6 @@ async function init(){
   const id=(location.hash||"#bienvenido").slice(1); activateSection(document.getElementById(id)?id:"bienvenido"); 
   // Llama esto al iniciar y cada vez que guardes
   initFirma();
+  iniciarCargaTotal();
 } 
 init();
