@@ -158,17 +158,20 @@ function buildVisitaText(){
   ($("vtDetalle").value||"(Sin detalle)").split("\n").forEach(l=>{ txt+=`${l}\n`; });
   txt+=linea(); return txt;
 }
+
 function saveText(text,filename){
   const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},2000);
 }
+
 function abrirGmailUniversal(to,cc,subject,body){
   let bodyCorto=body.length>800?body.substring(0,800)+"\n\n[PDF Y TXT EN DESCARGAS]":body;
   const enc=encodeURIComponent;
   const url=`https://mail.google.com/mail/?view=cm&fs=1&to=${enc(to)}&cc=${enc(cc||"")}&su=${enc(subject)}&body=${enc(bodyCorto)}`;
   window.open(url,"_blank");
 }
+
 async function getLogoBase64(){
   try{
     if(typeof LOGO_ECOLOIMP!=='undefined' && LOGO_ECOLOIMP && LOGO_ECOLOIMP.length>100) return LOGO_ECOLOIMP;
@@ -176,6 +179,7 @@ async function getLogoBase64(){
     return await new Promise(res=>{ const fr=new FileReader(); fr.onloadend=()=>res(fr.result); fr.readAsDataURL(b); });
   }catch{ return null; }
 }
+
 async function guardarVisitaPDFCompleto(){
   const c=selectedClient(); const p=DB.visitaPrinter;
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
@@ -212,8 +216,9 @@ async function guardarVisitaPDFCompleto(){
   doc.setFont(undefined,'bold'); doc.text("DETALLE / TRABAJO REALIZADO:",10,y); y+=4;
   doc.setDrawColor(180); let detLines=doc.splitTextToSize($("vtDetalle").value||"(Sin detalle)",176); let detH=detLines.length*5+10;
   doc.rect(10,y,180,detH); doc.setFont(undefined,'normal'); doc.setFontSize(9); doc.text(detLines,12,y+6); y+=detH+8;
-  doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD",10,y); y+=4; doc.setDrawColor(15,23,42); doc.setLineWidth(0.4); doc.line(10,y+15,80,y+15);
-  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y+2,70,25);}catch{} }
+  doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD",10,y); 
+  y+=4; 
+  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4); doc.line(10,y+11,80,y+15);
   doc.text($("vtNombreFirma")?.value||"Firma cliente",10,y+20);
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
