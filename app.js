@@ -46,6 +46,105 @@ async function cargarUsuariosTXT(){
   }catch(e){ usuariosTXT=[{user:"admin",pass:"admin"}]; }
 }
 
+function buildVisitaSis(){
+  const c = selectedClient("vtCliente"); const p = DB.visitaPrinter;
+  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  if(!c) throw new Error("Seleccione cliente");
+  if(!p) throw new Error("Seleccione impresora");
+  if(!t) throw new Error("Seleccione técnico");
+  if(!tr) throw new Error("Seleccione trabajo");
+  const detalle = ($("vtDetalle").value || "").replace(/;/g, ",").replace(/\n/g, " ");
+  return `${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${detalle}`;
+}
+function buildVisitaText(){
+  const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
+  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  if(!c) throw new Error("Seleccione cliente");
+  if(!p) throw new Error("Seleccione impresora");
+  if(!t) throw new Error("Seleccione técnico");
+  if(!tr) throw new Error("Seleccione trabajo");
+  return `REPORTE DE VISITA TECNICA
+
+Fecha: ${$("vtFecha").value} ${$("vtHora").value}
+Cliente: ${c.codigo} - ${c.nombre}
+Equipo: ${p.codigo} - ${p.modelo}
+Serie: ${p.serie}
+Sucursal: ${p.sede}
+Area: ${p.ubicacion}
+Ubicacion: ${p.ip}
+Bodega: ${p.bodega}
+Tecnico: ${t.codigo} - ${t.nombre}
+Tipo: ${$("vtTipo").value}
+Trabajo: ${tr.codigo} - ${tr.nombre}
+Estado: ${$("vtEstado").value}
+Email: ${$("vtEmail")?.value||""}
+Firmado por: ${$("vtNombreFirma")?.value||""}
+Firma digital: ${firmaDibujada?"SI":"NO"}
+
+DETALLE:
+${$("vtDetalle").value || "(Sin detalle)"}
+`;
+}
+function abrirGmailUniversal(to, cc, subject, body){
+  let bodyCorto = body.length > 800 ? body.substring(0,800) + "\n\n[PDF Y TXT EN DESCARGAS - Ver archivos adjuntos descargados]" : body;
+  const enc = encodeURIComponent;
+  const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${enc(to)}&cc=${enc(cc||"")}&su=${enc(subject)}&body=${enc(bodyCorto)}`;
+  window.open(url, "_blank");
+}
+function saveText(text, filename){
+  const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+async function getLogoBase64(){
+  try{ if(typeof LOGO_ECOLOIMP !== 'undefined' && LOGO_ECOLOIMP) return LOGO_ECOLOIMP;
+  const r=await fetch("assets/logo.jpg?v="+Date.now(),{cache:"no-store"}); const b=await r.blob();
+  return await new Promise(res=>{ const fr=new FileReader(); fr.onloadend=()=>res(fr.result); fr.readAsDataURL(b); });
+  }catch(e){ return null; }
+}
+async function guardarVisitaPDFCompleto(){
+  const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
+  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
+  const textoPlano = buildVisitaText();
+  const textoSis = buildVisitaSis();
+  const firmaData = (()=>{
+    const canvas=$("vtFirmaCanvas"); if(!canvas||!firmaDibujada) return null; return canvas.toDataURL("image/png");
+  })();
+  const logoBase64 = await getLogoBase64();
+
+  // 1. GUARDA LOS 2 TXT
+  saveText(textoPlano, `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+  setTimeout(()=> saveText(textoSis, `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`), 500);
+
+  // 2. GUARDA PDF
+  if(!window.jspdf){ alert("Falta libreria jsPDF"); return; }
+  const { jsPDF } = window.jspdf; const doc = new jsPDF();
+  if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,35,14);}catch{} }
+  doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.text("REPORTE DE VISITA TECNICA", 50, 15);
+  doc.setLineWidth(0.6); doc.line(10,24,200,24);
+  let y=30;
+  doc.setFontSize(10); doc.setFont(undefined,'normal');
+  const filas = [
+    `Fecha: ${$("vtFecha").value} ${$("vtHora").value}`,
+    `Cliente: ${c.codigo} - ${c.nombre}`,
+    `Equipo: ${p.codigo} - ${p.modelo} - ${p.serie}`,
+    `Tecnico: ${t.codigo} - ${t.nombre}`,
+    `Trabajo: ${tr.codigo} - ${tr.nombre}`,
+    `Email: ${$("vtEmail")?.value||"-"}`,
+  ];
+  filas.forEach(f=>{ doc.text(f,10,y); y+=7; });
+  y+=3; doc.text("DETALLE:",10,y); y+=6;
+  let detLines = doc.splitTextToSize($("vtDetalle").value||"(Sin detalle)",180);
+  doc.text(detLines,10,y); y+= detLines.length*6 + 10;
+  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); doc.text($("vtNombreFirma")?.value||"Firma",10,y+30);}catch{} }
+  doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
+}
+
 function setFileStatus(type,msg){ const el = $("file"+type.charAt(0).toUpperCase()+type.slice(1)); if(el) el.textContent=msg; }
 function refreshStats(){ if($("statClientes")) $("statClientes").textContent=DB.clientes.length; if($("statImpresoras")) $("statImpresoras").textContent=DB.impresoras.length; if($("statTecnicos")) $("statTecnicos").textContent=DB.tecnicos.length; if($("statBodegas")) $("statBodegas").textContent=DB.bodegas.length; if($("statProductos")) $("statProductos").textContent=DB.productos.length; if($("statInventarios")) $("statInventarios").textContent=DB.inventarios.length; if($("statTrabajos")) $("statTrabajos").textContent=DB.trabajos.length;}
 function options(select, rows, placeholder="Seleccione..."){ if(!select) return; select.innerHTML=`<option value="">${placeholder}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join(""); }
@@ -113,12 +212,35 @@ function initFirma(){
   canvas.addEventListener("touchstart",start,{passive:false}); canvas.addEventListener("touchmove",move,{passive:false}); canvas.addEventListener("touchend",end);
   $("btnFirmaLimpiar")?.addEventListener("click",()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); firmaDibujada=false; });
 }
+
+function showMessage(id,msg,error=false){ 
+  const el=$(id); if(!el) 
+  return; el.hidden=false; 
+  el.className="message"+(error?" error":""); 
+  el.textContent=msg; 
+}
+
 function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",()=>filterClientes("vtClienteFilter","vtCliente"));
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updatePrinterTable()});
   $("vtPrinterFilter")?.addEventListener("input",updatePrinterTable);
   $("vtPrinterBody")?.addEventListener("click",e=>{ const serie=e.target.dataset.selectPrinter; if(serie) selectVisitaPrinter(serie); });
-}
+  
+  $("btnVisitaGuardar")?.addEventListener("click", async()=>{
+    try{
+      const emailCliente = $("vtEmail")?.value.trim(); if(!emailCliente) throw new Error("Ingrese el email del cliente");
+      const c = selectedClient("vtCliente"); const p = DB.visitaPrinter; if(!c||!p) throw new Error("Seleccione cliente e impresora");
+      const fechaFile = $("vtFecha")?.value || "";
+      const textoPlano = buildVisitaText();
+      const to = $("pgCorreo")?.value.trim() || gcorreo;
+      // 1. ABRE GMAIL
+      abrirGmailUniversal(to, emailCliente, `ECOLOIMP - Visita ${c.codigo} ${p.serie} ${fechaFile}`, textoPlano);
+      // 2. DESCARGA TXT Y PDF
+      setTimeout(()=>guardarVisitaPDFCompleto(), 600);
+      showMessage("vtMessage","Guardado OK. Abriendo Gmail y descargando archivos...");
+    }catch(e){ showMessage("vtMessage", e.message, true); }
+  });
+  
 
 async function init(){
   setupNavigation();
