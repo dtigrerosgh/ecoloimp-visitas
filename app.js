@@ -127,6 +127,7 @@ function buildVisitaSis(){
   if(!tr) throw new Error("Seleccione trabajo");
   return `${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
 }
+
 function buildVisitaText(){
   const c=selectedClient(); const p=DB.visitaPrinter;
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
@@ -138,25 +139,52 @@ function buildVisitaText(){
   const fecha=$("vtFecha").value||""; const hora=$("vtHora").value||"";
   const firmaNombre=$("vtNombreFirma")?.value||"(Sin nombre)";
   const firmaEstado=firmaDibujada?"SI":"NO";
-  function linea(){return "+----------------------+----------------------------------------------------+\n";}
+  
+  function linea() {
+    return "__________________________________________________________________________________________\n";
+  }
+  
   function fila(campo,valor){
-    let v=(valor||"").toString(); let res=""; let primera=true;
-    while(v.length>50){ let chunk=v.substring(0,50); v=v.substring(50);
-      if(primera){ res+=`| ${campo.padEnd(20)} | ${chunk.padEnd(50)} |\n`; campo=""; primera=false; }
+    let v=(valor||"").toString(); 
+    let res=""; 
+    let primera=true;
+    while(v.length>0){ let chunk=v.substring(0,80); v=v.substring(80);
+      if(primera){ res+=`| ${campo.padEnd(20)} | ${chunk.padEnd(80)} |\n`; campo=""; primera=false; }
       else{ res+=`| ${"".padEnd(20)} | ${chunk.padEnd(50)} |\n`; }
     }
     if(primera){ res+=`| ${campo.padEnd(20)} | ${v.padEnd(50)} |\n`; }
     else if(v){ res+=`| ${"".padEnd(20)} | ${v.padEnd(50)} |\n`; }
     return res;
   }
-  let txt=""; txt+=" REPORTE DE VISITA TECNICA\n"; txt+=linea();
-  txt+=fila("Fecha",fecha); txt+=fila("Hora",hora); txt+=linea();
-  txt+=fila("Cliente",`${c.codigo} - ${c.nombre}`); txt+=fila("Impresora",`${p.codigo} - ${p.modelo}`); txt+=fila("Serie",p.serie); txt+=fila("Sucursal",p.sede); txt+=fila("Area",p.ubicacion); txt+=fila("Ubicacion",p.ip); txt+=fila("Bodega",p.bodega); txt+=linea();
-  txt+=fila("Tecnico",`${t.codigo} - ${t.nombre}`); txt+=fila("Tipo Visita",$("vtTipo").value); txt+=fila("Trabajo",`${tr.codigo} - ${tr.nombre}`); txt+=fila("Estado",$("vtEstado").value); txt+=fila("Email Cliente",$("vtEmail")?.value||""); txt+=linea();
-  txt+=fila("Firmado por",firmaNombre); txt+=fila("Firma digital",firmaEstado); txt+=linea();
-  txt+=` DETALLE / TRABAJO REALIZADO\n`; txt+=linea();
+  
+  let txt=""; 
+  txt+=" REPORTE DE VISITA TECNICA\n"; 
+  txt+=linea();
+  txt+=fila("Fecha",fecha); 
+  txt+=fila("Hora",hora); 
+  txt+=linea();
+  txt+=fila("Cliente",`${c.codigo} - ${c.nombre}`); 
+  txt+=fila("Impresora",`${p.codigo} - ${p.modelo}`); 
+  txt+=fila("Serie",p.serie); 
+  txt+=fila("Sucursal",p.sede); 
+  txt+=fila("Area",p.ubicacion); 
+  txt+=fila("Ubicacion",p.ip); 
+  txt+=fila("Bodega",p.bodega); 
+  txt+=linea();
+  txt+=fila("Tecnico",`${t.codigo} - ${t.nombre}`); 
+  txt+=fila("Tipo Visita",$("vtTipo").value); 
+  txt+=fila("Trabajo",`${tr.codigo} - ${tr.nombre}`); 
+  txt+=fila("Estado",$("vtEstado").value); 
+  txt+=fila("Email Cliente",$("vtEmail")?.value||""); 
+  txt+=linea();
+  txt+=fila("Firmado por",firmaNombre); 
+  txt+=fila("Firma digital",firmaEstado); 
+  txt+=linea();
+  txt+=` DETALLE / TRABAJO REALIZADO\n`; 
+  txt+=linea();
   ($("vtDetalle").value||"(Sin detalle)").split("\n").forEach(l=>{ txt+=`${l}\n`; });
-  txt+=linea(); return txt;
+  txt+=linea(); 
+  return txt;
 }
 
 function saveText(text,filename){
