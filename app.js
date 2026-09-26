@@ -246,6 +246,7 @@ async function guardarVisitaPDFCompleto(){
   doc.rect(10,y,180,detH); doc.setFont(undefined,'normal'); doc.setFontSize(9); doc.text(detLines,12,y+6); y+=detH+8;
   doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD",10,y); 
   y+=4; 
+  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y+2,70,25);}catch{} }
   doc.setDrawColor(15,23,42); doc.setLineWidth(0.4); doc.line(10,y+11,80,y+11);
   doc.text($("vtNombreFirma")?.value||"Firma cliente",10,y+20);
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
