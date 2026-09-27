@@ -62,8 +62,9 @@ function filterClientes(){
   options($("vtCliente"), rows.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})), "Seleccione cliente...");
 
   // para conteo usa el mismo
-  const selCt=$("ctCliente")||$("pgCliente");
-  if(selCt) options(selCt,rows.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})),"Seleccione cliente...");
+  const r = norm($("ctClienteFilter")?.value||"");
+  const rowsct = DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(r)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  options($("vtCliente"), rowsct.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})), "Seleccione cliente...");
 }
 
 function fillTecnicos(){ 
