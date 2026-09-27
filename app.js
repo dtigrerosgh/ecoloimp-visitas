@@ -349,19 +349,51 @@ async function init(){
   activateSection(document.getElementById(id)?id:"bienvenido");
   console.log("CARGA AUTOMATICA OK", DB);
 
-  // LOGIN SIMPLE NORMAL
+  // LOGIN SIMPLE NORMAL - SE CIERRA AL CERRAR PAGINA
   const loginScreen=$("loginScreen");
   const btnLogin=$("btnLogin");
   if(btnLogin){
     btnLogin.onclick=()=>{
       const u=$("loginUser")?.value.trim(); const p=$("loginPass")?.value.trim();
       const found=usuariosTXT.find(x=>x.user.toLowerCase()===u.toLowerCase() && x.pass===p);
-      if(found){ if(loginScreen) loginScreen.style.display="none"; localStorage.setItem("ecoloimp_session",found.user); }
+      if(found){ 
+        if(loginScreen) loginScreen.style.display="none"; 
+        sessionStorage.setItem("ecoloimp_session",found.user);
+        sessionStorage.removeItem("ecoloimp_last_hide");
+      }
       else{ alert("Usuario no existe o clave incorrecta"); }
     };
   }
-  if(localStorage.getItem("ecoloimp_session") && loginScreen){ loginScreen.style.display="none"; }
-  $("btnLogout")?.addEventListener("click",e=>{ e.preventDefault(); localStorage.removeItem("ecoloimp_session"); location.reload(); });
+  if(sessionStorage.getItem("ecoloimp_session") && loginScreen){ 
+    loginScreen.style.display="none"; 
+  }else{
+    if(loginScreen) loginScreen.style.display="flex";
+  }
+  $("btnLogout")?.addEventListener("click",e=>{ e.preventDefault(); cerrarSesionAutomatica(); location.reload(); });
+
+  // CERRAR SESION AL CERRAR PAGINA / PESTAÑA
+function cerrarSesionAutomatica(){
+  sessionStorage.removeItem("ecoloimp_session");
+  localStorage.removeItem("ecoloimp_session"); // por si quedó viejo
 }
 
+// Se dispara al cerrar pestaña, recargar o cerrar navegador
+window.addEventListener("beforeunload", cerrarSesionAutomatica);
+window.addEventListener("pagehide", cerrarSesionAutomatica);
+
+// Si el usuario cambia de app en el celular por mucho tiempo también cierra
+document.addEventListener("visibilitychange", ()=>{
+  if(document.visibilityState === "hidden"){
+    // Guarda hora de salida
+    sessionStorage.setItem("ecoloimp_last_hide", Date.now().toString());
+  }else{
+    const last = Number(sessionStorage.getItem("ecoloimp_last_hide")||0);
+    // Si estuvo oculto más de 5 minutos, cerrar sesión
+    if(last && Date.now() - last > 5*60*1000){
+      cerrarSesionAutomatica();
+      location.reload();
+    }
+  }
+});
+  
 document.addEventListener("DOMContentLoaded", init);
