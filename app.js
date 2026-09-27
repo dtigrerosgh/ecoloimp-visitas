@@ -329,6 +329,8 @@ function initFirma(){
   canvas.addEventListener("mousedown",start); canvas.addEventListener("mousemove",move); window.addEventListener("mouseup",end);
   canvas.addEventListener("touchstart",start,{passive:false}); canvas.addEventListener("touchmove",move,{passive:false}); canvas.addEventListener("touchend",end);
   $("btnFirmaLimpiar")?.addEventListener("click",()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); firmaDibujada=false; });
+  
+  
 }
 
 // EVENTOS
