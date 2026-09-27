@@ -60,7 +60,12 @@ function filterClientes(){
   const q = norm($("vtClienteFilter")?.value||"");
   const rows = DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(q)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   options($("vtCliente"), rows.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})), "Seleccione cliente...");
+
+  // para conteo usa el mismo
+  const selCt=$("ctCliente")||$("pgCliente");
+  if(selCt) options(selCt,rows.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})),"Seleccione cliente...");
 }
+
 function fillTecnicos(){ options($("vtTecnico"), DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)), "Seleccione técnico..."); }
 function fillTrabajos(){ options($("vtTrabajo"), DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)), "Seleccione trabajo..."); }
 function selectedClient(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
@@ -318,6 +323,27 @@ async function guardarVisitaPDFCompleto(){
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
 
+// EVENTO NUEVO PARA EL BOTON DE CONTEO
+function setupConteoEvent(){
+  const btn=$("btnConteoGuardar") || $("pgGuardar") || $("btnPgGuardar");
+  if(!btn) return;
+  btn.onclick = async()=>{
+    try{
+      const emailCliente=$("ctEmail")?.value?.trim() || $("pgEmailCliente")?.value?.trim();
+      if(!emailCliente) throw new Error("Ingrese email del cliente en conteo");
+      const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value || $("pgCliente")?.value);
+      const p=DB.visitaPrinter;
+      if(!c) throw new Error("Seleccione cliente");
+      const correo=buildConteoText();
+      const to=$("pgCorreo")?.value?.trim() || gcorreo;
+      abrirGmailUniversal(to,emailCliente,`ECOLOIMP - Conteo ${c.codigo} ${p?.serie||""} ${$("ctFecha")?.value||""}`,correo);
+      setTimeout(()=>guardarConteoPDFCompleto(),600);
+      showMessage("ctMessage"||"pgMessage","Conteo guardado. Abriendo Gmail y descargando PDF...",false);
+    }catch(e){
+      showMessage("ctMessage"||"pgMessage",e.message,true);
+    }
+  };
+}
 
 async function guardarConteoPDFCompleto(){
   const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value || "");
@@ -427,7 +453,14 @@ async function init(){
   if($("year")) $("year").textContent=new Date().getFullYear();
   setupNavigation(); setupEvents(); initFirma();
   const ahora=new Date(); if($("vtFecha")) $("vtFecha").value=ahora.toISOString().split("T")[0]; if($("vtHora")) $("vtHora").value=ahora.toTimeString().slice(0,5);
-  await cargarUsuarios(); await loadFile("clientes","clientes.txt",parseClientes); await loadFile("impresoras","impresoras.txt",parseImpresoras); await loadFile("tecnicos","tecnicos.txt",parseTecnicos); await loadFile("bodegas","bodegas.txt",parseBodegas); await loadFile("productos","productos.txt",parseProductos); await loadFile("inventarios","inventarios.txt",parseInventarios); await loadFile("trabajos","trabajos.txt",parseTrabajos);
+  await cargarUsuarios(); 
+  await loadFile("clientes","clientes.txt",parseClientes); 
+  await loadFile("impresoras","impresoras.txt",parseImpresoras); 
+  await loadFile("tecnicos","tecnicos.txt",parseTecnicos); 
+  await loadFile("bodegas","bodegas.txt",parseBodegas); 
+  await loadFile("productos","productos.txt",parseProductos); 
+  await loadFile("inventarios","inventarios.txt",parseInventarios); 
+  await loadFile("trabajos","trabajos.txt",parseTrabajos);
   refreshStats(); filterClientes(); fillTecnicos(); fillTrabajos(); updatePrinterTable();
   const id=(location.hash||"#bienvenido").slice(1); const target=document.getElementById(id)?id:"bienvenido"; activateSection(target);
   const loginScreen=$("loginScreen"); const btnLogin=$("btnLogin");
