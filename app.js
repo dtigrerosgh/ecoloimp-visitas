@@ -138,6 +138,39 @@ function buildVisitaText(){
   if(!t) throw new Error("Seleccione técnico");
   if(!tr) throw new Error("Seleccione trabajo");
 
+// Justificar el detalle a 85 caracteres por línea
+  function justificarTexto(texto, ancho){
+    const palabras = texto.split(/\s+/);
+    let lineas = []; let lineaActual = "";
+    for(let pal of palabras){
+      if((lineaActual + " " + pal).trim().length <= ancho){
+        lineaActual = (lineaActual + " " + pal).trim();
+      }else{
+        if(lineaActual) lineas.push(lineaActual);
+        lineaActual = pal;
+      }
+    }
+    if(lineaActual) lineas.push(lineaActual);
+    // Justificar con espacios
+    return lineas.map((l, i)=>{
+      if(i === lineas.length-1) return l; // ultima no se justifica
+      let palabrasL = l.split(" "); if(palabrasL.length===1) return l;
+      let espaciosTotales = ancho - l.replace(/\s/g,"").length;
+      let huecos = palabrasL.length -1;
+      let espaciosPorHueco = Math.floor(espaciosTotales / huecos);
+      let extra = espaciosTotales % huecos;
+      let res="";
+      palabrasL.forEach((w, idx)=>{
+        res+=w;
+        if(idx < huecos){
+          res+=" ".repeat(espaciosPorHueco + (idx < extra? 1:0));
+        }
+      });
+      return res;
+    }).join("\n");
+  }
+  
+  const detalleJustificado = justificarTexto($("vtDetalle").value || "(Sin detalle registrado)", 78);
   return `ECOLOIMP S.A. - REPORTE DE VISITA TÉCNICA
 ══════════════════════════════════════════════════
 
@@ -168,7 +201,7 @@ Se ha realizado la visita técnica con el siguiente detalle:
 
 📝 DETALLE DEL TRABAJO REALIZADO:
 ──────────────────────────────────
-${$("vtDetalle").value || "(Sin detalle registrado)"}
+${detalleJustificado.split("\n").map(l=>` ${l}`).join("\n")}
 ──────────────────────────────────
 
 ✍️ CONFORMIDAD
