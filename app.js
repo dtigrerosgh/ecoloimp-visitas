@@ -128,6 +128,7 @@ function buildVisitaSis(){
   return `${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
 }
 
+// ESTE ES EL QUE SE ENVIA POR CORREO - PROFESIONAL
 function buildVisitaText(){
   const c=selectedClient(); const p=DB.visitaPrinter;
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
@@ -136,55 +137,56 @@ function buildVisitaText(){
   if(!p) throw new Error("Seleccione impresora");
   if(!t) throw new Error("Seleccione técnico");
   if(!tr) throw new Error("Seleccione trabajo");
-  const fecha=$("vtFecha").value||""; const hora=$("vtHora").value||"";
-  const firmaNombre=$("vtNombreFirma")?.value||"(Sin nombre)";
-  const firmaEstado=firmaDibujada?"SI":"NO";
-  
-  function linea() {
-    return "__________________________________________________________________________________________\n";
-  }
-  
-  function fila(campo,valor){
-    let v=(valor||"").toString(); 
-    let res=""; 
-    let primera=true;
-    while(v.length>0){ let chunk=v.substring(0,80); v=v.substring(80);
-      if(primera){ res+=`| ${campo.padEnd(20)} | ${chunk.padEnd(80)} |\n`; campo=""; primera=false; }
-      else{ res+=`| ${"".padEnd(20)} | ${chunk.padEnd(50)} |\n`; }
-    }
-    if(primera){ res+=`| ${campo.padEnd(20)} | ${v.padEnd(50)} |\n`; }
-    else if(v){ res+=`| ${"".padEnd(20)} | ${v.padEnd(50)} |\n`; }
-    return res;
-  }
-  
-  let txt=""; 
-  txt+=" REPORTE DE VISITA TECNICA\n"; 
-  txt+=linea();
-  txt+=fila("Fecha",fecha); 
-  txt+=fila("Hora",hora); 
-  txt+=linea();
-  txt+=fila("Cliente",`${c.codigo} - ${c.nombre}`); 
-  txt+=fila("Impresora",`${p.codigo} - ${p.modelo}`); 
-  txt+=fila("Serie",p.serie); 
-  txt+=fila("Sucursal",p.sede); 
-  txt+=fila("Area",p.ubicacion); 
-  txt+=fila("Ubicacion",p.ip); 
-  txt+=fila("Bodega",p.bodega); 
-  txt+=linea();
-  txt+=fila("Tecnico",`${t.codigo} - ${t.nombre}`); 
-  txt+=fila("Tipo Visita",$("vtTipo").value); 
-  txt+=fila("Trabajo",`${tr.codigo} - ${tr.nombre}`); 
-  txt+=fila("Estado",$("vtEstado").value); 
-  txt+=fila("Email Cliente",$("vtEmail")?.value||""); 
-  txt+=linea();
-  txt+=fila("Firmado por",firmaNombre); 
-  txt+=fila("Firma digital",firmaEstado); 
-  txt+=linea();
-  txt+=` DETALLE / TRABAJO REALIZADO\n`; 
-  txt+=linea();
-  ($("vtDetalle").value||"(Sin detalle)").split("\n").forEach(l=>{ txt+=`${l}\n`; });
-  txt+=linea(); 
-  return txt;
+
+  return `ECOLOIMP S.A. - REPORTE DE VISITA TÉCNICA
+══════════════════════════════════════════════════
+
+Estimado cliente,
+
+Se ha realizado la visita técnica con el siguiente detalle:
+
+📅 INFORMACIÓN DE VISITA
+• Fecha: ${$("vtFecha").value} - ${$("vtHora").value}
+• Tipo: ${$("vtTipo").value}
+• Estado: ${$("vtEstado").value}
+
+🏢 CLIENTE
+• ${c.codigo} - ${c.nombre}
+
+🖨️ EQUIPO ATENDIDO
+• Código: ${p.codigo}
+• Modelo: ${p.modelo}
+• Serie: ${p.serie}
+• Sucursal: ${p.sede}
+• Área: ${p.ubicacion}
+• Ubicación: ${p.ip}
+• Bodega: ${p.bodega}
+
+👨‍🔧 SERVICIO
+• Técnico: ${t.nombre} (${t.codigo})
+• Trabajo realizado: ${tr.nombre} (${tr.codigo})
+
+📝 DETALLE DEL TRABAJO REALIZADO:
+──────────────────────────────────
+${$("vtDetalle").value || "(Sin detalle registrado)"}
+──────────────────────────────────
+
+✍️ CONFORMIDAD
+• Firmado por: ${$("vtNombreFirma")?.value || "Cliente"}
+• Firma digital: ${firmaDibujada ? "Sí, registrada en PDF" : "No registrada"}
+
+Se adjuntan en la descarga automática:
+• Reporte en PDF con firma
+• Respaldo en TXT
+
+Gracias por confiar en ECOLOIMP.
+
+Atentamente,
+Departamento Técnico
+ECOLOIMP S.A.
+${$("pgCorreo")?.value || gcorreo}
+www.ecoloimp.com.ec
+`;
 }
 
 function saveText(text,filename){
