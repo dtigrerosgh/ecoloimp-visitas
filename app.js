@@ -320,7 +320,7 @@ async function guardarVisitaPDFCompleto(){
 
 
 async function guardarConteoPDFCompleto(){
-  const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value || $("pgCliente")?.value);
+  const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value || "");
   const p=DB.visitaPrinter || DB.impresoras.find(x=>x.serie===$("ctSerie")?.value) || {codigo:"-", modelo:"-", serie:$("ctSerie")?.value||"-", sede:"-", ubicacion:"-"};
   const fechaFile=$("ctFecha")?.value || new Date().toISOString().slice(0,10);
   const textoPlano=buildConteoText(); const textoSis=buildConteoSis(); const logoBase64=await getLogoBase64();
