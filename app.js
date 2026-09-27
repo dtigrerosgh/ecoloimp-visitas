@@ -66,9 +66,19 @@ function filterClientes(){
   if(selCt) options(selCt,rows.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})),"Seleccione cliente...");
 }
 
-function fillTecnicos(){ options($("vtTecnico"), DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)), "Seleccione técnico..."); }
-function fillTrabajos(){ options($("vtTrabajo"), DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)), "Seleccione trabajo..."); }
-function selectedClient(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
+function fillTecnicos(){ 
+  options($("vtTecnico"), DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)), "Seleccione técnico..."); 
+  options($("ctTecnico"), DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)), "Seleccione técnico..."); 
+}
+
+function fillTrabajos(){ 
+  options($("vtTrabajo"), DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)), "Seleccione trabajo..."); 
+}
+
+function selectedClient(){ 
+  return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); 
+}
+
 function updatePrinterTable(){
   const client=$("vtCliente")?.value;
   const q=norm($("vtPrinterFilter")?.value||"");
