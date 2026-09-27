@@ -229,7 +229,7 @@ function saveText(text,filename){
 }
 
 function abrirGmailUniversal(to,cc,subject,body){
-  let bodyCorto=body.length>1500?body.substring(0,1500)+"\n\n[PDF Y TXT EN DESCARGAS]":body;
+  let bodyCorto=body.length>2500?body.substring(0,2500)+"\n\n[PDF Y TXT EN DESCARGAS]":body;
   const enc=encodeURIComponent;
   const url=`https://mail.google.com/mail/?view=cm&fs=1&to=${enc(to)}&cc=${enc(cc||"")}&su=${enc(subject)}&body=${enc(bodyCorto)}`;
   window.open(url,"_blank");
@@ -282,8 +282,8 @@ async function guardarVisitaPDFCompleto(){
   doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD",10,y); 
   y+=1; 
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y+1,70,25);}catch{} }
-  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4); doc.line(10,y+13,80,y+13);
-  doc.text($("vtNombreFirma")?.value||"Firma cliente",10,y+22);
+  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4); doc.line(10,y+14,80,y+14);
+  doc.text($("vtNombreFirma")?.value||"Firma cliente",10,y+23);
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
 
