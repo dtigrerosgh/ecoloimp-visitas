@@ -229,7 +229,7 @@ function saveText(text,filename){
 }
 
 function abrirGmailUniversal(to,cc,subject,body){
-  let bodyCorto=body.length>800?body.substring(0,800)+"\n\n[PDF Y TXT EN DESCARGAS]":body;
+  let bodyCorto=body.length>1200?body.substring(0,1200)+"\n\n[PDF Y TXT EN DESCARGAS]":body;
   const enc=encodeURIComponent;
   const url=`https://mail.google.com/mail/?view=cm&fs=1&to=${enc(to)}&cc=${enc(cc||"")}&su=${enc(subject)}&body=${enc(bodyCorto)}`;
   window.open(url,"_blank");
