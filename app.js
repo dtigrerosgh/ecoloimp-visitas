@@ -5,6 +5,7 @@ const DB = { clientes:[], impresoras:[], tecnicos:[], bodegas:[], productos:[], 
 const gcorreo = "dennistigreros@gmail.com";
 let usuariosTXT = [];
 let firmaDibujada = false;
+let firmaDibujadaCt = false;
 
 const $ = id => document.getElementById(id);
 const norm = s => (s??"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -317,6 +318,52 @@ async function guardarVisitaPDFCompleto(){
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
 
+
+async function guardarConteoPDFCompleto(){
+  const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value || $("pgCliente")?.value);
+  const p=DB.visitaPrinter || DB.impresoras.find(x=>x.serie===$("ctSerie")?.value) || {codigo:"-", modelo:"-", serie:$("ctSerie")?.value||"-", sede:"-", ubicacion:"-"};
+  const fechaFile=$("ctFecha")?.value || new Date().toISOString().slice(0,10);
+  const textoPlano=buildConteoText(); const textoSis=buildConteoSis(); const logoBase64=await getLogoBase64();
+  
+  // firma conteo
+  const firmaCtData=(()=>{const cv=$("ctFirmaCanvas"); if(!cv||!firmaDibujadaCt) return null; return cv.toDataURL("image/png");})();
+
+  saveText(textoPlano, `CONTEO ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+  setTimeout(()=>saveText(textoSis, `CT ${c.codigo} ${p.serie} ${fechaFile}.txt`),400);
+
+  if(!window.jspdf) return;
+  const {jsPDF}=window.jspdf; const doc=new jsPDF();
+  if(logoBase64){ try{doc.addImage(logoBase64,"JPEG",10,8,35,14);}catch{} }
+  doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.text("REPORTE DE CONTEO DE IMPRESIONES",50,15);
+  doc.setLineWidth(0.6); doc.line(10,24,200,24);
+  let y=30;
+  doc.setFontSize(10); doc.setFont(undefined,'normal');
+  doc.text(`Fecha: ${fechaFile}`,10,y); y+=6;
+  doc.text(`Cliente: ${c.codigo} - ${c.nombre}`,10,y); y+=6;
+  doc.text(`Equipo: ${p.codigo} - ${p.modelo} - Serie: ${p.serie}`,10,y); y+=6;
+  doc.text(`Sucursal: ${p.sede} - ${p.ubicacion}`,10,y); y+=10;
+  
+  doc.setFont(undefined,'bold'); doc.text("CONTEO:",10,y); y+=6;
+  doc.setFont(undefined,'normal');
+  doc.text(`Contador Total: ${$("ctContador")?.value||"0"}`,12,y); y+=5;
+  doc.text(`B/N: ${$("ctBCo")?.value||"0"}  -  Color: ${$("ctColor")?.value||"0"}`,12,y); y+=10;
+  
+  doc.setFont(undefined,'bold'); doc.text("OBSERVACIÓN (JUSTIFICADO):",10,y); y+=4;
+  doc.setFont(undefined,'normal'); doc.setFontSize(9);
+  doc.text($("ctObservacion")?.value||"(Sin observación)",12,y,{maxWidth:176,align:"justify"});
+  let obsLines=doc.splitTextToSize($("ctObservacion")?.value||"(Sin observación)",176);
+  y+=obsLines.length*5 + 10;
+
+  // FIRMA EN PDF CONTEO
+  doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD",10,y); y+=4;
+  doc.setLineWidth(0.4); doc.line(10,y+15,80,y+15);
+  if(firmaCtData){ try{doc.addImage(firmaCtData,"PNG",10,y+2,70,25);}catch{} }
+  doc.setFont(undefined,'normal'); doc.setFontSize(9);
+  doc.text($("ctNombreFirma")?.value||"Firma cliente",10,y+20);
+
+  doc.save(`CONTEO ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
+}
+
 // FIRMA
 function initFirma(){
   const canvas=$("vtFirmaCanvas"); if(!canvas) return;
@@ -329,8 +376,19 @@ function initFirma(){
   canvas.addEventListener("mousedown",start); canvas.addEventListener("mousemove",move); window.addEventListener("mouseup",end);
   canvas.addEventListener("touchstart",start,{passive:false}); canvas.addEventListener("touchmove",move,{passive:false}); canvas.addEventListener("touchend",end);
   $("btnFirmaLimpiar")?.addEventListener("click",()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); firmaDibujada=false; });
-  
-  
+  $("btnCtFirmaLimpiar")?.addEventListener("click",()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); firmaDibujadaCt=false; });
+}
+
+// Y actualiza buildConteoText para que salga si firmó
+function buildConteoText(){
+  const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value || $("pgCliente")?.value);
+  const p=DB.visitaPrinter || {codigo:"-", modelo:"-", serie:$("ctSerie")?.value||"-", sede:"-", ubicacion:"-"};
+  if(!c) throw new Error("Seleccione cliente");
+  function justificarTexto(texto,ancho){
+    if(!texto) return "(Sin observación)"; const palabras=texto.split(/\s+/); let lineas=[]; let act=""; for(let pal of palabras){ if((act+" "+pal).trim().length<=ancho){ act=(act+" "+pal).trim(); }else{ if(act) lineas.push(act); act=pal; } } if(act) lineas.push(act); return lineas.map((l,i)=>{ if(i===lineas.length-1) return l; let w=l.split(" "); if(w.length===1) return l; let tot=ancho - l.replace(/\s/g,"").length; let hue=w.length-1; let por=Math.floor(tot/hue); let ex=tot%hue; let r=""; w.forEach((word,idx)=>{ r+=word; if(idx<hue) r+=" ".repeat(por+(idx<ex?1:0)); }); return r; }).join("\n");
+  }
+  const obsJust=justificarTexto($("ctObservacion")?.value||"(Sin observación)",78);
+  return `ECOLOIMP S.A. - REPORTE DE CONTEO DE IMPRESIONES\nFecha: ${$("ctFecha")?.value || new Date().toISOString().slice(0,10)}\nCliente: ${c.codigo} - ${c.nombre}\nEquipo: ${p.codigo} - ${p.modelo} - Serie: ${p.serie}\nContador: ${$("ctContador")?.value||"0"} B/N:${$("ctBCo")?.value||"0"} Color:${$("ctColor")?.value||"0"}\n\nOBSERVACIÓN JUSTIFICADA:\n${obsJust}\n\nFirmado por: ${$("ctNombreFirma")?.value||"Cliente"} - Firma: ${firmaDibujadaCt?"SI REGISTRADA":"NO"}\n`;
 }
 
 // EVENTOS
