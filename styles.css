@@ -125,3 +125,13 @@ code{background:#edf0f2;border-radius:5px;padding:1px 5px}
   .main-nav.open{ display:flex; }
   #menuToggle{ display:block; }
 }
+
+/* FIX MENU */
+.main-nav{ display:flex; }
+.main-nav a.active{ background:#0f172a; color:white; }
+.page-section{ display:none; }
+.page-section.active{ display:block; }
+@media(max-width:900px){
+  .main-nav{ display:none; flex-direction:column; position:absolute; top:60px; left:0; right:0; background:#1e293b; z-index:1000; padding:10px; }
+  .main-nav.open{ display:flex !important; }
+}
