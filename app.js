@@ -172,7 +172,7 @@ function buildVisitaText(){
   
   const detalleJustificado = justificarTexto($("vtDetalle").value || "(Sin detalle registrado)", 120);
   return `ECOLOIMP S.A. - REPORTE DE VISITA TÉCNICA
-══════════════════════════════════════════════════
+════════════════════════════════════════════════════════════════════════════════
 
 Estimado cliente,
 
@@ -200,9 +200,9 @@ Se ha realizado la visita técnica con el siguiente detalle:
 • Trabajo realizado: ${tr.nombre} (${tr.codigo})
 
 📝 DETALLE DEL TRABAJO REALIZADO:
-────────────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 ${detalleJustificado.split("\n").map(l=>` ${l}`).join("\n")}
-────────────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────
 
 ✍️ CONFORMIDAD
 • Firmado por: ${$("vtNombreFirma")?.value || "Cliente"}
@@ -282,8 +282,8 @@ async function guardarVisitaPDFCompleto(){
   doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD",10,y); 
   y+=1; 
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y+1,70,25);}catch{} }
-  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4); doc.line(10,y+20,80,y+20);
-  doc.text($("vtNombreFirma")?.value||"Firma cliente",10,y+22);
+  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4); doc.line(10,y+22,80,y+22);
+  doc.text($("vtNombreFirma")?.value||"Firma cliente",10,y+25);
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
 
