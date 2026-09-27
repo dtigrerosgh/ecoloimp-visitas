@@ -83,34 +83,64 @@ function renderSelectedPrinter(){
 
 // MENU QUE SI FUNCIONA
 function activateSection(id){
-  document.querySelectorAll(".page-section").forEach(s=>s.classList.toggle("active",s.id===id));
-  document.querySelectorAll(".main-nav a").forEach(a=>a.classList.toggle("active",a.dataset.section===id));
-  const nav=$("mainNav"); const btn=$("menuToggle");
+  document.querySelectorAll(".page-section").forEach(s=>{
+    s.classList.toggle("active", s.id===id);
+  });
+  document.querySelectorAll(".main-nav a").forEach(a=>{
+    a.classList.toggle("active", a.dataset.section===id);
+  });
+  // NO toques el display aquí, solo cierra si es móvil
+  const nav=$("mainNav");
+  const btn=$("menuToggle");
   if(window.innerWidth<=900 && nav && nav.classList.contains("open")){
-    nav.classList.remove("open"); nav.style.display="none"; if(btn){btn.textContent="☰"; btn.setAttribute("aria-expanded","false");}
+    nav.classList.remove("open");
+    btn.textContent="☰";
   }
   if(location.hash!=="#"+id) history.replaceState(null,"","#"+id);
 }
+
 function setupNavigation(){
-  document.querySelectorAll("[data-section]").forEach(el=>{
-    el.addEventListener("click", e=>{ e.preventDefault(); activateSection(el.dataset.section); });
-  });
+  const nav=$("mainNav");
   const btn=$("menuToggle");
-  if(btn){
+  
+  // Asegura que en PC siempre se vea
+  function checkNav(){
+    if(window.innerWidth>900 && nav){
+      nav.style.display="";
+      nav.classList.remove("open");
+      if(btn) btn.textContent="☰";
+    }
+  }
+  checkNav();
+  window.addEventListener("resize", checkNav);
+
+  document.querySelectorAll("[data-section]").forEach(el=>{
+    el.addEventListener("click", e=>{
+      e.preventDefault();
+      activateSection(el.dataset.section);
+    });
+  });
+
+  if(btn && nav){
     btn.addEventListener("click", e=>{
       e.stopPropagation();
-      const nav=$("mainNav"); if(!nav) return;
-      const isOpen=nav.classList.toggle("open");
-      nav.style.display=isOpen?"flex":"none";
-      btn.setAttribute("aria-expanded", isOpen?"true":"false");
-      btn.textContent=isOpen?"✕":"☰";
+      const isOpen = nav.classList.toggle("open");
+      btn.textContent = isOpen ? "✕" : "☰";
+      // En móvil usamos clase, no display:none directo
+      if(window.innerWidth<=900){
+        nav.style.display = isOpen ? "flex" : "";
+      }
     });
   }
+  
+  // Clic fuera cierra solo en móvil
   document.addEventListener("click", e=>{
-    const nav=$("mainNav"); const b=$("menuToggle");
-    if(!nav||!b) return;
-    if(!nav.contains(e.target) &&!b.contains(e.target) && window.innerWidth<=900){
-      nav.classList.remove("open"); nav.style.display="none"; b.textContent="☰";
+    if(!nav||!btn) return;
+    if(window.innerWidth<=900 && nav.classList.contains("open")){
+      if(!nav.contains(e.target) && !btn.contains(e.target)){
+        nav.classList.remove("open");
+        btn.textContent="☰";
+      }
     }
   });
 }
