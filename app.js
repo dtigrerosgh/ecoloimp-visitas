@@ -60,11 +60,13 @@ function filterClientes(){
   const q = norm($("vtClienteFilter")?.value||"");
   const rows = DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(q)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   options($("vtCliente"), rows.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})), "Seleccione cliente...");
+}
 
   // para conteo usa el mismo
+function filterClientesCt(){
   const r = norm($("ctClienteFilter")?.value||"");
   const rowsct = DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(r)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-  options($("vtCliente"), rowsct.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})), "Seleccione cliente...");
+  options($("ctCliente"), rowsct.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})), "Seleccione cliente...");
 }
 
 function fillTecnicos(){ 
@@ -431,7 +433,10 @@ function buildConteoText(){
 // EVENTOS
 function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
+  $("ctClienteFilter")?.addEventListener("input",filterClientesCt);
+  
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null; updatePrinterTable();});
+  
   $("vtPrinterFilter")?.addEventListener("input",updatePrinterTable);
   $("vtPrinterBody")?.addEventListener("click", e=>{ const serie=e.target.dataset.selectPrinter; if(serie) selectVisitaPrinter(serie); });
   $("btnVisitaGuardar")?.addEventListener("click", async()=>{
