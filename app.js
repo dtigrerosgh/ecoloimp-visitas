@@ -247,7 +247,7 @@ async function guardarVisitaPDFCompleto(){
   doc.setDrawColor(180); let detLines=doc.splitTextToSize($("vtDetalle").value||"(Sin detalle)",176); let detH=detLines.length*5+10;
   doc.rect(10,y,180,detH); doc.setFont(undefined,'normal'); doc.setFontSize(9); doc.text(detLines,12,y+6); y+=detH+8;
   doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD",10,y); 
-  y+=4; 
+  y+=1; 
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y+1,70,25);}catch{} }
   doc.setDrawColor(15,23,42); doc.setLineWidth(0.4); doc.line(10,y+12,80,y+12);
   doc.text($("vtNombreFirma")?.value||"Firma cliente",10,y+21);
