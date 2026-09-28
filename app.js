@@ -37,13 +37,44 @@ function fillTecnicos(){const rows=DB.tecnicos.map(t=>({value:t.codigo,label:`${
 function fillTrabajos(){options($("vtTrabajo"),DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)),"Seleccione trabajo...");}
 
 function updateVisitaPrinterTable(){
-  const client=$("vtCliente")?.value;const q=norm($("vtPrinterFilter")?.value||"");
-  const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
+  const client=$("vtCliente")?.value;
+  const q=norm($("vtPrinterFilter")?.value||"");
+  const rows=DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
   const total=DB.impresoras.filter(p=>p.cliente===client).length;
-  if($("vtSelectedPrinterStatus"))$("vtSelectedPrinterStatus").textContent=client?`Cliente tiene ${total} imp. - Mostrando ${rows.length}`:"Ninguna impresora seleccionada";
-  if($("vtPrinterBody"))$("vtPrinterBody").innerHTML=rows.length?rows.map(p=>`<tr><td><button type="button" data-select-printer="${esc(p.serie)}">Seleccionar</button></td><td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td><td>${esc(p.sede)}</td><td>${esc(p.ubicacion)}</td><td>${esc(p.ip)}</td><td>${esc(p.bodega)}</td></tr>`).join(""):`<tr><td colspan="8">${client?"Sin impresoras":"Seleccione cliente en Visita"}</td></tr>`;
-  const p=DB.visitaPrinter;const c=DB.clientes.find(x=>x.codigo===client);if($("vtPrinterDetails"))$("vtPrinterDetails").innerHTML=p?`<div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div><div><small>Serie</small><strong>${esc(p.serie)}</strong></div>`:c?`<div><small>Cliente</small><strong>${esc(c.codigo+" · "+c.nombre)} (${total} imp.)</strong></div>`:"";
+
+  if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length}` : "Ninguna impresora seleccionada";
+  
+  if($("vtPrinterBody")){
+    $("vtPrinterBody").innerHTML = rows.length ? rows.map(p=>`
+      <tr>
+        <td><button type="button" data-select-printer="${esc(p.serie)}">Seleccionar</button></td>
+        <td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td>
+        <td>${esc(p.sede)}</td><td>${esc(p.ubicacion)}</td><td>${esc(p.ip)}</td><td>${esc(p.bodega)}</td>
+      </tr>`).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
+  }
+
+  // ESTO ES LO QUE MANTIENE LOS DATOS - NO LO BORRES
+  const p=DB.visitaPrinter;
+  const c=DB.clientes.find(x=>x.codigo===client);
+  if($("vtPrinterDetails")){
+    if(p){
+      $("vtPrinterDetails").innerHTML = `
+        <div><small>Código</small><strong>${esc(p.codigo)}</strong></div>
+        <div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div>
+        <div><small>Serie</small><strong>${esc(p.serie)}</strong></div>
+        <div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div>
+        <div><small>Área</small><strong>${esc(p.ubicacion)}</strong></div>
+        <div><small>Ubicación / IP</small><strong>${esc(p.ip)}</strong></div>
+        <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
+        <div><small>Cliente</small><strong>${c ? esc(c.codigo+" · "+c.nombre) : "-"} (${total} imp.)</strong></div>`;
+    } else if(c){
+      $("vtPrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - Tiene ${total} impresora(s)</strong></div><div><small>Acción</small><strong>Seleccione una impresora de la tabla de arriba</strong></div>`;
+    } else {
+      $("vtPrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
+    }
+  }
 }
+
 function updateConteoPrinterTable(){
   const client=$("ctCliente")?.value;const q=norm($("ctPrinterFilter")?.value||"");
   const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q));
