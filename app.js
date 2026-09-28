@@ -109,13 +109,14 @@ async function guardarVisitaPDFCompleto(){
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
   const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
-  const textoPlano = buildVisitaText(); const textoSis = buildVisitaSis();
+  const textoPlano = buildVisitaText(); 
+  const textoSis = buildVisitaSis();
   const firmaData = getFirmaData(); const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64();
 
-  // TXT
-  saveText(textoPlano, `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
-  saveText(textoSis, `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+// 1. GUARDA TXT PRIMERO, FUERA DEL TRY DEL PDF - ASÍ SIEMPRE GUARDA
+saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+try{ saveText(buildVisitaSis(), `VT_${c.codigo}_${p.serie}_${fechaFile}.txt`); }catch{}
 
   if(!window.jspdf) return;
   const { jsPDF } = window.jspdf; const doc = new jsPDF();
