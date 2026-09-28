@@ -95,6 +95,9 @@ function setupNavigation(){
   if(btn&&nav){btn.addEventListener("click",e=>{e.stopPropagation();const open=nav.classList.toggle("open");btn.textContent=open?"✕":"☰";btn.setAttribute("aria-expanded",open?"true":"false");});}
 }
 
+function selectedClientVisita(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
+function selectedClientConteo(){ return DB.clientes.find(c=>c.codigo===$("ctCliente")?.value); }
+
 function showMessage(id,msg,err=false){const el=$(id);if(!el)return;el.hidden=false;el.className="message"+(err?" error":"");el.textContent=msg;}
 function saveText(t,f){const b=new Blob([t],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
 function abrirGmail(to,cc,subj,body){window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&cc=${encodeURIComponent(cc||"")}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(body.substring(0,2000))}`,"_blank");}
@@ -103,7 +106,7 @@ async function getLogoBase64(){try{const r=await fetch("assets/logo.jpg?v="+Date
 function buildVisitaSis(){const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);const p=DB.visitaPrinter;const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);if(!c||!p||!t||!tr)throw new Error("Falta cliente/impresora/tecnico/trabajo");return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;}
 
 function buildVisitaText(){
-  const c=selectedClient(); const p=DB.visitaPrinter;
+  const c=selectedClientVisita(); const p=DB.visitaPrinter;
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
   const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
   if(!c) throw new Error("Seleccione cliente");
@@ -164,7 +167,7 @@ www.ecoloimp.com.ec
 function buildConteoText(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);if(!c)throw new Error("Seleccione cliente conteo");const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;let filas=[];document.querySelectorAll("#conteoBody tr[data-serie]").forEach(tr=>{const serie=tr.dataset.serie;const n=tr.querySelector('[data-campo="negro"]')?.value||"0";const co=tr.querySelector('[data-campo="color"]')?.value||"0";const sc=tr.querySelector('[data-campo="scan"]')?.value||"0";const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";if(n!="0"||co!="0"||sc!="0"||a3!="0")filas.push(`${serie} N:${n} C:${co} S:${sc} A3:${a3}`);});return`ECOLOIMP - CONTEO\nCliente: ${c.codigo} - ${c.nombre} (${total} imp.)\nFecha: ${$("ctFecha")?.value}\n\n${filas.join("\n")||"(Sin contadores)"}\n\nFirma: ${$("ctNombreFirma")?.value||"Cliente"} Firma: ${firmaDibujadaCt?"SI":"NO"}`;}
 
 async function guardarVisitaPDFCompleto(){
-  const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
+  const c=selectedClientVisita("vtCliente"); const p=DB.visitaPrinter;
   const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
   const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
