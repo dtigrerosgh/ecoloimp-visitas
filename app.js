@@ -101,7 +101,66 @@ function abrirGmail(to,cc,subj,body){window.open(`https://mail.google.com/mail/?
 async function getLogoBase64(){try{const r=await fetch("assets/logo.jpg?v="+Date.now(),{cache:"no-store"});const b=await r.blob();return await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(b);});}catch{return null;}}
 
 function buildVisitaSis(){const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);const p=DB.visitaPrinter;const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);if(!c||!p||!t||!tr)throw new Error("Falta cliente/impresora/tecnico/trabajo");return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;}
-function buildVisitaText(){const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);const p=DB.visitaPrinter;if(!c||!p)throw new Error("Seleccione cliente e impresora visita");const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;return`ECOLOIMP - VISITA\nCliente: ${c.codigo} - ${c.nombre} (${total} imp.)\nEquipo: ${p.codigo} ${p.modelo} Serie: ${p.serie}\nFecha: ${$("vtFecha").value} ${$("vtHora").value}\nTecnico: ${t?.nombre||""} Trabajo: ${tr?.nombre||""}\n\nDETALLE:\n${$("vtDetalle").value||""}\n\nFirma: ${$("vtNombreFirma")?.value||"Cliente"} Firma: ${firmaDibujada?"SI":"NO"}`;}
+
+function buildVisitaText(){
+  const c=selectedClient(); const p=DB.visitaPrinter;
+  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  if(!c) throw new Error("Seleccione cliente");
+  if(!p) throw new Error("Seleccione impresora");
+  if(!t) throw new Error("Seleccione técnico");
+  if(!tr) throw new Error("Seleccione trabajo");
+
+  return `ECOLOIMP S.A. - REPORTE DE VISITA TÉCNICA
+══════════════════════════════════════════════════
+
+Estimado cliente,
+
+Se ha realizado la visita técnica con el siguiente detalle:
+
+📅 INFORMACIÓN DE VISITA
+• Fecha: ${$("vtFecha").value} - ${$("vtHora").value}
+• Tipo: ${$("vtTipo").value}
+• Estado: ${$("vtEstado").value}
+
+🏢 CLIENTE
+• ${c.codigo} - ${c.nombre}
+
+🖨️ EQUIPO ATENDIDO
+• Código: ${p.codigo}
+• Modelo: ${p.modelo}
+• Serie: ${p.serie}
+• Sucursal: ${p.sede}
+• Área: ${p.ubicacion}
+• Ubicación: ${p.ip}
+• Bodega: ${p.bodega}
+
+👨‍🔧 SERVICIO
+• Técnico: ${t.nombre} (${t.codigo})
+• Trabajo realizado: ${tr.nombre} (${tr.codigo})
+
+📝 DETALLE DEL TRABAJO REALIZADO:
+──────────────────────────────────
+${$("vtDetalle").value || "(Sin detalle registrado)"}
+──────────────────────────────────
+
+✍️ CONFORMIDAD
+• Firmado por: ${$("vtNombreFirma")?.value || "Cliente"}
+• Firma digital: ${firmaDibujada ? "Sí, registrada en PDF" : "No registrada"}
+
+Se adjuntan en la descarga automática:
+• Reporte en PDF con firma
+• Respaldo en TXT
+
+Gracias por confiar en ECOLOIMP.
+
+Atentamente,
+Departamento Técnico
+ECOLOIMP S.A.
+${$("pgCorreo")?.value || gcorreo}
+www.ecoloimp.com.ec
+`;
+}
 function buildConteoText(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);if(!c)throw new Error("Seleccione cliente conteo");const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;let filas=[];document.querySelectorAll("#conteoBody tr[data-serie]").forEach(tr=>{const serie=tr.dataset.serie;const n=tr.querySelector('[data-campo="negro"]')?.value||"0";const co=tr.querySelector('[data-campo="color"]')?.value||"0";const sc=tr.querySelector('[data-campo="scan"]')?.value||"0";const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";if(n!="0"||co!="0"||sc!="0"||a3!="0")filas.push(`${serie} N:${n} C:${co} S:${sc} A3:${a3}`);});return`ECOLOIMP - CONTEO\nCliente: ${c.codigo} - ${c.nombre} (${total} imp.)\nFecha: ${$("ctFecha")?.value}\n\n${filas.join("\n")||"(Sin contadores)"}\n\nFirma: ${$("ctNombreFirma")?.value||"Cliente"} Firma: ${firmaDibujadaCt?"SI":"NO"}`;}
 
 async function guardarVisitaPDFCompleto(){
@@ -115,8 +174,8 @@ async function guardarVisitaPDFCompleto(){
   const logoBase64 = await getLogoBase64();
 
 // 1. GUARDA TXT PRIMERO, FUERA DEL TRY DEL PDF - ASÍ SIEMPRE GUARDA
-saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
-try{ saveText(buildVisitaSis(), `VT_${c.codigo}_${p.serie}_${fechaFile}.txt`); }catch{}
+try{ saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT1",e); }
+  try{ saveText(buildVisitaSis(), `VT_${c.codigo}_${p.serie}_${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT2",e); }
 
   if(!window.jspdf) return;
   const { jsPDF } = window.jspdf; const doc = new jsPDF();
