@@ -78,6 +78,8 @@ function filterClientes(){
     if($("vtCliente")) $("vtCliente").value=actual;
     if($("ctCliente")) $("ctCliente").value=actual;
   }
+  updateVisitaPrinterTable();
+  updateConteoPrinterTable();
 }
 
 function fillTecnicos(){ 
@@ -99,6 +101,25 @@ function updatePrinterTable(){
   const rows=DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
   if($("vtPrinterBody")){
     $("vtPrinterBody").innerHTML = rows.length? rows.map(p=>`<tr class="printer-row" data-serial="${esc(p.serie)}"><td><button type="button" class="select-printer-btn" data-select-printer="${esc(p.serie)}">Seleccionar</button></td><td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td><td>${esc(p.sede)}</td><td>${esc(p.ubicacion)}</td><td>${esc(p.ip)}</td><td>${esc(p.bodega)}</td></tr>`).join("") : `<tr><td colspan="8">Seleccione un cliente.</td></tr>`;
+  }
+  renderSelectedPrinter();
+}
+
+function updateVisitaPrinterTable(){
+  const client=$("vtCliente")?.value;
+  const q=norm($("vtPrinterFilter")?.value||"");
+  const rows=DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
+  const total=DB.impresoras.filter(p=>p.cliente===client).length;
+
+  if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length}` : "Ninguna impresora seleccionada";
+  
+  if($("vtPrinterBody")){
+    $("vtPrinterBody").innerHTML = rows.length ? rows.map(p=>`
+      <tr>
+        <td><button type="button" data-select-printer="${esc(p.serie)}">Seleccionar</button></td>
+        <td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td>
+        <td>${esc(p.sede)}</td><td>${esc(p.ubicacion)}</td><td>${esc(p.ip)}</td><td>${esc(p.bodega)}</td>
+      </tr>`).join("") : `<tr><td colspan="8">${client ? "Este cliente no tiene impresoras" : "Seleccione cliente en Visita"}</td></tr>`;
   }
   renderSelectedPrinter();
 }
@@ -512,7 +533,9 @@ async function init(){
   await loadFile("productos","productos.txt",parseProductos); 
   await loadFile("inventarios","inventarios.txt",parseInventarios); 
   await loadFile("trabajos","trabajos.txt",parseTrabajos);
-  refreshStats(); filterClientes(); fillTecnicos(); fillTrabajos(); updatePrinterTable();
+  refreshStats(); filterClientes(); fillTecnicos(); fillTrabajos(); 
+  updateVisitaPrinterTable();
+  updateConteoPrinterTable();  
   const id=(location.hash||"#bienvenido").slice(1); const target=document.getElementById(id)?id:"bienvenido"; activateSection(target);
   const loginScreen=$("loginScreen"); const btnLogin=$("btnLogin");
   if(btnLogin){ btnLogin.onclick=()=>{ const u=$("loginUser")?.value.trim(); const p=$("loginPass")?.value.trim(); const f=usuariosTXT.find(x=>x.user.toLowerCase()===u.toLowerCase() && x.pass===p); if(f){ if(loginScreen) loginScreen.style.display="none"; sessionStorage.setItem("ecoloimp_session",f.user); }else{ alert("Usuario incorrecto"); } }; }
