@@ -104,7 +104,85 @@ function buildVisitaSis(){const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?
 function buildVisitaText(){const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);const p=DB.visitaPrinter;if(!c||!p)throw new Error("Seleccione cliente e impresora visita");const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;return`ECOLOIMP - VISITA\nCliente: ${c.codigo} - ${c.nombre} (${total} imp.)\nEquipo: ${p.codigo} ${p.modelo} Serie: ${p.serie}\nFecha: ${$("vtFecha").value} ${$("vtHora").value}\nTecnico: ${t?.nombre||""} Trabajo: ${tr?.nombre||""}\n\nDETALLE:\n${$("vtDetalle").value||""}\n\nFirma: ${$("vtNombreFirma")?.value||"Cliente"} Firma: ${firmaDibujada?"SI":"NO"}`;}
 function buildConteoText(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);if(!c)throw new Error("Seleccione cliente conteo");const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;let filas=[];document.querySelectorAll("#conteoBody tr[data-serie]").forEach(tr=>{const serie=tr.dataset.serie;const n=tr.querySelector('[data-campo="negro"]')?.value||"0";const co=tr.querySelector('[data-campo="color"]')?.value||"0";const sc=tr.querySelector('[data-campo="scan"]')?.value||"0";const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";if(n!="0"||co!="0"||sc!="0"||a3!="0")filas.push(`${serie} N:${n} C:${co} S:${sc} A3:${a3}`);});return`ECOLOIMP - CONTEO\nCliente: ${c.codigo} - ${c.nombre} (${total} imp.)\nFecha: ${$("ctFecha")?.value}\n\n${filas.join("\n")||"(Sin contadores)"}\n\nFirma: ${$("ctNombreFirma")?.value||"Cliente"} Firma: ${firmaDibujadaCt?"SI":"NO"}`;}
 
-async function guardarVisitaPDFCompleto(){const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);const p=DB.visitaPrinter;const fecha=$("vtFecha").value||new Date().toISOString().slice(0,10);const logo=await getLogoBase64();const firmaData=(()=>{const cv=$("vtFirmaCanvas");if(!cv||!firmaDibujada)return null;return cv.toDataURL("image/png");})();saveText(buildVisitaText(),`VISITA ${c.codigo} ${p.serie} ${fecha}.txt`);saveText(buildVisitaSis(),`VT ${c.codigo} ${p.serie} ${fecha}.txt`);if(!window.jspdf)return;const{jsPDF}=window.jspdf;const doc=new jsPDF();if(logo)try{doc.addImage(logo,"JPEG",10,8,35,14);}catch{}doc.setFontSize(14);doc.text("VISITA TECNICA",50,15);doc.line(10,24,200,24);doc.setFontSize(10);doc.text(doc.splitTextToSize(buildVisitaText(),180),10,30);if(firmaData)try{doc.addImage(firmaData,"PNG",10,140,60,20);}catch{}doc.save(`VISITA ${c.codigo} ${p.serie} ${fecha}.pdf`);}
+async function guardarVisitaPDFCompleto(){
+  try{
+    const c = DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);
+    const p = DB.visitaPrinter;
+    if(!c || !p) throw new Error("Seleccione cliente e impresora");
+    const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {nombre:"-"};
+    const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {nombre:"-"};
+    const fechaFile = $("vtFecha")?.value || new Date().toISOString().slice(0,10);
+    const logo = await getLogoBase64();
+    const firmaData = (()=>{ const cv=$("vtFirmaCanvas"); if(!cv || !firmaDibujada) return null; return cv.toDataURL("image/png"); })();
+
+    // TXT
+    saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+    setTimeout(()=>{ saveText(buildVisitaSis(), `VT_${c.codigo}_${p.serie}_${fechaFile}.txt`); },300);
+
+    if(!window.jspdf) { showMessage("vtMessage","TXT guardados (sin PDF por falta de libreria)"); return; }
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF();
+    const total = DB.impresoras.filter(x=>x.cliente===c.codigo).length;
+
+    // HEADER
+    if(logo) try{ doc.addImage(logo,"JPEG",10,8,32,12); }catch{}
+    doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.text("ECOLOIMP - VISITA TECNICA", 50, 15);
+    doc.setFontSize(9); doc.setFont("helvetica","normal"); doc.text("Ecologia en Impresion S.A.", 50, 19);
+    doc.setDrawColor(15,23,42); doc.setLineWidth(0.8); doc.line(10,23,200,23);
+
+    // CLIENTE BOX
+    doc.setFillColor(241,245,249); doc.rect(10,26,190,18,"F");
+    doc.setFont("helvetica","bold"); doc.setFontSize(10);
+    doc.text(`CLIENTE: ${c.codigo} - ${c.nombre}`,12,32);
+    doc.setFont("helvetica","normal"); doc.setFontSize(9);
+    doc.text(`Cliente tiene ${total} impresora(s) | Fecha: ${$("vtFecha")?.value} ${$("vtHora")?.value} | Tipo: ${$("vtTipo")?.value} | Estado: ${$("vtEstado")?.value}`,12,38);
+
+    // EQUIPO BOX
+    doc.setFont("helvetica","bold"); doc.text("DATOS DE LA IMPRESORA SELECCIONADA",10,50);
+    doc.setFont("helvetica","normal"); doc.setFontSize(9);
+    let y=55;
+    doc.text(`Codigo: ${p.codigo}    Modelo: ${p.modelo}    Serie: ${p.serie}`,12,y); y+=5;
+    doc.text(`Sucursal: ${p.sede}    Area: ${p.ubicacion}`,12,y); y+=5;
+    doc.text(`Ubicacion/IP: ${p.ip}    Bodega: ${p.bodega}`,12,y); y+=7;
+
+    // TECNICO / TRABAJO
+    doc.setFont("helvetica","bold"); doc.text("SERVICIO",10,y); y+=5;
+    doc.setFont("helvetica","normal");
+    doc.text(`Tecnico: ${t.nombre}    Trabajo: ${tr.nombre}`,12,y); y+=7;
+
+    // DETALLE
+    doc.setFont("helvetica","bold"); doc.text("DETALLE / TRABAJO REALIZADO:",10,y); y+=5;
+    doc.setFont("helvetica","normal");
+    const detalle = $("vtDetalle")?.value || "(Sin detalle)";
+    const split = doc.splitTextToSize(detalle, 186);
+    doc.text(split,12,y);
+    y+= split.length * 5 + 10;
+
+    // FIRMA
+    doc.setDrawColor(200); doc.line(10,y,200,y); y+=6;
+    doc.setFont("helvetica","bold"); doc.text("CONFORMIDAD DEL CLIENTE",10,y); y+=6;
+    if(firmaData){
+      try{ doc.addImage(firmaData,"PNG",12,y,70,30); }catch{}
+      y+=32;
+    }else{
+      y+=20; doc.setDrawColor(100); doc.line(12,y,82,y);
+    }
+    doc.setFont("helvetica","normal"); doc.setFontSize(9);
+    doc.text(`${$("vtNombreFirma")?.value||"Nombre de quien firma"}`,12,y+4);
+    doc.text(`Email: ${$("vtEmail")?.value||""}`,12,y+9);
+    doc.text(`Firma digital: ${firmaDibujada?"SI":"NO"}`,120,y+4);
+
+    // FOOTER
+    doc.setFontSize(7); doc.setTextColor(100); doc.text(`Generado: ${new Date().toLocaleString()} - ECOLOIMP`,10,290);
+
+    doc.save(`VISITA_${c.codigo}_${p.serie}_${fechaFile}.pdf`);
+    showMessage("vtMessage","Guardado: 2 TXT + PDF con formato excelente");
+  }catch(e){
+    showMessage("vtMessage",e.message,true);
+    console.error(e);
+  }
+}
+
 async function guardarConteoPDFCompleto(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);if(!c)throw new Error("Seleccione cliente conteo");const fecha=$("ctFecha")?.value||new Date().toISOString().slice(0,10);const logo=await getLogoBase64();const firmaCt=(()=>{const cv=$("ctFirmaCanvas");if(!cv||!firmaDibujadaCt)return null;return cv.toDataURL("image/png");})();saveText(buildConteoText(),`CONTEO ${c.codigo} ${fecha}.txt`);if(!window.jspdf)return;const{jsPDF}=window.jspdf;const doc=new jsPDF();if(logo)try{doc.addImage(logo,"JPEG",10,8,35,14);}catch{}doc.setFontSize(14);doc.text("CONTEO - "+c.nombre,50,15);doc.line(10,24,200,24);doc.setFontSize(10);doc.text(doc.splitTextToSize(buildConteoText(),180),10,30);if(firmaCt)try{doc.addImage(firmaCt,"PNG",10,150,60,20);}catch{}doc.text($("ctNombreFirma")?.value||"Firma",10,175);doc.save(`CONTEO ${c.codigo} ${fecha}.pdf`);}
 
 function initFirma(){function activar(cid,bid,setter){const canvas=$(cid);if(!canvas)return;const ctx=canvas.getContext("2d");ctx.lineWidth=2.5;ctx.lineCap="round";ctx.strokeStyle="#0f172a";let dib=false,last={x:0,y:0};function pos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)};}function start(e){dib=true;last=pos(e);e.preventDefault();}function move(e){if(!dib)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;setter(true);e.preventDefault();}function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
