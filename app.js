@@ -56,17 +56,28 @@ function options(select, rows, placeholder){
   if(!select) return;
   select.innerHTML=`<option value="">${placeholder}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join("");
 }
-function filterClientes(){
-  const q = norm($("vtClienteFilter")?.value||"");
-  const rows = DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(q)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-  options($("vtCliente"), rows.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})), "Seleccione cliente...");
-}
 
-  // para conteo usa el mismo
-function filterClientesCt(){
-  const r = norm($("ctClienteFilter")?.value||"");
-  const rowsct = DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(r)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-  options($("ctCliente"), rowsct.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre}`})), "Seleccione cliente...");
+// REEMPLAZA filterClientes COMPLETO
+function filterClientes(){
+  const conteo={}; 
+  DB.impresoras.forEach(p=>{ conteo[p.cliente]=(conteo[p.cliente]||0)+1; });
+
+  // Visita - filtra solo visita
+  const qVt = norm($("vtClienteFilter")?.value||"");
+  const rowsVt = DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(qVt)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  options($("vtCliente"), rowsVt.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})), "Seleccione cliente...");
+
+  // Conteo - filtra solo conteo
+  const qCt = norm($("ctClienteFilter")?.value||"");
+  const rowsCt = DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(qCt)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  options($("ctCliente"), rowsCt.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})), "Seleccione cliente...");
+
+  // Mantén seleccionado el que ya tenías
+  const actual = getClienteActual();
+  if(actual){
+    if($("vtCliente")) $("vtCliente").value=actual;
+    if($("ctCliente")) $("ctCliente").value=actual;
+  }
 }
 
 function fillTecnicos(){ 
@@ -91,6 +102,30 @@ function updatePrinterTable(){
   }
   renderSelectedPrinter();
 }
+
+// 2. SOLO PARA CONTEO - ESTA ES LA NUEVA
+function updateConteoPrinterTable(){
+  const client=$("ctCliente")?.value;
+  const q=norm($("ctPrinterFilter")?.value||"");
+  const rows=DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q));
+  const total=DB.impresoras.filter(p=>p.cliente===client).length;
+
+  console.log("CONTEO -> Cliente:", client, "Total impresoras:", total, "Filtro:", q);
+
+  if($("conteoBody")){
+    $("conteoBody").innerHTML = rows.length ? rows.map(p=>`
+      <tr data-serie="${esc(p.serie)}">
+        <td>${esc(p.codigo)}</td>
+        <td>${esc(p.modelo)}</td>
+        <td>${esc(p.serie)}</td>
+        <td>${esc(p.sede)}</td>
+        <td><input type="number" data-campo="negro" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td>
+        <td><input type="number" data-campo="color" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td>
+        <td><input type="number" data-campo="scan" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td>
+        <td><input type="number" data-campo="a3" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td>
+      </tr>`).join("") : `<tr><td colspan="8">${client ? `Cliente ${client} tiene ${total} impresoras pero filtro no coincide` : "Seleccione cliente en Conteo"}</td></tr>`;
+  }
+
 function selectVisitaPrinter(serie){ const p=DB.impresoras.find(x=>x.serie===serie && x.cliente===$("vtCliente")?.value); if(!p) return; DB.visitaPrinter=p; renderSelectedPrinter(); }
 function renderSelectedPrinter(){
   const p=DB.visitaPrinter; const c=selectedClient();
