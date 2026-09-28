@@ -105,12 +105,85 @@ function buildVisitaText(){const c=DB.clientes.find(x=>x.codigo===$("vtCliente")
 function buildConteoText(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);if(!c)throw new Error("Seleccione cliente conteo");const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;let filas=[];document.querySelectorAll("#conteoBody tr[data-serie]").forEach(tr=>{const serie=tr.dataset.serie;const n=tr.querySelector('[data-campo="negro"]')?.value||"0";const co=tr.querySelector('[data-campo="color"]')?.value||"0";const sc=tr.querySelector('[data-campo="scan"]')?.value||"0";const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";if(n!="0"||co!="0"||sc!="0"||a3!="0")filas.push(`${serie} N:${n} C:${co} S:${sc} A3:${a3}`);});return`ECOLOIMP - CONTEO\nCliente: ${c.codigo} - ${c.nombre} (${total} imp.)\nFecha: ${$("ctFecha")?.value}\n\n${filas.join("\n")||"(Sin contadores)"}\n\nFirma: ${$("ctNombreFirma")?.value||"Cliente"} Firma: ${firmaDibujadaCt?"SI":"NO"}`;}
 
 async function guardarVisitaPDFCompleto(){
-  const c=selectedClient(); const p=DB.visitaPrinter; const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value); const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value); const fechaFile=$("vtFecha").value||new Date().toISOString().slice(0,10);
-  const logo=await getLogoBase64(); const firmaData=(()=>{const cv=$("vtFirmaCanvas"); if(!cv||!firmaDibujada) return null; return cv.toDataURL("image/png");})();
-  saveText(buildVisitaText(),`VISITA ${c.codigo} ${p.serie} ${fechaFile}.txt`); setTimeout(()=>saveText(buildVisitaSis(),`VT ${c.codigo} ${p.serie} ${fechaFile}.txt`),300);
-  if(!window.jspdf) return; const {jsPDF}=window.jspdf; const doc=new jsPDF(); if(logo) try{doc.addImage(logo,"JPEG",10,8,35,14);}catch{} doc.setFontSize(14); doc.text("VISITA TECNICA",50,15); doc.line(10,24,200,24); doc.setFontSize(10); doc.text(`Cliente: ${c.codigo} - ${c.nombre} (${DB.impresoras.filter(x=>x.cliente===c.codigo).length} imp.)`,10,30); doc.text(`Equipo: ${p.codigo} ${p.modelo} Serie: ${p.serie}`,10,36); doc.text(doc.splitTextToSize($("vtDetalle").value||"",180),10,44); if(firmaData) try{doc.addImage(firmaData,"PNG",10,110,60,20);}catch{} doc.save(`VISITA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
-}
+  const c=selectedClient("vtCliente"); const p=DB.visitaPrinter;
+  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
+  const textoPlano = buildVisitaText(); const textoSis = buildVisitaSis();
+  const firmaData = getFirmaData(); const firmaNombre = $("vtNombreFirma")?.value || "";
+  const logoBase64 = await getLogoBase64();
 
+  // TXT
+  saveText(textoPlano, `VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+  saveText(textoSis, `VT ${c.codigo} ${p.serie} ${fechaFile}.txt`);
+
+  if(!window.jspdf) return;
+  const { jsPDF } = window.jspdf; const doc = new jsPDF();
+  
+  // --- CANVAS = DIBUJO DE LINEAS ---
+  function drawTable(x,y,w1,w2,h, rows){
+    doc.setDrawColor(180); doc.setLineWidth(0.3);
+    // bordes externos con canvas
+    doc.rect(x, y, w1+w2, h*rows.length);
+    let cy = y;
+    rows.forEach((r,i)=>{
+      if(i>0){ doc.line(x, cy, x+w1+w2, cy); } // linea separacion
+      doc.line(x+w1, cy, x+w1, cy+h); // linea vertical medio
+      doc.setFontSize(9); doc.setFont(undefined,'bold');
+      doc.text(r[0], x+2, cy+5);
+      doc.setFont(undefined,'normal');
+      let lines = doc.splitTextToSize(r[1], w2-4);
+      doc.text(lines, x+w1+2, cy+5);
+      let lh = Math.max(h, lines.length*5+2);
+      cy += lh;
+    });
+    return cy;
+  }
+
+  // Logo
+  if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,35,14);}catch{} }
+  doc.setFontSize(14); doc.setFont(undefined,'bold');
+  doc.text("ECOLOIMP - REPORTE DE VISITA TECNICA", 50, 15);
+  doc.setLineWidth(0.6); doc.setDrawColor(15,23,42);
+  doc.line(10, 24, 200, 24); // linea separacion principal con canvas
+
+  let y = 30;
+  // Tabla 1
+  let rows1 = [
+    ["FECHA", $("vtFecha").value + "  " + $("vtHora").value],
+    ["CLIENTE", `${c.codigo} - ${c.nombre}`],
+    ["EQUIPO", `${p.codigo} - ${p.modelo} | Serie: ${p.serie}`],
+    ["SUCURSAL / AREA", `${p.sede} / ${p.ubicacion} - ${p.ip}`],
+  ];
+  y = drawTable(10, y, 35, 145, 8, rows1) + 6;
+
+  // Tabla 2
+  let rows2 = [
+    ["TECNICO", `${t.codigo} - ${t.nombre}`],
+    ["TIPO VISITA", $("vtTipo").value],
+    ["TRABAJO", `${tr.codigo} - ${tr.nombre}`],
+    ["ESTADO", $("vtEstado").value],
+    ["EMAIL", $("vtEmail")?.value || "-"],
+  ];
+  y = drawTable(10, y, 35, 145, 8, rows2) + 6;
+
+  // Detalle con lineas canvas
+  doc.setFont(undefined,'bold'); doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=4;
+  doc.setDrawColor(180); doc.rect(10, y, 180, 30);
+  doc.setFont(undefined,'normal'); doc.setFontSize(9);
+  let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
+  doc.text(detLines, 12, y+6);
+  y += 32;
+
+  // Firma con linea canvas
+  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4);
+  doc.line(10, y+15, 80, y+15); // linea para firma
+  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
+  doc.text(firmaNombre || "Firma cliente", 10, y+20);
+  doc.text(`Firma digital: ${firmaDibujada?"SI":"NO"}`, 100, y+20);
+
+  doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
+}
 async function guardarConteoPDFCompleto(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);if(!c)throw new Error("Seleccione cliente conteo");const fecha=$("ctFecha")?.value||new Date().toISOString().slice(0,10);const logo=await getLogoBase64();const firmaCt=(()=>{const cv=$("ctFirmaCanvas");if(!cv||!firmaDibujadaCt)return null;return cv.toDataURL("image/png");})();saveText(buildConteoText(),`CONTEO ${c.codigo} ${fecha}.txt`);if(!window.jspdf)return;const{jsPDF}=window.jspdf;const doc=new jsPDF();if(logo)try{doc.addImage(logo,"JPEG",10,8,35,14);}catch{}doc.setFontSize(14);doc.text("CONTEO - "+c.nombre,50,15);doc.line(10,24,200,24);doc.setFontSize(10);doc.text(doc.splitTextToSize(buildConteoText(),180),10,30);if(firmaCt)try{doc.addImage(firmaCt,"PNG",10,150,60,20);}catch{}doc.text($("ctNombreFirma")?.value||"Firma",10,175);doc.save(`CONTEO ${c.codigo} ${fecha}.pdf`);}
 
 function initFirma(){function activar(cid,bid,setter){const canvas=$(cid);if(!canvas)return;const ctx=canvas.getContext("2d");ctx.lineWidth=2.5;ctx.lineCap="round";ctx.strokeStyle="#0f172a";let dib=false,last={x:0,y:0};function pos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)};}function start(e){dib=true;last=pos(e);e.preventDefault();}function move(e){if(!dib)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;setter(true);e.preventDefault();}function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
