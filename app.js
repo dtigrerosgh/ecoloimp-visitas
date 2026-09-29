@@ -338,10 +338,11 @@ async function guardarConteoPDFCompleto(){
   const pageH = doc.internal.pageSize.getHeight();
 
   function drawHeader(){
-    doc.setFillColor(15,23,42); doc.rect(0,0,pageW,22,"F");
-    if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",8,3,32,12); }catch{}
-    doc.setTextColor(255); doc.setFontSize(13); doc.setFont(undefined,"bold");
-    doc.text("ECOLOIMP - REPORTE DE CONTEO", 45, 11);
+    doc.setTextColor(0,0,0);
+    doc.rect(0,0,pageW,22,"F");
+    if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,8,35,14); }catch{}
+    doc.setFontSize(13); doc.setFont(undefined,"bold");
+    doc.text("CONTEO DE IMPRESIONES", 45, 11);
     doc.setFontSize(8); doc.setFont(undefined,"normal");
     doc.text(`Cliente: ${c.codigo} - ${c.nombre.substring(0,60)}`, 45, 16);
     doc.text(`Fecha: ${$("ctFecha")?.value||""} ${$("ctHora")?.value||""} | Equipos: ${impresorasConteo.length}`, 45, 19);
@@ -355,7 +356,7 @@ async function guardarConteoPDFCompleto(){
   const tableW = colW.reduce((a,b)=>a+b,0);
 
   function drawTableHeader(yy){
-    let x=10; doc.setFillColor(37,99,235); doc.setTextColor(255); doc.setFont(undefined,"bold"); doc.setFontSize(7.5);
+    let x=10; doc.setTextColor(0); doc.setFont(undefined,"bold"); doc.setFontSize(7.5);
     headers.forEach((h,i)=>{ doc.rect(x,yy,colW[i],7,"F"); doc.rect(x,yy,colW[i],7,"S"); doc.text(h, x+colW[i]/2, yy+4.5, {align:"center"}); x+=colW[i]; });
     doc.setTextColor(0); doc.setFont(undefined,"normal");
     return yy+7;
@@ -365,7 +366,17 @@ async function guardarConteoPDFCompleto(){
 
   const rows = impresorasConteo.map(serie=>{
     const p = DB.impresoras.find(x=>x.serie===serie) || {};
-    return [p.codigo||"", p.modelo||"", serie, p.sede||"", String(datos[serie].negro), String(datos[serie].color), String(datos[serie].scan), String(datos[serie].a3)];
+    return [
+      p.bodega||"", 
+      p.modelo||"", 
+      serie, 
+      p.sede||"", 
+      p.area||"", 
+      String(datos[serie].negro), 
+      String(datos[serie].color), 
+      String(datos[serie].scan), 
+      String(datos[serie].a3)
+    ];
   });
 
   rows.forEach((r, idx)=>{
@@ -386,7 +397,7 @@ async function guardarConteoPDFCompleto(){
   // Totales
   if(y > pageH-35){ doc.addPage(); drawHeader(); y=28; }
   const tot = rows.reduce((a,r)=>({n:a.n+parseInt(r[4]||0), c:a.c+parseInt(r[5]||0), s:a.s+parseInt(r[6]||0), a3:a.a3+parseInt(r[7]||0)}), {n:0,c:0,s:0,a3:0});
-  doc.setFillColor(15,23,42); doc.setTextColor(255); doc.setFont(undefined,"bold"); doc.setFontSize(8);
+  doc.setTextColor(0,0,0); doc.setFont(undefined,"bold"); doc.setFontSize(8);
   doc.rect(10,y,tableW,8,"F");
   doc.text(`TOTALES -> NEGRO: ${tot.n} | COLOR: ${tot.c} | SCAN: ${tot.s} | A3: ${tot.a3} | EQUIPOS: ${rows.length}`, 12, y+5);
   y+=14;
@@ -405,7 +416,7 @@ async function guardarConteoPDFCompleto(){
     doc.setPage(i);
     doc.setFontSize(7); doc.setTextColor(100);
     doc.setDrawColor(200); doc.line(10, pageH-10, pageW-10, pageH-10);
-    doc.text(`© ${new Date().getFullYear()} ECOLOIMP S.A.S. - Sistema de Conteo - Todos los derechos reservados | ${c.codigo}`, 10, pageH-6);
+    doc.text(`© ${new Date().getFullYear()} DT Soluciones Informaticas       Generado desde ECOLOIMP Web | ${c.codigo}`, 10, pageH-6);
     doc.text(`Página ${i} de ${totalPages}`, pageW-10, pageH-6, {align:"right"});
   }
 
