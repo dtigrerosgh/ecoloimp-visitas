@@ -176,13 +176,15 @@ function buildConteoText(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")
 
 async function guardarVisitaPDFCompleto(){
   const c=selectedClientVisita("vtCliente"); const p=DB.visitaPrinter;
-  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
-  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
+  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
   const textoPlano = buildVisitaText(); 
   const textoSis = buildVisitaSis();
-  const firmaData = getFirmaData(); const firmaNombre = $("vtNombreFirma")?.value || "";
-  const logoBase64 = await getLogoBase64();
+  const firmaData = $("vtFirmaCanvas")?.toDataURL ? (()=>{ try{ return firmaDibujada ? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })() : null;
+  const firmaNombre = $("vtNombreFirma")?.value || "";
+  const logoBase64 = await getLogoBase64().catch(()=>null);
+
 
 // 1. GUARDA TXT PRIMERO, FUERA DEL TRY DEL PDF - ASÍ SIEMPRE GUARDA
   try{ saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT1",e); }
