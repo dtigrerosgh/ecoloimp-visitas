@@ -19,9 +19,29 @@ button{cursor:pointer}
 .header-inner{max-width:1250px;margin:auto;min-height:82px;padding:10px 20px;display:flex;align-items:center;gap:25px;position:relative}
 .brand{display:block;flex:0 0 auto}.brand img{display:block;width:min(280px,38vw);height:auto;max-height:65px;object-fit:contain}
 .main-nav{margin-left:auto;display:flex;align-items:center;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.main-nav a,.footer-data{border:0;background:none;text-decoration:none;color:#27303b;font-weight:1200;padding:10px 12px;border-radius:10px}
-.main-nav a:hover,.main-nav a.active,.footer-data:hover{background:#eaffeb;color:var(--green-dark)}
-.menu-toggle{display:none;margin-left:auto;border:0;background:var(--ink);color:white;border-radius:10px;padding:9px 12px;font-size:20px}
+.main-nav a,.footer-data{
+  border:0;
+  background:none;
+  text-decoration:none;
+  color:#27303b;
+  font-weight:1200;
+  padding:10px 12px;
+  border-radius:10px
+}
+.main-nav a:hover,.main-nav a.active,.footer-data:hover{
+  background:#eaffeb;
+  color:var(--green-dark)
+}
+.menu-toggle{
+  display:none;
+  margin-left:auto;
+  border:0;
+  background:var(--ink);
+  color:var(--danger);
+  border-radius:10px;
+  padding:9px 12px;
+  font-size:20px
+}
 .container{max-width:1250px;margin:auto;padding:30px 20px 55px;min-height:calc(100vh - 170px)}
 .page-section{display:none;animation:fade .18s ease}.page-section.active{display:block}
 @keyframes fade{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
