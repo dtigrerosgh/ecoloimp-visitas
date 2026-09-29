@@ -72,6 +72,18 @@ code{background:#edf0f2;border-radius:5px;padding:1px 5px}
 #vtPrinterBody tr.selected td {
   color: #1e40af;
 }
+#conteoBody tr.selected {
+  background: #fef3c7 !important;
+  outline: 2px solid #f59e0b;
+}
+#conteoBody tr.selected td {
+  color: #92400e;
+  font-weight: bold;
+}
+#conteoBody input:focus {
+  border: 2px solid #f59e0b !important;
+  background: #fffbeb;
+}
 
 /* TABLA VISITA */
 .printer-selection-wrap{max-height:390px;overflow:auto;margin-top:18px;border:1px solid var(--line);border-radius:12px}
