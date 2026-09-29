@@ -91,10 +91,10 @@ function updateConteoPrinterTable(){
   <td>${esc(p.serie)}</td>
   <td>${esc(p.sede)}</td>
   <td>${esc(p.ubicacion)}</td>
-  <td><input type="number" data-campo="negro" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td>
-  <td><input type="number" data-campo="color" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td>
-  <td><input type="number" data-campo="scan" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td>
-  <td><input type="number" data-campo="a3" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td>
+  <td><input type="number" data-campo="negro" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
+  <td><input type="number" data-campo="color" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
+  <td><input type="number" data-campo="scan" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
+  <td><input type="number" data-campo="a3" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
   </tr>`).join(""):`<tr><td colspan="8">${client?"Cliente sin impresoras - revisa impresoras.txt":"Seleccione cliente en Conteo"}</td></tr>`;
 }
 
