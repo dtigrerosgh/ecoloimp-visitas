@@ -250,14 +250,14 @@ async function guardarVisitaPDFCompleto(){
   
   y+=1;
   doc.setDrawColor(180); 
-  doc.rect(10, y, 180, 36);
+  doc.rect(10, y, 180, 40);
   doc.setFont(undefined,'normal'); 
   doc.setFontSize(9);
   y+=9;
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
   doc.text(detLines, 12, y);
   
-  y += 36;
+  y += 40;
 
   // Firma con linea canvas
   doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD", 10, y); 
@@ -267,9 +267,9 @@ async function guardarVisitaPDFCompleto(){
   y+=2;
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
   
-  y+=8;
+  y+=12;
   doc.line(10, y, 80, y); // linea para firma
-  y+=2;
+  y+=3;
   doc.text(firmaNombre || "Firma cliente", 10, y);
 
 
