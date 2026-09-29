@@ -98,6 +98,7 @@ function updateConteoPrinterTable(){
   </tr>`).join(""):`<tr><td colspan="8">${client?"Cliente sin impresoras - revisa impresoras.txt":"Seleccione cliente en Conteo"}</td></tr>`;
 }
 
+
 function selectVisitaPrinter(serie){
   const p = DB.impresoras.find(x=>x.serie===serie);
   if(!p) return;
@@ -328,6 +329,27 @@ function setupEvents(){
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{try{const email=$("vtEmail")?.value.trim();if(!email)throw new Error("Ingrese email cliente");abrirGmail($("pgCorreo").value||gcorreo,email,`Visita ${$("vtCliente").value} ${DB.visitaPrinter?.serie}`,buildVisitaText());setTimeout(()=>guardarVisitaPDFCompleto(),600);showMessage("vtMessage","Visita guardada");}catch(err){showMessage("vtMessage",err.message,true);}});
   $("btnConteoGuardar")?.addEventListener("click",async()=>{try{const email=$("ctEmail")?.value.trim();if(!email)throw new Error("Ingrese email cliente conteo");abrirGmail($("pgCorreo").value||gcorreo,email,`Conteo ${$("ctCliente").value} ${$("ctFecha").value}`,buildConteoText());setTimeout(()=>guardarConteoPDFCompleto(),600);showMessage("ctMessage","Conteo guardado");}catch(err){showMessage("ctMessage",err.message,true);}});
+
+  // Sombrear fila en conteo al escribir
+  const conteoBody = $("conteoBody");
+  if(conteoBody){
+    conteoBody.addEventListener("focusin", (e)=>{
+      if(e.target.matches('input[data-campo]')){
+        conteoBody.querySelectorAll("tr.selected").forEach(tr=>tr.classList.remove("selected"));
+        const tr = e.target.closest("tr[data-serie]");
+        if(tr) tr.classList.add("selected");
+      }
+    });
+    conteoBody.addEventListener("input", (e)=>{
+      if(e.target.matches('input[data-campo]')){
+        const tr = e.target.closest("tr[data-serie]");
+        if(tr && !tr.classList.contains("selected")){
+          conteoBody.querySelectorAll("tr.selected").forEach(r=>r.classList.remove("selected"));
+          tr.classList.add("selected");
+        }
+      }
+    });
+  }
 }
 
 async function init(){
