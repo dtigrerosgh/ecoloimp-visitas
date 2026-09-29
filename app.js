@@ -30,7 +30,8 @@ function filterClientes(){
   const conteo={};DB.impresoras.forEach(p=>{conteo[p.cliente]=(conteo[p.cliente]||0)+1;});
   const qVt=norm($("vtClienteFilter")?.value||"");const rowsVt=DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(qVt)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   options($("vtCliente"),rowsVt.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})),"Seleccione cliente...");
-  const qCt=norm($("ctClienteFilter")?.value||"");const rowsCt=DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(qCt)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  const qCt=norm($("ctClienteFilter")?.value||"");
+  const rowsCt=DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(qCt)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   options($("ctCliente"),rowsCt.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})),"Seleccione cliente...");
 }
 function fillTecnicos(){const rows=DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label));options($("vtTecnico"),rows,"Seleccione técnico...");options($("ctTecnico"),rows,"Seleccione técnico...");}
