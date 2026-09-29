@@ -245,9 +245,11 @@ async function guardarVisitaPDFCompleto(){
   y = drawTable(10, y, 35, 145, 8, rows2) + 6;
 
   // Detalle con lineas canvas
-  doc.setFont(undefined,'bold'); doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=6;
-  doc.setDrawColor(180); doc.rect(10, y, 180, 30);
-  doc.setFont(undefined,'normal'); doc.setFontSize(9);
+  doc.setFont(undefined,'bold'); doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=7;
+  doc.setDrawColor(180); 
+  doc.rect(10, y, 180, 32);
+  doc.setFont(undefined,'normal'); 
+  doc.setFontSize(9);
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
   doc.text(detLines, 12, y+10);
   y += 38;
@@ -255,8 +257,8 @@ async function guardarVisitaPDFCompleto(){
   // Firma con linea canvas
   doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD", 10, y); y+=2;
   doc.setDrawColor(15,23,42); doc.setLineWidth(0.4);
-  doc.line(10, y+19, 80, y+19); // linea para firma
-  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y+2,70,25); }catch{} }
+  doc.line(10, y+20, 80, y+20); // linea para firma
+  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y+4,70,25); }catch{} }
   doc.text(firmaNombre || "Firma cliente", 10, y+22);
 
 
