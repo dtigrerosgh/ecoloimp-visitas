@@ -37,25 +37,27 @@ function fillTecnicos(){const rows=DB.tecnicos.map(t=>({value:t.codigo,label:`${
 function fillTrabajos(){options($("vtTrabajo"),DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)),"Seleccione trabajo...");}
 
 function updateVisitaPrinterTable(){
-  const client=$("vtCliente")?.value;
-  const q=norm($("vtPrinterFilter")?.value||"");
-  const rows=DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
-  const total=DB.impresoras.filter(p=>p.cliente===client).length;
+  const client = $("vtCliente")?.value;
+  const q = norm($("vtPrinterFilter")?.value||"");
+  const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
+  const total = DB.impresoras.filter(p=>p.cliente===client).length;
+  const selectedSerie = DB.visitaPrinter?.serie || "";
 
-  if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length}` : "Ninguna impresora seleccionada";
+  if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length} ${selectedSerie?`- Seleccionada: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
   
   if($("vtPrinterBody")){
-    $("vtPrinterBody").innerHTML = rows.length ? rows.map(p=>`
-      <tr>
-        <td><button type="button" data-select-printer="${esc(p.serie)}">Seleccionar</button></td>
+    $("vtPrinterBody").innerHTML = rows.length ? rows.map(p=>{
+      const isSel = p.serie === selectedSerie;
+      return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
+        <td><button type="button" data-select-printer="${esc(p.serie)}">${isSel?'✓ Seleccionada':'Seleccionar'}</button></td>
         <td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td>
         <td>${esc(p.sede)}</td><td>${esc(p.ubicacion)}</td><td>${esc(p.ip)}</td><td>${esc(p.bodega)}</td>
-      </tr>`).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
+      </tr>`;
+    }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
   }
 
-  // ESTO ES LO QUE MANTIENE LOS DATOS - NO LO BORRES
-  const p=DB.visitaPrinter;
-  const c=DB.clientes.find(x=>x.codigo===client);
+  const p = DB.visitaPrinter;
+  const c = DB.clientes.find(x=>x.codigo===client);
   if($("vtPrinterDetails")){
     if(p){
       $("vtPrinterDetails").innerHTML = `
@@ -68,12 +70,14 @@ function updateVisitaPrinterTable(){
         <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
         <div><small>Cliente</small><strong>${c ? esc(c.codigo+" · "+c.nombre) : "-"} (${total} imp.)</strong></div>`;
     } else if(c){
-      $("vtPrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - Tiene ${total} impresora(s)</strong></div><div><small>Acción</small><strong>Seleccione una impresora de la tabla de arriba</strong></div>`;
+      $("vtPrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - Tiene ${total} impresora(s)</strong></div>`;
     } else {
       $("vtPrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
     }
   }
 }
+
+
 
 function updateConteoPrinterTable(){
   const client=$("ctCliente")?.value;const q=norm($("ctPrinterFilter")?.value||"");
@@ -82,7 +86,16 @@ function updateConteoPrinterTable(){
   console.log("CONTEO cliente:",client,"total:",total,"mostrando:",rows.length);
   if($("conteoBody"))$("conteoBody").innerHTML=rows.length?rows.map(p=>`<tr data-serie="${esc(p.serie)}"><td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td><td>${esc(p.sede)}</td><td><input type="number" data-campo="negro" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td><td><input type="number" data-campo="color" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td><td><input type="number" data-campo="scan" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td><td><input type="number" data-campo="a3" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td></tr>`).join(""):`<tr><td colspan="8">${client?"Cliente sin impresoras - revisa impresoras.txt":"Seleccione cliente en Conteo"}</td></tr>`;
 }
-function selectVisitaPrinter(serie){const p=DB.impresoras.find(x=>x.serie===serie);if(!p)return;DB.visitaPrinter=p;updateVisitaPrinterTable();}
+
+function selectVisitaPrinter(serie){
+  const p = DB.impresoras.find(x=>x.serie===serie);
+  if(!p) return;
+  DB.visitaPrinter = p;
+  updateVisitaPrinterTable();
+  // scroll para que vea que quedó seleccionado
+  const row = document.querySelector(`#vtPrinterBody tr.selected`);
+  if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
 
 function activateSection(id){
   document.querySelectorAll(".page-section").forEach(s=>{const on=s.id===id;s.classList.toggle("active",on);s.style.display=on?"block":"none";});
