@@ -64,6 +64,15 @@ code{background:#edf0f2;border-radius:5px;padding:1px 5px}
 .contact-grid span{font-size:25px}.contact-grid small{display:block;color:var(--muted)}.contact-grid strong{display:block;margin-top:3px}
 .site-footer{background:#111827;color:white}.footer-inner{max-width:1250px;margin:auto;padding:18px 20px;display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap}.footer-data{color:white}
 
+#vtPrinterBody tr.selected {
+  background: #dbeafe !important;
+  outline: 2px solid #2563eb;
+  font-weight: bold;
+}
+#vtPrinterBody tr.selected td {
+  color: #1e40af;
+}
+
 /* TABLA VISITA */
 .printer-selection-wrap{max-height:390px;overflow:auto;margin-top:18px;border:1px solid var(--line);border-radius:12px}
 .printer-selection-table{min-width:700px}
