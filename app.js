@@ -315,9 +315,22 @@ const coordenadaY = altoPagina - margenInferior;
   doc.text(texto, 105, coordenadaY, { align: "center" });
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
-async function guardarConteoPDFCompleto(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);if(!c)throw new Error("Seleccione cliente conteo");const fecha=$("ctFecha")?.value||new Date().toISOString().slice(0,10);const logo=await getLogoBase64();const firmaCt=(()=>{const cv=$("ctFirmaCanvas");if(!cv||!firmaDibujadaCt)return null;return cv.toDataURL("image/png");})();saveText(buildConteoText(),`CONTEO ${c.codigo} ${fecha}.txt`);if(!window.jspdf)return;const{jsPDF}=window.jspdf;const doc=new jsPDF();if(logo)try{doc.addImage(logo,"JPEG",10,8,35,14);}catch{}doc.setFontSize(14);doc.text("CONTEO - "+c.nombre,50,15);doc.line(10,24,200,24);doc.setFontSize(10);doc.text(doc.splitTextToSize(buildConteoText(),180),10,30);if(firmaCt)try{doc.addImage(firmaCt,"PNG",10,150,60,20);}catch{}doc.text($("ctNombreFirma")?.value||"Firma",10,175);doc.save(`CONTEO ${c.codigo} ${fecha}.pdf`);}
 
-function initFirma(){function activar(cid,bid,setter){const canvas=$(cid);if(!canvas)return;const ctx=canvas.getContext("2d");ctx.lineWidth=2.5;ctx.lineCap="round";ctx.strokeStyle="#0f172a";let dib=false,last={x:0,y:0};function pos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)};}function start(e){dib=true;last=pos(e);e.preventDefault();}function move(e){if(!dib)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;setter(true);e.preventDefault();}function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
+// GRABA CONTEO
+async function guardarConteoPDFCompleto(){
+  const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
+  if(!c)throw new Error("Seleccione cliente conteo");
+  const fecha=$("ctFecha")?.value||new Date().toISOString().slice(0,10);
+  const logo=await getLogoBase64();
+  const firmaCt=(()=>{const cv=$("ctFirmaCanvas");if(!cv||!firmaDibujadaCt)return null;return cv.toDataURL("image/png");})();saveText(buildConteoText(),`CONTEO ${c.codigo} ${fecha}.txt`);if(!window.jspdf)return;const{jsPDF}=window.jspdf;const doc=new jsPDF();if(logo)try{doc.addImage(logo,"JPEG",10,8,35,14);}catch{}doc.setFontSize(14);doc.text("CONTEO - "+c.nombre,50,15);doc.line(10,24,200,24);doc.setFontSize(10);doc.text(doc.splitTextToSize(buildConteoText(),180),10,30);if(firmaCt)try{doc.addImage(firmaCt,"PNG",10,150,60,20);}catch{}doc.text($("ctNombreFirma")?.value||"Firma",10,175);doc.save(`CONTEO ${c.codigo} ${fecha}.pdf`);}
+
+function initFirma(){function activar(cid,bid,setter){const canvas=$(cid);if(!canvas)return;
+                                                      const ctx=canvas.getContext("2d");ctx.lineWidth=2.5;ctx.lineCap="round";
+                                                      ctx.strokeStyle="#0f172a";
+                                                      let dib=false,last={x:0,y:0};
+                                                      function pos(e){const r=canvas.getBoundingClientRect();
+                                                                      const t=e.touches?e.touches[0]:e;
+                                                                      return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)};}function start(e){dib=true;last=pos(e);e.preventDefault();}function move(e){if(!dib)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;setter(true);e.preventDefault();}function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
 
 function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
@@ -328,7 +341,10 @@ function setupEvents(){
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{try{const email=$("vtEmail")?.value.trim();if(!email)throw new Error("Ingrese email cliente");abrirGmail($("pgCorreo").value||gcorreo,email,`Visita ${$("vtCliente").value} ${DB.visitaPrinter?.serie}`,buildVisitaText());setTimeout(()=>guardarVisitaPDFCompleto(),600);showMessage("vtMessage","Visita guardada");}catch(err){showMessage("vtMessage",err.message,true);}});
-  $("btnConteoGuardar")?.addEventListener("click",async()=>{try{const email=$("ctEmail")?.value.trim();if(!email)throw new Error("Ingrese email cliente conteo");abrirGmail($("pgCorreo").value||gcorreo,email,`Conteo ${$("ctCliente").value} ${$("ctFecha").value}`,buildConteoText());setTimeout(()=>guardarConteoPDFCompleto(),600);showMessage("ctMessage","Conteo guardado");}catch(err){showMessage("ctMessage",err.message,true);}});
+  
+  $("btnConteoGuardar")?.addEventListener("click",async()=>{try{const email=$("ctEmail")?.value.trim();
+    if(!email)throw new Error("Ingrese email cliente conteo");
+    abrirGmail($("pgCorreo").value||gcorreo,email,`Conteo ${$("ctCliente").value} ${$("ctFecha").value}`,buildConteoText());setTimeout(()=>guardarConteoPDFCompleto(),600);showMessage("ctMessage","Conteo guardado");}catch(err){showMessage("ctMessage",err.message,true);}});
 
   // Sombrear fila en conteo al escribir
   const conteoBody = $("conteoBody");
