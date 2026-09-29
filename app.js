@@ -252,14 +252,20 @@ async function guardarVisitaPDFCompleto(){
   doc.setFontSize(9);
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
   doc.text(detLines, 12, y+10);
-  y += 38;
+  y += 39;
 
   // Firma con linea canvas
-  doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD", 10, y); y+=2;
-  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4);
-  doc.line(10, y+20, 80, y+20); // linea para firma
-  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y+4,70,25); }catch{} }
-  doc.text(firmaNombre || "Firma cliente", 10, y+22);
+  doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD", 10, y); 
+  y+=1;
+  doc.setDrawColor(15,23,42); 
+  doc.setLineWidth(0.4);
+  
+  y+=3;
+  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
+  y+=2;
+  doc.line(10, y, 80, y); // linea para firma
+  y+=2;
+  doc.text(firmaNombre || "Firma cliente", 10, y);
 
 
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
