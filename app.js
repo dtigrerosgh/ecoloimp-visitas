@@ -225,8 +225,11 @@ async function guardarVisitaPDFCompleto(){
   let rows1 = [
     ["FECHA", $("vtFecha").value + "  " + $("vtHora").value],
     ["CLIENTE", `${c.codigo} - ${c.nombre}`],
-    ["EQUIPO", `${p.codigo} - ${p.modelo} | Serie: ${p.serie}`],
-    ["SUCURSAL / AREA", `${p.sede} / ${p.ubicacion} - ${p.ip}`],
+    ["EQUIPO", `${p.codigo} - ${p.modelo}`],
+    ["SERIE", `${p.serie}`],
+    ["SUCURSAL", `${p.sede}`],
+    ["AREA", `${p.ubicacion}`],
+    ["UBICACION", `${p.ip}`],
   ];
   y = drawTable(10, y, 35, 145, 8, rows1) + 6;
 
@@ -236,7 +239,8 @@ async function guardarVisitaPDFCompleto(){
     ["TIPO VISITA", $("vtTipo").value],
     ["TRABAJO", `${tr.codigo} - ${tr.nombre}`],
     ["ESTADO", $("vtEstado").value],
-    ["EMAIL", $("vtEmail")?.value || "-"],
+    ["EMAIL CLIENTE", $("vtEmail")?.value || "-"],
+    ["FIRMA DIGITAL", ${firmaDibujada?"SI":"NO"}],
   ];
   y = drawTable(10, y, 35, 145, 8, rows2) + 6;
 
@@ -249,11 +253,12 @@ async function guardarVisitaPDFCompleto(){
   y += 32;
 
   // Firma con linea canvas
+  doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD", 10, y); y+=2;
   doc.setDrawColor(15,23,42); doc.setLineWidth(0.4);
-  doc.line(10, y+15, 80, y+15); // linea para firma
+  doc.line(10, y+17, 80, y+17); // linea para firma
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
-  doc.text(firmaNombre || "Firma cliente", 10, y+20);
-  doc.text(`Firma digital: ${firmaDibujada?"SI":"NO"}`, 100, y+20);
+  doc.text(firmaNombre || "Firma cliente", 10, y+22);
+
 
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
