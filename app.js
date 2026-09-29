@@ -103,19 +103,27 @@ function saveText(t,f){const b=new Blob([t],{type:"text/plain;charset=utf-8"});c
 function abrirGmail(to,cc,subj,body){window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&cc=${encodeURIComponent(cc||"")}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(body.substring(0,2000))}`,"_blank");}
 async function getLogoBase64(){try{const r=await fetch("assets/logo.jpg?v="+Date.now(),{cache:"no-store"});const b=await r.blob();return await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(b);});}catch{return null;}}
 
-function buildVisitaSis(){const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);const p=DB.visitaPrinter;const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);if(!c||!p||!t||!tr)throw new Error("Falta cliente/impresora/tecnico/trabajo");return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;}
+function buildVisitaSis(){
+  const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);
+  const p=DB.visitaPrinter;
+  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:""};
+  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:""};
+  
+  if(!c||!p||!t||!tr)throw new Error("Falta cliente/impresora/tecnico/trabajo");
+  return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;}
 
 function buildVisitaText(){
   const c=selectedClientVisita(); const p=DB.visitaPrinter;
-  const t=DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
-  const tr=DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
+  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
+  
   if(!c) throw new Error("Seleccione cliente");
   if(!p) throw new Error("Seleccione impresora");
   if(!t) throw new Error("Seleccione técnico");
   if(!tr) throw new Error("Seleccione trabajo");
 
   return `ECOLOIMP S.A. - REPORTE DE VISITA TÉCNICA
-══════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
 
 Estimado cliente,
 
@@ -143,9 +151,9 @@ Se ha realizado la visita técnica con el siguiente detalle:
 • Trabajo realizado: ${tr.nombre} (${tr.codigo})
 
 📝 DETALLE DEL TRABAJO REALIZADO:
-──────────────────────────────────
+──────────────────────────────────────────────────────────────────────────
 ${$("vtDetalle").value || "(Sin detalle registrado)"}
-──────────────────────────────────
+──────────────────────────────────────────────────────────────────────────
 
 ✍️ CONFORMIDAD
 • Firmado por: ${$("vtNombreFirma")?.value || "Cliente"}
@@ -177,7 +185,7 @@ async function guardarVisitaPDFCompleto(){
   const logoBase64 = await getLogoBase64();
 
 // 1. GUARDA TXT PRIMERO, FUERA DEL TRY DEL PDF - ASÍ SIEMPRE GUARDA
-try{ saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT1",e); }
+  try{ saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT1",e); }
   try{ saveText(buildVisitaSis(), `VT_${c.codigo}_${p.serie}_${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT2",e); }
 
   if(!window.jspdf) return;
