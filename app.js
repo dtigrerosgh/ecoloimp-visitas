@@ -78,10 +78,9 @@ function updateVisitaPrinterTable(){
   }
 }
 
-
-
 function updateConteoPrinterTable(){
-  const client=$("ctCliente")?.value;const q=norm($("ctPrinterFilter")?.value||"");
+  const client=$("ctCliente")?.value;
+  const q=norm($("ctPrinterFilter")?.value||"");
  // const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q)); //
   const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.bodega,p.modelo,p.serie,p.sede,p.ubicacion,p.ip].join(" ")).includes(q));   
   const total=DB.impresoras.filter(p=>p.cliente===client).length;
