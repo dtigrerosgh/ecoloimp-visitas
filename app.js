@@ -81,7 +81,8 @@ function updateVisitaPrinterTable(){
 
 function updateConteoPrinterTable(){
   const client=$("ctCliente")?.value;const q=norm($("ctPrinterFilter")?.value||"");
-  const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q));
+ // const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q)); //
+  const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.bodega,p.modelo,p.serie,p.sede,p.ubicacion,p.ip].join(" ")).includes(q));   
   const total=DB.impresoras.filter(p=>p.cliente===client).length;
   console.log("CONTEO cliente:",client,"total:",total,"mostrando:",rows.length);
   if($("conteoBody"))$("conteoBody").innerHTML=rows.length?rows.map(p=>`<tr data-serie="${esc(p.serie)}"><td>${esc(p.codigo)}</td><td>${esc(p.modelo)}</td><td>${esc(p.serie)}</td><td>${esc(p.sede)}</td><td><input type="number" data-campo="negro" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td><td><input type="number" data-campo="color" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td><td><input type="number" data-campo="scan" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td><td><input type="number" data-campo="a3" data-serie="${esc(p.serie)}" value="0" style="width:70px"></td></tr>`).join(""):`<tr><td colspan="8">${client?"Cliente sin impresoras - revisa impresoras.txt":"Seleccione cliente en Conteo"}</td></tr>`;
