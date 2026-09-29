@@ -198,7 +198,7 @@ async function guardarVisitaPDFCompleto(){
   format: "a4"
   });
   const altoPagina = 297; 
-  const margenInferior = 15;
+  const margenInferior = 10;
   
   // --- CANVAS = DIBUJO DE LINEAS ---
   function drawTable(x,y,w1,w2,h, rows){
@@ -287,7 +287,7 @@ async function guardarVisitaPDFCompleto(){
 const coordenadaY = altoPagina - margenInferior;
 
 // 5. Escribir el texto (centrado horizontalmente a 105mm)
-  doc.text(texto, 105, coordenadaY, { align: "left" });
+  doc.text(texto, 105, coordenadaY, { align: "center" });
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
 async function guardarConteoPDFCompleto(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);if(!c)throw new Error("Seleccione cliente conteo");const fecha=$("ctFecha")?.value||new Date().toISOString().slice(0,10);const logo=await getLogoBase64();const firmaCt=(()=>{const cv=$("ctFirmaCanvas");if(!cv||!firmaDibujadaCt)return null;return cv.toDataURL("image/png");})();saveText(buildConteoText(),`CONTEO ${c.codigo} ${fecha}.txt`);if(!window.jspdf)return;const{jsPDF}=window.jspdf;const doc=new jsPDF();if(logo)try{doc.addImage(logo,"JPEG",10,8,35,14);}catch{}doc.setFontSize(14);doc.text("CONTEO - "+c.nombre,50,15);doc.line(10,24,200,24);doc.setFontSize(10);doc.text(doc.splitTextToSize(buildConteoText(),180),10,30);if(firmaCt)try{doc.addImage(firmaCt,"PNG",10,150,60,20);}catch{}doc.text($("ctNombreFirma")?.value||"Firma",10,175);doc.save(`CONTEO ${c.codigo} ${fecha}.pdf`);}
