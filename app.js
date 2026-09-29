@@ -240,7 +240,7 @@ async function guardarVisitaPDFCompleto(){
     ["TRABAJO", `${tr.codigo} - ${tr.nombre}`],
     ["ESTADO", $("vtEstado").value],
     ["EMAIL CLIENTE", $("vtEmail")?.value || "-"],
-    ["FIRMA DIGITAL", ${firmaDibujada?"SI":"NO"}],
+    ["FIRMA DIGITAL", firmaDibujada ? "SI" : "NO"],    
   ];
   y = drawTable(10, y, 35, 145, 8, rows2) + 6;
 
