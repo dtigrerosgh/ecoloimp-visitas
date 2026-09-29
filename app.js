@@ -245,18 +245,22 @@ async function guardarVisitaPDFCompleto(){
   y = drawTable(10, y, 35, 145, 8, rows2) + 6;
 
   // Detalle con lineas canvas
-  doc.setFont(undefined,'bold'); doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=7;
+  y+=7;
+  doc.setFont(undefined,'bold'); doc.text("DETALLE / TRABAJO REALIZADO:", 10, y);
+  
+  y+=1;
   doc.setDrawColor(180); 
   doc.rect(10, y, 180, 32);
   doc.setFont(undefined,'normal'); 
   doc.setFontSize(9);
+  y+=10;
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
-  doc.text(detLines, 12, y+10);
-  y += 39;
+  doc.text(detLines, 12, y);
+  y += 2;
 
   // Firma con linea canvas
   doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD", 10, y); 
-  y+=1;
+  y+=2;
   doc.setDrawColor(15,23,42); 
   doc.setLineWidth(0.4);
   
