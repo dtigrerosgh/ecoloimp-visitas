@@ -358,10 +358,10 @@ async function guardarConteoPDFCompleto(){
   if(!c){ showMessage("ctMessage","Seleccione cliente",true); return; }
 
   const datos = Array.from(document.querySelectorAll("#conteoBody input[data-campo]")).reduce((acc, inp)=>{
-    const serie = inp.dataset.serie;
-    if(!acc[serie]) acc[serie] = {negro:0,color:0,scan:0,a3:0};
-    acc[serie][inp.dataset.campo] = parseInt(inp.value)||0;
-    return acc;
+  const serie = inp.dataset.serie;
+  if(!acc[serie]) acc[serie] = {negro:0,color:0,scan:0,a3:0};
+  acc[serie][inp.dataset.campo] = parseInt(inp.value)||0;
+  return acc;
   },{});
   // const impresorasConteo = Object.keys(datos).filter(s=> datos[s].negro>0||datos[s].color>0||datos[s].scan>0||datos[s].a3>0 );
   // CAMBIO: TODAS, tengan o no conteo
@@ -416,8 +416,8 @@ async function guardarConteoPDFCompleto(){
       (p.bodega||""),
       (p.modelo||""),
       serie,
-      (p.sede||p.sucursal||""),
-      areaReal.trim(),
+      (p.sede||""),
+      (p.ubicacion||""),
       fmt(datos[serie].negro),
       fmt(datos[serie].color),
       fmt(datos[serie].scan),
@@ -457,14 +457,15 @@ async function guardarConteoPDFCompleto(){
   doc.setFillColor(255,255,255);
   doc.setDrawColor(0,0,0);
   doc.setTextColor(0,0,0);
-  doc.setFont("Arial","bold"); doc.setFontSize(8);
+  doc.setFont("Arial","bold"); 
+  doc.setFontSize(8);
   doc.rect(10,y,tableW,7,"FD");
   doc.text(`TOT: N:${fmt(totRaw.n)} C:${fmt(totRaw.c)} S:${fmt(totRaw.s)} A3:${fmt(totRaw.a3)} EQ:${rows.length}`, 12, y+4.5);
   y+=13;
 
   // Firma
 
-  doc.setFont(undefined,'bold'); 
+  doc.setFont("Arial",'bold'); 
   doc.text("FIRMA DE CONFORMIDAD", 10, y); 
 
   
