@@ -197,7 +197,23 @@ ${$("pgCorreo")?.value || gcorreo}
 www.ecoloimp.com.ec
 `;
 }
-function buildConteoText(){const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);if(!c)throw new Error("Seleccione cliente conteo");const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;let filas=[];document.querySelectorAll("#conteoBody tr[data-serie]").forEach(tr=>{const serie=tr.dataset.serie;const n=tr.querySelector('[data-campo="negro"]')?.value||"0";const co=tr.querySelector('[data-campo="color"]')?.value||"0";const sc=tr.querySelector('[data-campo="scan"]')?.value||"0";const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";if(n!="0"||co!="0"||sc!="0"||a3!="0")filas.push(`${serie} N:${n} C:${co} S:${sc} A3:${a3}`);});return`ECOLOIMP - CONTEO\nCliente: ${c.codigo} - ${c.nombre} (${total} imp.)\nFecha: ${$("ctFecha")?.value}\n\n${filas.join("\n")||"(Sin contadores)"}\n\nFirma: ${$("ctNombreFirma")?.value||"Cliente"} Firma: ${firmaDibujadaCt?"SI":"NO"}`;}
+function buildConteoText(){
+  const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
+  if(!c)throw new Error("Seleccione cliente conteo");
+  const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;
+  let filas=[];
+  document.querySelectorAll("#conteoBody tr[data-serie]").forEach(tr=>{
+    const serie=tr.dataset.serie;                                                                   
+    const n=tr.querySelector('[data-campo="negro"]')?.value||"0";
+    const co=tr.querySelector('[data-campo="color"]')?.value||"0";
+    const sc=tr.querySelector('[data-campo="scan"]')?.value||"0";
+    const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";
+    filas.push(`${c.codigo};${serie};${n};${co};${sc};${a3}`);});
+  return`ECOLOIMP - CONTEO\n
+  Cliente: ${c.codigo} - ${c.nombre} (${total} imp.)\n
+  Fecha: ${$("ctFecha")?.value}\n\n
+  ${filas.join("\n")||"(Sin contadores)"}\n\n
+  Firma: ${$("ctNombreFirma")?.value||"Cliente"} Firma: ${firmaDibujadaCt?"SI":"NO"}`;}
 
 async function guardarVisitaPDFCompleto(){
   const c=selectedClientVisita("vtCliente"); const p=DB.visitaPrinter;
@@ -346,10 +362,10 @@ async function guardarConteoPDFCompleto(){
     if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,8,35,14); }catch{}
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFontSize(12); doc.setFont(undefined,"bold");
-    doc.text("CONTEO DE IMPRESIONES", 45, 11);
-    doc.setFontSize(7.5); doc.setFont(undefined,"normal");
-    doc.text(`Cliente: ${c.codigo} - ${c.nombre.substring(0,55)}`, 45, 16);
-    doc.text(`Fecha: ${$("ctFecha")?.value||""} ${$("ctHora")?.value||""} | Equipos: ${impresorasConteo.length}`, 45, 19);
+    doc.text("CONTEO DE IMPRESIONES", 60, 11);
+    doc.setFontSize(9); doc.setFont(undefined,"normal");
+    doc.text(`Cliente: ${c.codigo} - ${c.nombre.substring(0,55)}`, 60, 16);
+    doc.text(`Fecha: ${$("ctFecha")?.value||""} ${$("ctHora")?.value||""} | Equipos: ${impresorasConteo.length}`, 60, 19);
   }
 
   drawHeader();
@@ -401,7 +417,7 @@ async function guardarConteoPDFCompleto(){
     doc.setTextColor(0,0,0); // NEGRO
     r.forEach((val,i)=>{
       doc.rect(x,y,colW[i],6,"S");
-      doc.text(String(val).substring(0,15), i>=5? x+colW[i]/2 : x+1, y+4, {align:i>=6?"right":"left"});
+      doc.text(String(val).substring(0,15), i>=5? x+colW[i]/2 : x+1, y+4, {align:i>=5?"right":"left"});
       x+=colW[i];
     });
     y+=6;
@@ -437,7 +453,7 @@ async function guardarConteoPDFCompleto(){
     doc.setPage(i);
     doc.setFontSize(6); doc.setTextColor(0,0,0);
     doc.setDrawColor(180); doc.line(10, pageH-10, pageW-10, pageH-10);
-    doc.text(`© 2026 DT Soluciones Informaticas | Generado desde ECOLOIMP Web | ${c.codigo}`, 10, pageH-5);
+    doc.text(`© 2026 DT Soluciones Informaticas           Generado desde ECOLOIMP Web`, 10, pageH-5);
     doc.text(`Pag ${i}/${totalPages}`, pageW-10, pageH-5, {align:"right"});
   }
   doc.save(`CONTEO ${c.codigo} ${$("ctFecha")?.value||""}.pdf`);
