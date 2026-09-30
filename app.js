@@ -380,9 +380,9 @@ async function guardarConteoPDFCompleto(){
     return [
       (p.bodega||"").substring(0,10),
       (p.modelo||"").substring(0,30),
-      serie.substring(0,18),
+      (p.serie||"").substring(0,18),
       (p.sede||"").substring(0,14),
-      (p.area||"").substring(0,14),
+      (p.ubicacion||"").substring(0,14),
       fmt(datos[serie].negro),
       fmt(datos[serie].color),
       fmt(datos[serie].scan),
@@ -401,7 +401,7 @@ async function guardarConteoPDFCompleto(){
     doc.setTextColor(0,0,0); // NEGRO
     r.forEach((val,i)=>{
       doc.rect(x,y,colW[i],6,"S");
-      doc.text(String(val).substring(0,15), i>=5? x+colW[i]/2 : x+1, y+4, {align:i>=5?"center":"left"});
+      doc.text(String(val).substring(0,15), i>=5? x+colW[i]/2 : x+1, y+4, {align:i>=6?"right":"left"});
       x+=colW[i];
     });
     y+=6;
