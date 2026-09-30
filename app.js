@@ -339,6 +339,7 @@ async function guardarConteoPDFCompleto(){
   const pageH = doc.internal.pageSize.getHeight();
 
   function drawHeader(){
+    doc.setFillColor(255,255,255);
     doc.rect(0,0,pageW,22,"F");
     if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,4,30,12); }catch{}
     doc.setTextColor(0,0,0); // NEGRO
@@ -357,11 +358,12 @@ async function guardarConteoPDFCompleto(){
 
   function drawTableHeader(yy){
     let x=10;
-    doc.setTextColor(0,0,0); // NEGRO
+    doc.setTextColor(0,0,0);
     doc.setFont(undefined,"bold"); doc.setFontSize(6.5);
+    doc.setDrawColor(0,0,0);
     headers.forEach((h,i)=>{
-      doc.rect(x,yy,colW[i],6,"F");
-      doc.rect(x,yy,colW[i],6,"S");
+      doc.setFillColor(255,255,255); // BLANCO
+      doc.rect(x,yy,colW[i],6,"FD"); // FD = Fill blanco + Borde negro
       doc.text(h, x+colW[i]/2, yy+4, {align:"center"});
       x+=colW[i];
     });
@@ -410,10 +412,11 @@ async function guardarConteoPDFCompleto(){
     s:a.s+datos[s].scan, a3:a.a3+datos[s].a3
   }), {n:0,c:0,s:0,a3:0});
 
+  doc.setFillColor(255,255,255);
+  doc.setDrawColor(0,0,0);
   doc.setTextColor(0,0,0);
   doc.setFont(undefined,"bold"); doc.setFontSize(7);
-  doc.rect(10,y,tableW,7,"F");
-  doc.rect(10,y,tableW,7,"S");
+  doc.rect(10,y,tableW,7,"FD");
   doc.text(`TOT: N:${fmt(totRaw.n)} C:${fmt(totRaw.c)} S:${fmt(totRaw.s)} A3:${fmt(totRaw.a3)} EQ:${rows.length}`, 12, y+4.5);
   y+=13;
 
