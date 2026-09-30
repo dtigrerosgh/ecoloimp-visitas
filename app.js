@@ -339,7 +339,7 @@ async function guardarConteoPDFCompleto(){
   const pageH = doc.internal.pageSize.getHeight();
 
   function drawHeader(){
-    doc.setFillColor(245,247,248); // fondo claro para que texto negro se vea
+    //doc.setFillColor(245,247,248); // fondo claro para que texto negro se vea
     doc.rect(0,0,pageW,22,"F");
     if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,4,30,12); }catch{}
     doc.setTextColor(0,0,0); // NEGRO
@@ -358,7 +358,7 @@ async function guardarConteoPDFCompleto(){
 
   function drawTableHeader(yy){
     let x=10;
-    doc.setFillColor(230,230,230); // gris claro, no color
+    //doc.setFillColor(230,230,230); // gris claro, no color
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFont(undefined,"bold"); doc.setFontSize(6.5);
     headers.forEach((h,i)=>{
