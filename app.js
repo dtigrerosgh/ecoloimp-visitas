@@ -417,8 +417,8 @@ async function guardarConteoPDFCompleto(){
       (p.serie||"").substring(0,25),
       (p.sede||"").substring(0,25),
       (p.ubicacion||"").substring(0,30),
-      (fmt(datos[serie].negro).substring(0,15),
-      (fmt(datos[serie].color).substring(0,15),
+      fmt(datos[serie].negro),
+      fmt(datos[serie].color),
       fmt(datos[serie].scan),
       fmt(datos[serie].a3)
     ];
