@@ -55,7 +55,7 @@ function updateVisitaPrinterTable(){
         <td data-label="Modelo">${p.modelo||''}</td>
         <td data-label="Serie">${p.serie}</td>
         <td data-label="Sucursal">${p.sede||''}</td>
-        <td data-label="Area"><span>${p.ubicacion||''</span></td>
+        <td data-label="Area"><span>${p.ubicacion||''}</span></td>
         <td data-label="Ubic">${p.ip||''}</td>
         <td data-label="Bodega">${p.bodega||''}</td>
       </tr>`;
@@ -72,7 +72,7 @@ function updateVisitaPrinterTable(){
         <div><small>Serie</small><strong>${esc(p.serie)}</strong></div>
         <div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div>
         <div><small>Área</small><strong>${esc(p.ubicacion)}</strong></div>
-        <div><small>Ubicación / IP</small><strong>${esc(p.ip)}</strong></div>
+        <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
         <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
         <div><small>Cliente</small><strong>${c ? esc(c.codigo+" · "+c.nombre) : "-"} (${total} imp.)</strong></div>`;
     } else if(c){
@@ -562,7 +562,7 @@ async function init(){
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
 }
 document.addEventListener("DOMContentLoaded",init);
-});
+
 
 // MENU QUE NO SE CAE
 const btn = document.getElementById('menuToggle');
