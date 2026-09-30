@@ -410,7 +410,6 @@ async function guardarConteoPDFCompleto(){
     s:a.s+datos[s].scan, a3:a.a3+datos[s].a3
   }), {n:0,c:0,s:0,a3:0});
 
-  doc.setFillColor(255,255,255);
   doc.setTextColor(0,0,0);
   doc.setFont(undefined,"bold"); doc.setFontSize(7);
   doc.rect(10,y,tableW,7,"F");
