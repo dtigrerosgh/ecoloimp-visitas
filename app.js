@@ -348,9 +348,11 @@ const coordenadaY = altoPagina - margenInferior;
   doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
 }
 
-// GRABA CONTEO
+// GRABA CONTEO DE IMPRESIONES
 async function guardarConteoPDFCompleto(){
-  const fmt = (n) => (parseInt(String(n).replace(/\./g,''))||0).toLocaleString('es-EC');  
+  const fmt = (n) => (
+    parseInt(String(n).replace(/\./g,''))||0).toLocaleString('es-EC')
+    ;  
   const clientCode = $("ctCliente")?.value;
   const c = DB.clientes.find(x=>x.codigo===clientCode);
   if(!c){ showMessage("ctMessage","Seleccione cliente",true); return; }
@@ -386,14 +388,14 @@ async function guardarConteoPDFCompleto(){
 
   drawHeader();
   let y = 28;
-  const colW = [10, 40, 20, 25, 25, 15, 15, 15, 15];
+  const colW = [10, 40, 25, 25, 25, 15, 15, 15, 15];
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
   function drawTableHeader(yy){
     let x=10;
     doc.setTextColor(0,0,0);
-    doc.setFont("Arial","bold"); doc.setFontSize(8);
+    doc.setFont("Arial","bold"); doc.setFontSize(7);
     doc.setDrawColor(0,0,0);
     headers.forEach((h,i)=>{
       doc.setFillColor(255,255,255); // BLANCO
@@ -412,7 +414,7 @@ async function guardarConteoPDFCompleto(){
     return [
       (p.bodega||"").substring(0,10),
       (p.modelo||"").substring(0,40),
-      (p.serie||"").substring(0,20),
+      (p.serie||"").substring(0,25),
       (p.sede||"").substring(0,25),
       (p.ubicacion||"").substring(0,25),
       fmt(datos[serie].negro),
