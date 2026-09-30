@@ -388,14 +388,15 @@ async function guardarConteoPDFCompleto(){
 
   drawHeader();
   let y = 28;
-  const colW = [10, 40, 25, 25, 30, 15, 15, 15, 15];
+  const colW = [10, 28, 26, 20, 50, 14, 14, 14, 14]; // AREA 50mm
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
   function drawTableHeader(yy){
     let x=10;
     doc.setTextColor(0,0,0);
-    doc.setFont("Arial","bold"); doc.setFontSize(7);
+    doc.setFont("Arial","bold"); 
+    doc.setFontSize(8);
     doc.setDrawColor(0,0,0);
     headers.forEach((h,i)=>{
       doc.setFillColor(255,255,255); // BLANCO
@@ -412,11 +413,11 @@ async function guardarConteoPDFCompleto(){
   const rows = impresorasConteo.map(serie=>{
     const p = DB.impresoras.find(x=>x.serie===serie) || {};
     return [
-      (p.bodega||"").substring(0,10),
-      (p.modelo||"").substring(0,40),
-      (p.serie||"").substring(0,25),
-      (p.sede||"").substring(0,25),
-      (p.ubicacion||"").substring(0,30),
+      (p.bodega||""),
+      (p.modelo||""),
+      serie,
+      (p.sede||p.sucursal||""),
+      areaReal.trim(),
       fmt(datos[serie].negro),
       fmt(datos[serie].color),
       fmt(datos[serie].scan),
@@ -424,22 +425,26 @@ async function guardarConteoPDFCompleto(){
     ];
   });
 
-  rows.forEach((r, idx)=>{
-    if(y > pageH-28){
-      doc.addPage(); drawHeader(); y=28; y=drawTableHeader(y);
-    }
+  rows.forEach((r)=>{
+    doc.setFontSize(8); // <--- 8 AQUI
+    const areaLines = doc.splitTextToSize(r[4], colW[4]-2);
+    const rowH = Math.max(7, areaLines.length * 4 + 3);
+
+    if(y + rowH > pageH-28){ doc.addPage(); drawHeader(); y=28; y=drawTableHeader(y); }
+
     let x=10;
-    if(idx%2===0){ doc.setFillColor(248,248,248); doc.rect(10,y,tableW,6,"F"); }
-    doc.setDrawColor(180);
-    doc.setFontSize(8);
-    doc.setTextColor(0,0,0); // NEGRO
+    doc.setDrawColor(0,0,0); doc.setTextColor(0,0,0);
     r.forEach((val,i)=>{
-      doc.rect(x,y,colW[i],6,"S");
-      //doc.text(String(val).substring(0,15), i>=5? x+colW[i]/2 : x+1, y+4, {align:i>=5?"right":"left"});
-      doc.text(String(val).substring(0,20), i>=5? x+colW[i] : x+1, y+4, {align:i>=5?"right":"left"});
+      doc.setFillColor(255,255,255);
+      doc.rect(x,y,colW[i],rowH,"FD");
+      if(i===4){
+        doc.text(areaLines, x+1, y+4.5);
+      } else {
+        doc.text(String(val), i>=5? x+colW[i]/2 : x+1, y+5, {align:i>=5?"center":"left"});
+      }
       x+=colW[i];
     });
-    y+=6;
+    y+=rowH;
   });
 
   // Totales
