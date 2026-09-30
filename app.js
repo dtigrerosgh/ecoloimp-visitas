@@ -436,7 +436,7 @@ async function guardarConteoPDFCompleto(){
     r.forEach((val,i)=>{
       doc.rect(x,y,colW[i],6,"S");
       //doc.text(String(val).substring(0,15), i>=5? x+colW[i]/2 : x+1, y+4, {align:i>=5?"right":"left"});
-      doc.text(String(val).substring(0,15), i>=5? x+1 : x+1, y+4, {align:i>=5?"right":"left"});
+      doc.text(String(val).substring(0,20), i>=5? x+colW[i] : x+1, y+4, {align:i>=5?"right":"left"});
       x+=colW[i];
     });
     y+=6;
