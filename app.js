@@ -318,7 +318,7 @@ const coordenadaY = altoPagina - margenInferior;
 
 // GRABA CONTEO
 async function guardarConteoPDFCompleto(){
-  const fmt = (n) => (parseInt(n)||0).toLocaleString('es-EC'); // 1.250
+  const fmt = (n) => (parseInt(String(n).replace(/\./g,''))||0).toLocaleString('es-EC');  
   const clientCode = $("ctCliente")?.value;
   const c = DB.clientes.find(x=>x.codigo===clientCode);
   if(!c){ showMessage("ctMessage","Seleccione cliente",true); return; }
@@ -339,7 +339,6 @@ async function guardarConteoPDFCompleto(){
   const pageH = doc.internal.pageSize.getHeight();
 
   function drawHeader(){
-    //doc.setFillColor(245,247,248); // fondo claro para que texto negro se vea
     doc.rect(0,0,pageW,22,"F");
     if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,4,30,12); }catch{}
     doc.setTextColor(0,0,0); // NEGRO
@@ -352,13 +351,12 @@ async function guardarConteoPDFCompleto(){
 
   drawHeader();
   let y = 28;
-  const colW = [10, 40, 30, 25, 25, 16, 16, 16, 16];
+  const colW = [10, 40, 30, 25, 25, 15, 15, 15, 15];
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
   function drawTableHeader(yy){
     let x=10;
-    //doc.setFillColor(230,230,230); // gris claro, no color
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFont(undefined,"bold"); doc.setFontSize(6.5);
     headers.forEach((h,i)=>{
@@ -379,8 +377,8 @@ async function guardarConteoPDFCompleto(){
       (p.bodega||"").substring(0,10),
       (p.modelo||"").substring(0,30),
       serie.substring(0,18),
-      (p.sede||"").substring(0,12),
-      (p.area||"").substring(0,12),
+      (p.sede||"").substring(0,14),
+      (p.area||"").substring(0,14),
       fmt(datos[serie].negro),
       fmt(datos[serie].color),
       fmt(datos[serie].scan),
@@ -407,17 +405,17 @@ async function guardarConteoPDFCompleto(){
 
   // Totales
   if(y > pageH-35){ doc.addPage(); drawHeader(); y=28; }
-  const tot = rows.reduce((a,r)=>({
-    n:a.n+parseInt(r[5]||0), c:a.c+parseInt(r[6]||0),
-    s:a.s+parseInt(r[7]||0), a3:a.a3+parseInt(r[8]||0)
+  const totRaw = impresorasConteo.reduce((a,s)=>({
+    n:a.n+datos[s].negro, c:a.c+datos[s].color,
+    s:a.s+datos[s].scan, a3:a.a3+datos[s].a3
   }), {n:0,c:0,s:0,a3:0});
 
-  doc.setFillColor(220,220,220);
-  doc.setTextColor(0,0,0); // NEGRO
+  doc.setFillColor(255,255,255);
+  doc.setTextColor(0,0,0);
   doc.setFont(undefined,"bold"); doc.setFontSize(7);
   doc.rect(10,y,tableW,7,"F");
   doc.rect(10,y,tableW,7,"S");
-  doc.text(`TOT: N:${tot.n} C:${tot.c} S:${tot.s} A3:${tot.a3} EQ:${rows.length}`, 12, y+4.5);
+  doc.text(`TOT: N:${fmt(totRaw.n)} C:${fmt(totRaw.c)} S:${fmt(totRaw.s)} A3:${fmt(totRaw.a3)} EQ:${rows.length}`, 12, y+4.5);
   y+=13;
 
   // Firma
@@ -430,15 +428,14 @@ async function guardarConteoPDFCompleto(){
   doc.text($("ctNombreFirma")?.value||"Firma", 12, y+13);
 
   // --- FOOTER CON PAGINA X DE Y EN TODAS LAS PAGINAS ---
-    const totalPages = doc.internal.getNumberOfPages();
+  const totalPages = doc.internal.getNumberOfPages();
   for(let i=1; i<=totalPages; i++){
     doc.setPage(i);
-    doc.setFontSize(6); doc.setTextColor(0,0,0); // NEGRO
+    doc.setFontSize(6); doc.setTextColor(0,0,0);
     doc.setDrawColor(180); doc.line(10, pageH-10, pageW-10, pageH-10);
-    doc.text(`© 2026 DT Soluciones Informaticas          Generado desde ECOLOIMP Web, 10, pageH-5);
+    doc.text(`© 2026 DT Soluciones Informaticas | Generado desde ECOLOIMP Web | ${c.codigo}`, 10, pageH-5);
     doc.text(`Pag ${i}/${totalPages}`, pageW-10, pageH-5, {align:"right"});
   }
-
   doc.save(`CONTEO ${c.codigo} ${$("ctFecha")?.value||""}.pdf`);
   showMessage("ctMessage",`PDF generado: ${totalPages} página(s)`);
 }
