@@ -458,13 +458,18 @@ async function guardarConteoPDFCompleto(){
   y+=13;
 
   // Firma
+
+  doc.setFont(undefined,'bold'); 
+  doc.text("FIRMA DE CONFORMIDAD", 10, y); 
+
+  
   const firmaData = (()=>{ try{ return (typeof firmaDibujadaCt!== 'undefined' && firmaDibujadaCt)? $("ctFirmaCanvas").toDataURL("image/png"):null;}catch{return null;} })();
   doc.setTextColor(0,0,0); // NEGRO
   doc.setDrawColor(0,0,0);
-  doc.line(10,y+10,60,y+10);
+  doc.line(10,y+11,60,y+11);
   if(firmaData) try{ doc.addImage(firmaData,"PNG",10,y-2,50,14);}catch{}
   doc.setFontSize(8); doc.setFont("Arial","normal");
-  doc.text($("ctNombreFirma")?.value||"Firma", 12, y+13);
+  doc.text($("ctNombreFirma")?.value||"Firma", 12, y+14);
 
   // --- FOOTER CON PAGINA X DE Y EN TODAS LAS PAGINAS ---
   const totalPages = doc.internal.getNumberOfPages();
