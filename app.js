@@ -51,13 +51,13 @@ function updateVisitaPrinterTable(){
       const isSel = p.serie === selectedSerie;
       return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
         <td><button type="button" data-select-printer="${esc(p.serie)}">${isSel?'✓ Seleccionada':'Seleccionar'}</button></td>
-        <td>${esc(p.codigo)}</td>
-        <td>${esc(p.modelo)}</td>
-        <td>${esc(p.serie)}</td>
-        <td>${esc(p.sede)}</td>
-        <td>${esc(p.ubicacion)}</td>
-        <td>${esc(p.ip)}</td>
-        <td>${esc(p.bodega)}</td>
+        <td data-label="Código">${p.codigo||''}</td>
+        <td data-label="Modelo">${p.modelo||''}</td>
+        <td data-label="Serie">${p.serie}</td>
+        <td data-label="Sucursal">${p.sede||''}</td>
+        <td data-label="Area"><span>${p.ubicacion||''</span></td>
+        <td data-label="Ubic">${p.ip||''}</td>
+        <td data-label="Bodega">${p.bodega||''}</td>
       </tr>`;
     }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
   }
