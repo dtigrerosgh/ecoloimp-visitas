@@ -329,9 +329,11 @@ async function guardarConteoPDFCompleto(){
     acc[serie][inp.dataset.campo] = parseInt(inp.value)||0;
     return acc;
   },{});
-  const impresorasConteo = Object.keys(datos).filter(s=> datos[s].negro>0||datos[s].color>0||datos[s].scan>0||datos[s].a3>0 );
-  if(impresorasConteo.length===0){ showMessage("ctMessage","Ingrese al menos un conteo",true); return; }
-
+  // const impresorasConteo = Object.keys(datos).filter(s=> datos[s].negro>0||datos[s].color>0||datos[s].scan>0||datos[s].a3>0 );
+  // CAMBIO: TODAS, tengan o no conteo
+  const impresorasConteo = Object.keys(datos);
+  if(impresorasConteo.length===0){ showMessage("ctMessage","No hay impresoras para este cliente",true); return; }
+  
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({orientation:"portrait", unit:"mm", format:"a4"});
   const logoBase64 = await getLogoBase64().catch(()=>null);
@@ -341,7 +343,7 @@ async function guardarConteoPDFCompleto(){
   function drawHeader(){
     doc.setFillColor(255,255,255);
     doc.rect(0,0,pageW,22,"F");
-    if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,4,30,12); }catch{}
+    if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,8,35,14); }catch{}
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFontSize(12); doc.setFont(undefined,"bold");
     doc.text("CONTEO DE IMPRESIONES", 45, 11);
