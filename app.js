@@ -562,3 +562,6 @@ async function init(){
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
 }
 document.addEventListener("DOMContentLoaded",init);
+document.getElementById('menuToggle')?.addEventListener('click',()=>{
+  document.getElementById('mainNav').classList.toggle('open');
+});
