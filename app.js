@@ -51,13 +51,13 @@ function updateVisitaPrinterTable(){
       const isSel = p.serie === selectedSerie;
       return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
         <td><button type="button" data-select-printer="${esc(p.serie)}">${isSel?'✓ Seleccionada':'Seleccionar'}</button></td>
-        <tddata-label="Código">${esc(p.codigo)}</td>
-        <tddata-label="Modelo">${esc(p.modelo)}</td>
-        <tddata-label="Serie">${esc(p.serie)}</td>
-        <tddata-label="Sucursal">${esc(p.sede)}</td>
-        <tddata-label="Area">${esc(p.ubicacion)}</td>
-        <tddata-label="Ubicacion">${esc(p.ip)}</td>
-        <tddata-label="Bodega">${esc(p.bodega)}</td>
+        <td>${esc(p.codigo)}</td>
+        <td>${esc(p.modelo)}</td>
+        <td>${esc(p.serie)}</td>
+        <td>${esc(p.sede)}</td>
+        <td>${esc(p.ubicacion)}</td>
+        <td>${esc(p.ip)}</td>
+        <td>${esc(p.bodega)}</td>
       </tr>`;
     }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
   }
@@ -91,15 +91,15 @@ function updateConteoPrinterTable(){
   const total=DB.impresoras.filter(p=>p.cliente===client).length;
   console.log("CONTEO cliente:",client,"total:",total,"mostrando:",rows.length);
   if($("conteoBody"))$("conteoBody").innerHTML=rows.length?rows.map(p=>`<tr data-serie="${esc(p.serie)}">
-  <td data-label="Bodega">${esc(p.bodega)}</td>
-  <td data-label="Impresora">${esc(p.modelo)}</td>
-  <td data-label="Serie">${esc(p.serie)}</td>
-  <td data-label="Sucursal">${esc(p.sede)}</td>
-  <td data-label="Area">${esc(p.ubicacion)}</td>
-  <td data-label="Negro"><input type="number" data-campo="negro" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
-  <td data-label="Color"><input type="number" data-campo="color" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
-  <td data-label="Escaneo"><input type="number" data-campo="scan" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
-  <td data-label="A3"><input type="number" data-campo="a3" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
+  <td>${esc(p.bodega)}</td>
+  <td>${esc(p.modelo)}</td>
+  <td>${esc(p.serie)}</td>
+  <td>${esc(p.sede)}</td>
+  <td>${esc(p.ubicacion)}</td>
+  <td><input type="number" data-campo="negro" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
+  <td><input type="number" data-campo="color" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
+  <td><input type="number" data-campo="scan" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
+  <td><input type="number" data-campo="a3" data-serie="${esc(p.serie)}" value="0" style="width:80px"></td>
   </tr>`).join(""):`<tr><td colspan="8">${client?"Cliente sin impresoras - revisa impresoras.txt":"Seleccione cliente en Conteo"}</td></tr>`;
 }
 
