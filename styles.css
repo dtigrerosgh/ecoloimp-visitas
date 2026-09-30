@@ -89,7 +89,9 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
   .data-table td{display:flex;justify-content:space-between;align-items:center;border:none !important;padding:11px 0 !important;font-size:14px;gap:12px}
   .data-table td::before{content:attr(data-label);font-weight:800;font-size:11px;color:var(--muted);text-transform:uppercase;flex-shrink:0}
   .data-table td input{width:60% !important;min-height:44px;font-size:16px !important;text-align:right}
-  
+  td::before{
+  content: attr(data-label); /* lee lo que pongas en data-label */
+}
   td[data-label="Area"] span, td[data-label="AREA"] span{white-space:normal !important;word-break:break-word;text-align:right;max-width:60%;font-size:13px}
   
   .actions .btn{width:100%;min-height:48px}
