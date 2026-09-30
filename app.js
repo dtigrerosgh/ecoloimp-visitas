@@ -388,7 +388,7 @@ async function guardarConteoPDFCompleto(){
 
   drawHeader();
   let y = 28;
-  const colW = [10, 40, 25, 25, 25, 15, 15, 15, 15];
+  const colW = [10, 40, 25, 25, 30, 15, 15, 15, 15];
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
@@ -416,9 +416,9 @@ async function guardarConteoPDFCompleto(){
       (p.modelo||"").substring(0,40),
       (p.serie||"").substring(0,25),
       (p.sede||"").substring(0,25),
-      (p.ubicacion||"").substring(0,25),
-      fmt(datos[serie].negro),
-      fmt(datos[serie].color),
+      (p.ubicacion||"").substring(0,30),
+      (fmt(datos[serie].negro).substring(0,15),
+      (fmt(datos[serie].color).substring(0,15),
       fmt(datos[serie].scan),
       fmt(datos[serie].a3)
     ];
