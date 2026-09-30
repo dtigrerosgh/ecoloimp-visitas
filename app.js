@@ -318,6 +318,7 @@ const coordenadaY = altoPagina - margenInferior;
 
 // GRABA CONTEO
 async function guardarConteoPDFCompleto(){
+  const fmt = (n) => (parseInt(n)||0).toLocaleString('es-EC'); // 1.250
   const clientCode = $("ctCliente")?.value;
   const c = DB.clientes.find(x=>x.codigo===clientCode);
   if(!c){ showMessage("ctMessage","Seleccione cliente",true); return; }
@@ -351,7 +352,7 @@ async function guardarConteoPDFCompleto(){
 
   drawHeader();
   let y = 28;
-  const colW = [14, 24, 28, 24, 24, 14, 14, 14, 12];
+  const colW = [10, 40, 30, 25, 25, 16, 16, 16, 16];
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
@@ -376,14 +377,14 @@ async function guardarConteoPDFCompleto(){
     const p = DB.impresoras.find(x=>x.serie===serie) || {};
     return [
       (p.bodega||"").substring(0,10),
-      (p.modelo||"").substring(0,14),
-      serie.substring(0,16),
+      (p.modelo||"").substring(0,30),
+      serie.substring(0,18),
       (p.sede||"").substring(0,12),
       (p.area||"").substring(0,12),
-      String(datos[serie].negro),
-      String(datos[serie].color),
-      String(datos[serie].scan),
-      String(datos[serie].a3)
+      fmt(datos[serie].negro),
+      fmt(datos[serie].color),
+      fmt(datos[serie].scan),
+      fmt(datos[serie].a3)
     ];
   });
 
@@ -423,10 +424,10 @@ async function guardarConteoPDFCompleto(){
   const firmaData = (()=>{ try{ return (typeof firmaDibujadaCt!== 'undefined' && firmaDibujadaCt)? $("ctFirmaCanvas").toDataURL("image/png"):null;}catch{return null;} })();
   doc.setTextColor(0,0,0); // NEGRO
   doc.setDrawColor(0,0,0);
-  doc.line(10,y+8,60,y+8);
+  doc.line(10,y+10,60,y+10);
   if(firmaData) try{ doc.addImage(firmaData,"PNG",10,y-2,50,14);}catch{}
   doc.setFontSize(7); doc.setFont(undefined,"normal");
-  doc.text($("ctNombreFirma")?.value||"Firma", 12, y+11);
+  doc.text($("ctNombreFirma")?.value||"Firma", 12, y+13);
 
   // --- FOOTER CON PAGINA X DE Y EN TODAS LAS PAGINAS ---
     const totalPages = doc.internal.getNumberOfPages();
@@ -434,7 +435,7 @@ async function guardarConteoPDFCompleto(){
     doc.setPage(i);
     doc.setFontSize(6); doc.setTextColor(0,0,0); // NEGRO
     doc.setDrawColor(180); doc.line(10, pageH-10, pageW-10, pageH-10);
-    doc.text(`DT Soluciones - ECOLOIMP | ${c.codigo}`, 10, pageH-5);
+    doc.text(`© 2026 DT Soluciones Informaticas          Generado desde ECOLOIMP Web, 10, pageH-5);
     doc.text(`Pag ${i}/${totalPages}`, pageW-10, pageH-5, {align:"right"});
   }
 
