@@ -562,6 +562,22 @@ async function init(){
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
 }
 document.addEventListener("DOMContentLoaded",init);
-document.getElementById('menuToggle')?.addEventListener('click',()=>{
-  document.getElementById('mainNav').classList.toggle('open');
+});
+
+// MENU QUE NO SE CAE
+const btn = document.getElementById('menuToggle');
+const nav = document.getElementById('mainNav');
+
+btn?.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  nav.classList.toggle('open');
+  btn.textContent = nav.classList.contains('open') ? '✕' : '☰';
+});
+
+// cerrar al hacer click en un link
+document.querySelectorAll('.main-nav a').forEach(a=>{
+  a.addEventListener('click', ()=>{
+    nav.classList.remove('open');
+    btn.textContent = '☰';
+  });
 });
