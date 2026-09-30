@@ -352,7 +352,7 @@ async function guardarConteoPDFCompleto(){
   drawHeader();
   let y = 28;
   const colW = [22, 20, 28, 22, 18, 18, 18, 12];
-  const headers = ["CODIGO","MODELO","SERIE","SUCURSAL","NEGRO","COLOR","SCAN","A3"];
+  const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
   function drawTableHeader(yy){
