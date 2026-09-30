@@ -213,7 +213,23 @@ function buildConteoText(){
   Cliente: ${c.codigo} - ${c.nombre} (${total} imp.)\n
   Fecha: ${$("ctFecha")?.value}\n\n
   ${filas.join("\n")||"(Sin contadores)"}\n\n
-  Firma: ${$("ctNombreFirma")?.value||"Cliente"} Firma: ${firmaDibujadaCt?"SI":"NO"}`;}
+
+✍️ CONFORMIDAD
+• Firmado por: ${$("ctNombreFirma")?.value || "Cliente"}
+• Firma digital: ${firmaDibujadaCt ? "Sí, registrada en PDF" : "No registrada"}  
+
+  Se adjuntan en la descarga automática:
+• Reporte en PDF con firma
+• Respaldo en TXT
+
+Gracias por confiar en ECOLOIMP.
+
+Atentamente,
+Departamento Técnico
+ECOLOIMP S.A.
+${$("pgCorreo")?.value || gcorreo}
+www.ecoloimp.com.ec`
+    ;}
 
 async function guardarVisitaPDFCompleto(){
   const c=selectedClientVisita("vtCliente"); const p=DB.visitaPrinter;
@@ -361,23 +377,23 @@ async function guardarConteoPDFCompleto(){
     doc.rect(0,0,pageW,22,"F");
     if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,8,35,14); }catch{}
     doc.setTextColor(0,0,0); // NEGRO
-    doc.setFontSize(12); doc.setFont(undefined,"bold");
+    doc.setFontSize(12); doc.setFont("Arial","bold");
     doc.text("CONTEO DE IMPRESIONES", 60, 11);
-    doc.setFontSize(9); doc.setFont(undefined,"normal");
+    doc.setFontSize(9); doc.setFont("Arial","normal");
     doc.text(`Cliente: ${c.codigo} - ${c.nombre.substring(0,55)}`, 60, 16);
-    doc.text(`Fecha: ${$("ctFecha")?.value||""} ${$("ctHora")?.value||""} | Equipos: ${impresorasConteo.length}`, 60, 19);
+    doc.text(`Fecha: ${$("ctFecha")?.value||""} ${$("ctHora")?.value||""} | Equipos: ${impresorasConteo.length}`, 60, 20);
   }
 
   drawHeader();
   let y = 28;
-  const colW = [10, 40, 30, 25, 25, 15, 15, 15, 15];
+  const colW = [10, 40, 20, 25, 25, 15, 15, 15, 15];
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
   function drawTableHeader(yy){
     let x=10;
     doc.setTextColor(0,0,0);
-    doc.setFont(undefined,"bold"); doc.setFontSize(6.5);
+    doc.setFont("Arial","bold"); doc.setFontSize(8);
     doc.setDrawColor(0,0,0);
     headers.forEach((h,i)=>{
       doc.setFillColor(255,255,255); // BLANCO
@@ -385,7 +401,7 @@ async function guardarConteoPDFCompleto(){
       doc.text(h, x+colW[i]/2, yy+4, {align:"center"});
       x+=colW[i];
     });
-    doc.setFont(undefined,"normal");
+    doc.setFont("Arial","normal");
     return yy+6;
   }
   
@@ -395,10 +411,10 @@ async function guardarConteoPDFCompleto(){
     const p = DB.impresoras.find(x=>x.serie===serie) || {};
     return [
       (p.bodega||"").substring(0,10),
-      (p.modelo||"").substring(0,30),
-      (p.serie||"").substring(0,18),
-      (p.sede||"").substring(0,14),
-      (p.ubicacion||"").substring(0,14),
+      (p.modelo||"").substring(0,40),
+      (p.serie||"").substring(0,20),
+      (p.sede||"").substring(0,25),
+      (p.ubicacion||"").substring(0,25),
       fmt(datos[serie].negro),
       fmt(datos[serie].color),
       fmt(datos[serie].scan),
@@ -413,11 +429,11 @@ async function guardarConteoPDFCompleto(){
     let x=10;
     if(idx%2===0){ doc.setFillColor(248,248,248); doc.rect(10,y,tableW,6,"F"); }
     doc.setDrawColor(180);
-    doc.setFontSize(6);
+    doc.setFontSize(8);
     doc.setTextColor(0,0,0); // NEGRO
     r.forEach((val,i)=>{
       doc.rect(x,y,colW[i],6,"S");
-      doc.text(String(val).substring(0,15), i>=5? x+colW[i]/2 : x+1, y+4, {align:i>=5?"right":"left"});
+      doc.text(String(val).substring(0,14), i>=5? x+colW[i]/2 : x+1, y+4, {align:i>=5?"right":"left"});
       x+=colW[i];
     });
     y+=6;
@@ -433,7 +449,7 @@ async function guardarConteoPDFCompleto(){
   doc.setFillColor(255,255,255);
   doc.setDrawColor(0,0,0);
   doc.setTextColor(0,0,0);
-  doc.setFont(undefined,"bold"); doc.setFontSize(7);
+  doc.setFont("Arial","bold"); doc.setFontSize(8);
   doc.rect(10,y,tableW,7,"FD");
   doc.text(`TOT: N:${fmt(totRaw.n)} C:${fmt(totRaw.c)} S:${fmt(totRaw.s)} A3:${fmt(totRaw.a3)} EQ:${rows.length}`, 12, y+4.5);
   y+=13;
@@ -444,7 +460,7 @@ async function guardarConteoPDFCompleto(){
   doc.setDrawColor(0,0,0);
   doc.line(10,y+10,60,y+10);
   if(firmaData) try{ doc.addImage(firmaData,"PNG",10,y-2,50,14);}catch{}
-  doc.setFontSize(7); doc.setFont(undefined,"normal");
+  doc.setFontSize(8); doc.setFont("Arial","normal");
   doc.text($("ctNombreFirma")?.value||"Firma", 12, y+13);
 
   // --- FOOTER CON PAGINA X DE Y EN TODAS LAS PAGINAS ---
