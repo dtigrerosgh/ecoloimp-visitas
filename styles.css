@@ -95,7 +95,7 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
 .contact-grid span{font-size:25px}
 .contact-grid small{display:block;color:var(--muted)}
 .contact-grid strong{display:block;margin-top:3px}
-.site-footer{background:#111827;color:white}
+.site-footer{background:#111827;color:white;margin-top:auto;width:100%;}
 .footer-inner{max-width:1250px;margin:auto;padding:18px 20px;display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap}.footer-data{color:white}
 
 
