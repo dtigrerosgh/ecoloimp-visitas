@@ -11,21 +11,26 @@
   --radius:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{height:100%}
+html{scroll-behavior:smooth}
 body{
+  margin:0
   font-family:Inter,system-ui,Arial;
   background:var(--bg);
   color:var(--ink);
   min-height:100vh;
   display:flex;
   flex-direction:column;
+  line-height:1.45;
+  overflow-x:hidden
 }
+
 .container, main{
   flex:1 0 auto;
   width:100%;
 }
 .page-section{display:none}.page-section.active{display:block;animation:fade .2s ease}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+button{cursor:pointer}
 
 /* HEADER */
 .site-header{position:sticky;top:0;z-index:50;background:var(--white);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
@@ -77,6 +82,7 @@ body{
 
 
 /* BOTONES Y FIRMA */
+
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
 .btn{border:0;border-radius:11px;padding:11px 17px;font-weight:800;transition:.15s;white-space:nowrap}
 .btn:hover{transform:translateY(-1px)}
