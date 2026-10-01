@@ -145,7 +145,7 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
 
 * RESPONSIVE */
 @media(max-width:1000px){
-  .stats-grid{grid-template-columns:repeat(3,1fr)}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
   .data-loader-grid{grid-template-columns:repeat(3,1fr)}
   .contact-grid{grid-template-columns:1fr}
   .hero{grid-template-columns:1fr}
