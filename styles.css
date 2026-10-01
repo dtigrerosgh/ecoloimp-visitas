@@ -58,7 +58,7 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
 .printer-details-card{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
 .printer-details-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:14px;flex-wrap:wrap}
 .printer-details-heading h3{margin:0;font-size:17px}.printer-details-heading span{font-size:12px;font-weight:800;color:var(--green-dark);background:#effff0;border:1px solid #bfeec2;padding:7px 10px;border-radius:999px}
-.printer-details-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.printer-details-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .printer-details-grid>div{border:1px solid #edf0f2;border-radius:10px;padding:11px;background:#fafbfb;min-width:0}
 .printer-details-grid small{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}.printer-details-grid strong{display:block;font-size:13px;overflow-wrap:anywhere}
 .saldo{font-weight:800;text-align:center}
