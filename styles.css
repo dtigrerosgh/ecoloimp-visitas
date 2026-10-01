@@ -220,7 +220,7 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
     background:#f8fafc!important;
     padding:12px!important;
     justify-content:center!important;
-  }
+  } 
   #vtPrinterBody td[data-label="Sel"]::before{display:none!important}
   #vtPrinterBody td[data-label="Sel"] button{
     width:100%!important;height:48px!important;
