@@ -150,8 +150,22 @@ function activateSection(id){
 }
 function setupNavigation(){
   const nav=$("mainNav"),btn=$("menuToggle");
-  document.querySelectorAll("[data-section]").forEach(el=>{el.addEventListener("click",e=>{e.preventDefault();activateSection(el.dataset.section);history.replaceState(null,"","#"+el.dataset.section);});});
-  if(btn&&nav){btn.addEventListener("click",e=>{e.stopPropagation();const open=nav.classList.toggle("open");btn.textContent=open?"✕":"☰";btn.setAttribute("aria-expanded",open?"true":"false");});}
+  document.querySelectorAll("[data-section]").forEach(el=>{
+    el.addEventListener("click",e=>{
+      e.preventDefault();
+      activateSection(el.dataset.section);
+      history.replaceState(null,"","#"+el.dataset.section);
+      nav?.classList.remove("open");
+      if(btn) btn.textContent="☰";
+    });
+  });
+  if(btn&&nav){
+    btn.addEventListener("click",e=>{
+      e.stopPropagation();
+      const open=nav.classList.toggle("open");
+      btn.textContent=open?"✕":"☰";
+    });
+  }
 }
 
 function selectedClientVisita(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
