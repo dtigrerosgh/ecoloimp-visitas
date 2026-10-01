@@ -66,13 +66,15 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
 
 /* BOTONES Y FIRMA */
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
-.btn{padding:12px 18px;border-radius:10px;border:0;font-weight:800;cursor:pointer;transition:.15s}
-.btn.primary{background:var(--green);color:var(--ink);border:1px solid var(--green-dark)}
-.btn.primary:hover{background:var(--green-dark);color:#fff}
-.btn.secondary{background:var(--white);border:1px solid var(--line)}
-.btn.ghost{background:transparent;border:1px dashed var(--line)}
+.btn{border:0;border-radius:11px;padding:11px 17px;font-weight:800;transition:.15s;white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:var(--green);color:#082b0a}
+.btn.secondary{background:var(--ink);color:white}
+.btn.ghost{background:white;color:var(--ink);border:1px solid var(--line)}.btn.full{width:100%}
 .signature-wrap{border:1px dashed var(--line);border-radius:var(--radius);padding:8px;background:var(--white)}
 .signature-wrap canvas{width:100%;max-width:100%;touch-action:none;background:#fff;border-radius:10px}
+
+
 
 /* HERO */
 .hero,.stats-grid,.data-loader-grid{display:grid;gap:12px;margin-bottom:14px}
