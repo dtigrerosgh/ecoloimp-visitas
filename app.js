@@ -10,6 +10,7 @@ const esc=s=>(s??"").toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','
 
 function splitLines(t){return t.replace(/^\uFEFF/,"").replace(/\r/g,"").split("\n").map(x=>x.trim()).filter(Boolean);}
 function parse(t){return splitLines(t).map(l=>l.split(";").map(v=>v.trim()));}
+
 const parseClientes=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
 const parseImpresoras=t=>parse(t).filter(r=>r.length>=2).map(r=>({cliente:r[0],codigo:r[1]||"",modelo:r[2]||"",serie:r[3]||"",sede:r[4]||"",ubicacion:r[5]||"",ip:r[6]||"",bodega:r[7]||""}));
 const parseTecnicos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
@@ -19,7 +20,15 @@ const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nom
 const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],nombre:r[2]||"",cantidad:Number((r[3]||"0").replace(",","."))||0}));
 
 async function loadFile(type,file,parser){
-  try{const r=await fetch("data/"+file+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;const b=await r.arrayBuffer();const txt=new TextDecoder("windows-1252").decode(b);DB[type]=parser(txt);console.log(file,DB[type].length);}catch{DB[type]=[];}
+  try{
+    const r=await fetch("data/"+file+"?v="+Date.now(),{cache:"no-store"});
+    if(!r.ok)throw 0;const b=await r.arrayBuffer();
+    const txt=new TextDecoder("windows-1252").decode(b);
+    DB[type]=parser(txt);console.log(file,DB[type].length);
+  }
+  catch{
+    DB[type]=[];
+  }
 }
 async function cargarUsuarios(){try{const r=await fetch("data/usuarios.txt?v="+Date.now(),{cache:"no-store"});const txt=await r.text();usuariosTXT=splitLines(txt).map(l=>{let[u,p]=l.split(";");return{user:u.trim(),pass:p.trim()};});}catch{usuariosTXT=[{user:"admin",pass:"admin"}];}}
 
@@ -558,11 +567,12 @@ async function init(){
   fillTrabajos();
   updateVisitaPrinterTable();
   updateConteoPrinterTable();
+  initFirma();
   activateSection((location.hash||"#bienvenido").slice(1));
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
 }
 document.addEventListener("DOMContentLoaded",init);
-
+init();
 
 // MENU QUE NO SE CAE
 const btn = document.getElementById('menuToggle');
