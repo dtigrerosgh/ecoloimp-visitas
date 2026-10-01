@@ -175,62 +175,57 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
   #menuToggle{ display:block; }
 }
 
-/* ===== FIX TABLA FILTRAR IMPRESORAS - TARJETA ===== */
+/* ULTIMO FIX - TARJETAS IMPRESORAS - v999 */
 @media (max-width: 768px){
-  #vtPrinterTable thead{display:none !important}
+  #vtPrinterTable{display:block!important;width:100%!important}
+  #vtPrinterTable thead{display:none!important}
+  #vtPrinterTable tbody{display:block!important;width:100%!important}
+  #vtPrinterBody{display:block!important;width:100%!important}
   
   #vtPrinterBody tr{
-    display:block !important;
-    border:1px solid #e2e8f0 !important;
-    border-radius:14px !important;
-    margin-bottom:12px !important;
-    padding:0 !important;
-    overflow:hidden !important;
-    background:#fff !important;
-    box-shadow:0 2px 8px rgba(0,0,0,.05) !important;
+    display:block!important;
+    width:calc(100% - 2px)!important;
+    margin:0 0 14px 0!important;
+    padding:0!important;
+    border:1px solid #e2e8f0!important;
+    border-radius:16px!important;
+    background:#fff!important;
+    box-shadow:0 4px 12px rgba(0,0,0,.06)!important;
+    overflow:hidden!important;
   }
-
   #vtPrinterBody td{
-    display:flex !important;
-    justify-content:space-between !important;
-    align-items:center !important;
-    padding:10px 14px !important;
-    border-bottom:1px solid #f1f5f9 !important;
-    font-size:13px !important;
+    display:flex!important;
+    flex-direction:row!important;
+    justify-content:space-between!important;
+    align-items:center!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    padding:12px 14px!important;
+    margin:0!important;
+    border:none!important;
+    border-bottom:1px solid #f1f5f9!important;
+    text-align:right!important;
+    font-size:13px!important;
+    gap:10px!important;
   }
   #vtPrinterBody td::before{
-    content:attr(data-label) !important;
-    display:block !important;
-    font-size:10px !important;
-    font-weight:800 !important;
-    color:#64748b !important;
-    text-transform:uppercase !important;
-    margin-right:10px !important;
+    content:attr(data-label)!important;
+    font-size:10px!important;
+    font-weight:800!important;
+    color:#64748b!important;
+    text-transform:uppercase!important;
+    text-align:left!important;
   }
-  
-  /* Botón arriba, ancho completo */
   #vtPrinterBody td[data-label="Sel"]{
-    background:#f8fafc !important;
-    border-bottom:1px solid #e2e8f0 !important;
-    padding:12px !important;
+    background:#f8fafc!important;
+    padding:12px!important;
+    justify-content:center!important;
   }
-  #vtPrinterBody td[data-label="Sel"]::before{display:none !important}
+  #vtPrinterBody td[data-label="Sel"]::before{display:none!important}
   #vtPrinterBody td[data-label="Sel"] button{
-    width:100% !important;
-    height:44px !important;
-    background:#00e50a !important;
-    color:#000 !important;
-    font-weight:800 !important;
-    border:0 !important;
-    border-radius:10px !important;
-  }
-  /* Cuando está seleccionada */
-  #vtPrinterBody tr.selected{
-    outline:2px solid #2563eb !important;
-    background:#eff6ff !important;
-  }
-  #vtPrinterBody tr.selected td[data-label="Sel"] button{
-    background:#2563eb !important;
-    color:#fff !important;
+    width:100%!important;height:48px!important;
+    background:#00e676!important;color:#000!important;
+    font-weight:900!important;font-size:15px!important;
+    border:none!important;border-radius:12px!important;
   }
 }
