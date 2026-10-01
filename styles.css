@@ -86,7 +86,8 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
 .stat-card span{display:block;color:var(--muted);font-size:13px}
 .stat-card strong{display:block;font-size:28px;margin-top:4px}
 
-.loader-card label{display:flex;flex-direction:column;gap:10px;font-weight:800}.loader-card input{font-weight:normal}
+.loader-card label{display:flex;flex-direction:column;gap:10px;font-weight:800}
+.loader-card input{font-weight:normal}
 .loader-card span{display:block;color:var(--muted);font-size:12px;margin-top:10px}
 .contact-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:30px;box-shadow:var(--shadow)}
 .contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:25px}
