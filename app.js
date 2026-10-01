@@ -50,7 +50,7 @@ function updateVisitaPrinterTable(){
     $("vtPrinterBody").innerHTML = rows.length ? rows.map(p=>{
       const isSel = p.serie === selectedSerie;
       return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
-        <td><button data-select-printer="${esc(p.serie)}">${isSel?'✓ Seleccionada':'Seleccionar'}</button></td>
+        <td><button class="btn primary" data-select-printer="${esc(p.serie)}">${isSel?'✓ Seleccionada':'Seleccionar'}</button></td>
         <td data-label="Código">${p.codigo||''}</td>
         <td data-label="Modelo">${p.modelo||''}</td>
         <td data-label="Serie">${p.serie}</td>
