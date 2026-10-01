@@ -67,14 +67,14 @@ function updateVisitaPrinterTable(){
   if($("vtPrinterDetails")){
     if(p){
       $("vtPrinterDetails").innerHTML = `
-        <div><small>Código</small><strong>${esc(p.codigo)}</strong></div>
-        <div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div>
-        <div><small>Serie</small><strong>${esc(p.serie)}</strong></div>
-        <div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div>
-        <div><small>Área</small><strong>${esc(p.ubicacion)}</strong></div>
-        <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
-        <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
-        <div><small>Cliente</small><strong>${c ? esc(c.codigo+" · "+c.nombre) : "-"} (${total} imp.)</strong></div>`;
+        <div class="field span-2"><small>Código</small><strong>${esc(p.codigo)}</strong></div>
+        <div class="field span-2"><small>Modelo</small><strong>${esc(p.modelo)}</strong></div>
+        <div class="field span-2"><small>Serie</small><strong>${esc(p.serie)}</strong></div>
+        <div class="field span-2"><small>Sucursal</small><strong>${esc(p.sede)}</strong></div>
+        <div class="field span-2"><small>Área</small><strong>${esc(p.ubicacion)}</strong></div>
+        <div class="field span-2"><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
+        <div class="field span-2"><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
+        <div class="field span-4"><small>Cliente</small><strong>${c ? esc(c.codigo+" · "+c.nombre) : "-"} (${total} imp.)</strong></div>`;
     } else if(c){
       $("vtPrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - Tiene ${total} impresora(s)</strong></div>`;
     } else {
