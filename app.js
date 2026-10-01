@@ -44,7 +44,15 @@ async function cargarUsuarios(){
   }
 }
 
-function refreshStats(){if($("statClientes"))$("statClientes").textContent=DB.clientes.length;if($("statImpresoras"))$("statImpresoras").textContent=DB.impresoras.length;}
+function refreshStats(){
+  if($("statClientes")) $("statClientes").textContent=DB.clientes.length;
+  if($("statImpresoras")) $("statImpresoras").textContent=DB.impresoras.length;
+  if($("statTecnicos")) $("statTecnicos").textContent=DB.tecnicos.length;
+  if($("statBodegas")) $("statBodegas").textContent=DB.bodegas.length;
+  if($("statProductos")) $("statProductos").textContent=DB.productos.length;
+  if($("statInventarios")) $("statInventarios").textContent=DB.inventarios.length;
+  if($("statTrabajos")) $("statTrabajos").textContent=DB.trabajos.length;
+}
 function options(sel,rows,ph){if(!sel)return;sel.innerHTML=`<option value="">${ph}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join("");}
 
 function filterClientes(){
