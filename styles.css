@@ -23,7 +23,7 @@ body{
   overflow-x:hidden;
 }
 
-
+.container{max-width:1250px;margin:auto;padding:30px 20px 55px;min-height:calc(100vh - 170px)}
 .page-section{display:none}.page-section.active{display:block;animation:fade .2s ease}
 
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
