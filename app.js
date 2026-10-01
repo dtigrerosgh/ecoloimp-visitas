@@ -21,7 +21,7 @@ const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],c
 
 async function loadFile(type,file,parser){
   try{
-    const r=await fetch("data/"+file+"?v="+Date.now(),{cache:"no-store"});
+    const r=await fetch("data/"+file+",{cache:"no-store"});
     if(!r.ok)throw 0;const b=await r.arrayBuffer();
     const txt=new TextDecoder("windows-1252").decode(b);
     DB[type]=parser(txt);console.log(file,DB[type].length);
@@ -31,7 +31,18 @@ async function loadFile(type,file,parser){
   }
 }
 
-async function cargarUsuarios(){try{const r=await fetch("data/usuarios.txt?v="+Date.now(),{cache:"no-store"});const txt=await r.text();usuariosTXT=splitLines(txt).map(l=>{let[u,p]=l.split(";");return{user:u.trim(),pass:p.trim()};});}catch{usuariosTXT=[{user:"admin",pass:"admin"}];}}
+async function cargarUsuarios(){
+  try{
+    const r=await fetch("data/usuarios.txt?v="+Date.now(),{cache:"no-store"});
+    const txt=await r.text();
+    usuariosTXT=splitLines(txt).map(l=>{let[u,p]=l.split(";");
+    return{user:u.trim(),pass:p.trim()};});
+  }
+  catch
+  {
+    usuariosTXT=[{user:"admin",pass:"admin"}];
+  }
+}
 
 function refreshStats(){if($("statClientes"))$("statClientes").textContent=DB.clientes.length;if($("statImpresoras"))$("statImpresoras").textContent=DB.impresoras.length;}
 function options(sel,rows,ph){if(!sel)return;sel.innerHTML=`<option value="">${ph}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join("");}
@@ -562,16 +573,6 @@ async function init(){
   await loadFile("productos","productos.txt",parseProductos);
   await loadFile("inventarios","inventarios.txt",parseInventarios);
   await loadFile("trabajos","trabajos.txt",parseTrabajos);
-
-await Promise.all([
-  loadDefaultFile("clientes","clientes.txt",parseClientes),
-  loadDefaultFile("impresoras","impresoras.txt",parseImpresoras),
-  loadDefaultFile("tecnicos","tecnicos.txt",parseTecnicos),
-  loadDefaultFile("trabajos","trabajos.txt",parseTrabajos),
-  loadDefaultFile("bodegas","bodegas.txt",parseBodegas),
-  loadDefaultFile("productos","productos.txt",parseProductos),
-  loadDefaultFile("inventarios","inventarios.txt",parseInventarios)]);
-
   
   refreshStats();
   filterClientes();
