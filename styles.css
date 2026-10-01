@@ -175,57 +175,72 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
   #menuToggle{ display:block; }
 }
 
-/* ULTIMO FIX - TARJETAS IMPRESORAS - v999 */
+/* ===== MOVIL - TABLA HORIZONTAL + DATOS EN COLUMNAS ===== */
+.table-h-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+#vtPrinterTable{width:100%;border-collapse:collapse}
+
 @media (max-width: 768px){
-  #vtPrinterTable{display:block!important;width:100%!important}
-  #vtPrinterTable thead{display:none!important}
-  #vtPrinterTable tbody{display:block!important;width:100%!important}
-  #vtPrinterBody{display:block!important;width:100%!important}
-  
-  #vtPrinterBody tr{
-    display:block!important;
-    width:calc(100% - 2px)!important;
-    margin:0 0 14px 0!important;
-    padding:0!important;
-    border:1px solid #e2e8f0!important;
-    border-radius:16px!important;
-    background:#fff!important;
-    box-shadow:0 4px 12px rgba(0,0,0,.06)!important;
-    overflow:hidden!important;
+ .table-h-scroll{
+    border:1px solid #e2e8f0;
+    border-radius:14px;
+    background:#fff;
   }
-  #vtPrinterBody td{
-    display:flex!important;
-    flex-direction:row!important;
-    justify-content:space-between!important;
-    align-items:center!important;
-    width:100%!important;
-    box-sizing:border-box!important;
-    padding:12px 14px!important;
-    margin:0!important;
+  #vtPrinterTable{min-width:520px}
+  #vtPrinterTable th, #vtPrinterTable td{
+    padding:10px 12px;
+    font-size:13px;
+    white-space:nowrap;
+  }
+  #vtPrinterTable td[data-label="Sel"] button{
+    height:36px;
+    padding:0 16px;
+    background:#00e676;
+    border:0;
+    border-radius:10px;
+    font-weight:800;
+  }
+  /* Ocultar columnas que no necesitas para elegir */
+  #vtPrinterTable th:nth-child(2),
+  #vtPrinterTable td[data-label="Código"],
+  #vtPrinterTable th:nth-child(8),
+  #vtPrinterTable td[data-label="Bodega"]{
+    display:none!important;
+  }
+
+  /* DATOS SELECCIONADA EN COLUMNAS */
+  #vtPrinterDetails{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
     border:none!important;
-    border-bottom:1px solid #f1f5f9!important;
-    text-align:right!important;
-    font-size:13px!important;
-    gap:10px!important;
+    background:transparent!important;
+    margin-top:12px!important;
   }
-  #vtPrinterBody td::before{
-    content:attr(data-label)!important;
+  #vtPrinterDetails div{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    padding:12px!important;
+    border:1px solid #e2e8f0!important;
+    border-radius:12px!important;
+    background:#fff!important;
+    min-height:64px!important;
+  }
+  #vtPrinterDetails small{
     font-size:10px!important;
     font-weight:800!important;
     color:#64748b!important;
     text-transform:uppercase!important;
-    text-align:left!important;
+    margin-bottom:4px!important;
   }
-  #vtPrinterBody td[data-label="Sel"]{
-    background:#f8fafc!important;
-    padding:12px!important;
-    justify-content:center!important;
-  } 
-  #vtPrinterBody td[data-label="Sel"]::before{display:none!important}
-  #vtPrinterBody td[data-label="Sel"] button{
-    width:100%!important;height:48px!important;
-    background:#00e676!important;color:#000!important;
-    font-weight:900!important;font-size:15px!important;
-    border:none!important;border-radius:12px!important;
+  #vtPrinterDetails strong{
+    font-size:13px!important;
+    text-align:left!important;
+    max-width:100%!important;
+    line-height:1.3!important;
+  }
+  /* Cliente ocupa 2 columnas */
+  #vtPrinterDetails div:last-child{
+    grid-column:span 2!important;
   }
 }
