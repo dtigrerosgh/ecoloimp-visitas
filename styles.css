@@ -175,4 +175,62 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
   #menuToggle{ display:block; }
 }
 
+/* ===== FIX TABLA FILTRAR IMPRESORAS - TARJETA ===== */
+@media (max-width: 768px){
+  #vtPrinterTable thead{display:none !important}
+  
+  #vtPrinterBody tr{
+    display:block !important;
+    border:1px solid #e2e8f0 !important;
+    border-radius:14px !important;
+    margin-bottom:12px !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    background:#fff !important;
+    box-shadow:0 2px 8px rgba(0,0,0,.05) !important;
+  }
 
+  #vtPrinterBody td{
+    display:flex !important;
+    justify-content:space-between !important;
+    align-items:center !important;
+    padding:10px 14px !important;
+    border-bottom:1px solid #f1f5f9 !important;
+    font-size:13px !important;
+  }
+  #vtPrinterBody td::before{
+    content:attr(data-label) !important;
+    display:block !important;
+    font-size:10px !important;
+    font-weight:800 !important;
+    color:#64748b !important;
+    text-transform:uppercase !important;
+    margin-right:10px !important;
+  }
+  
+  /* Botón arriba, ancho completo */
+  #vtPrinterBody td[data-label="Sel"]{
+    background:#f8fafc !important;
+    border-bottom:1px solid #e2e8f0 !important;
+    padding:12px !important;
+  }
+  #vtPrinterBody td[data-label="Sel"]::before{display:none !important}
+  #vtPrinterBody td[data-label="Sel"] button{
+    width:100% !important;
+    height:44px !important;
+    background:#00e50a !important;
+    color:#000 !important;
+    font-weight:800 !important;
+    border:0 !important;
+    border-radius:10px !important;
+  }
+  /* Cuando está seleccionada */
+  #vtPrinterBody tr.selected{
+    outline:2px solid #2563eb !important;
+    background:#eff6ff !important;
+  }
+  #vtPrinterBody tr.selected td[data-label="Sel"] button{
+    background:#2563eb !important;
+    color:#fff !important;
+  }
+}
