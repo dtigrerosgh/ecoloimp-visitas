@@ -81,42 +81,6 @@ body{font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}
 .data-loader-grid{grid-template-columns:repeat(3,1fr)}
 .stat-card,.loader-card,.contact-card,.printer-details-card,.notice,.hero-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
 
-/* PC GRANDE - AREA COMPLETA */
-@media (min-width: 1025px){
-  .data-table td:nth-child(5){max-width:300px;white-space:normal;word-break:break-word;line-height:1.2}
-}
-
-/* TABLET */
-@media (max-width: 1024px){
-  .form-grid{grid-template-columns:repeat(2,1fr)}
-  .field.span-4{grid-column:span 2}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .data-loader-grid{grid-template-columns:repeat(2,1fr)}
-  .hero{grid-template-columns:1fr}
-}
-
-/* CELULAR */
-@media (max-width: 768px){
-  .menu-toggle{display:block}
-  .main-nav{position:fixed;left:0;right:0;top:62px;background:var(--white);flex-direction:column;padding:12px;display:none;border-bottom:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.15)}
-  .main-nav.open{display:flex}
-  .main-nav a{width:100%;padding:14px}
-  
-  .form-grid{grid-template-columns:1fr !important}
-  .field.span-2,.field.span-4{grid-column:span 1 !important}
-  
-  .table-wrap{border:none;background:transparent;box-shadow:none;overflow:visible}
-  .data-table{min-width:100% !important}
-  .data-table thead{display:none}
-  .data-table,.data-table tbody,.data-table tr{display:block;width:100%}
-  .data-table tr{background:var(--white);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;padding:12px;box-shadow:var(--shadow)}
-  .data-table td{display:flex;justify-content:space-between;align-items:center;border:none !important;padding:11px 0 !important;font-size:14px;gap:12px}
-  .data-table td::before{content:attr(data-label);font-weight:800;font-size:11px;color:var(--muted);text-transform:uppercase;flex-shrink:0}
-  .data-table td input{width:60% !important;min-height:44px;font-size:16px !important;text-align:right}
-  td::before{
-  content: attr(data-label); /* lee lo que pongas en data-label */
-}
-  td[data-label="Area"] span, td[data-label="AREA"] span{white-space:normal !important;word-break:break-word;text-align:right;max-width:60%;font-size:13px}
   
   .actions .btn{width:100%;min-height:48px}
   .stats-grid{grid-template-columns:1fr 1fr}
