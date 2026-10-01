@@ -516,13 +516,24 @@ async function guardarConteoPDFCompleto(){
   showMessage("ctMessage",`PDF generado: ${totalPages} página(s)`);
 }
 
-function initFirma(){function activar(cid,bid,setter){const canvas=$(cid);if(!canvas)return;
-                                                      const ctx=canvas.getContext("2d");ctx.lineWidth=2.5;ctx.lineCap="round";
-                                                      ctx.strokeStyle="#0f172a";
-                                                      let dib=false,last={x:0,y:0};
-                                                      function pos(e){const r=canvas.getBoundingClientRect();
-                                                                      const t=e.touches?e.touches[0]:e;
-                                                                      return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)};}function start(e){dib=true;last=pos(e);e.preventDefault();}function move(e){if(!dib)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;setter(true);e.preventDefault();}function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
+function initFirma(){
+  function activar(cid,bid,setter){
+    const canvas=$(cid);if(!canvas)return;
+    const ctx=canvas.getContext("2d");ctx.lineWidth=2.5;ctx.lineCap="round";
+    ctx.strokeStyle="#0f172a";
+    let dib=false,last={x:0,y:0};
+    function pos(e){
+      const r=canvas.getBoundingClientRect();
+      const t=e.touches?e.touches[0]:e;
+      return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)};}
+    function start(e){dib=true;last=pos(e);e.preventDefault();}
+    function move(e){if(!dib)return;
+                     const p=pos(e);
+                     ctx.beginPath();
+                     ctx.moveTo(last.x,last.y);
+                     ctx.lineTo(p.x,p.y);
+                     ctx.stroke();
+                     last=p;setter(true);e.preventDefault();}function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
 
 function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
@@ -584,7 +595,6 @@ async function init(){
   activateSection((location.hash||"#bienvenido").slice(1));
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
 }
-document.addEventListener("DOMContentLoaded",init);
 init();
 
 // MENU QUE NO SE CAE
