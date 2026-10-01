@@ -30,6 +30,7 @@ async function loadFile(type,file,parser){
     DB[type]=[];
   }
 }
+
 async function cargarUsuarios(){try{const r=await fetch("data/usuarios.txt?v="+Date.now(),{cache:"no-store"});const txt=await r.text();usuariosTXT=splitLines(txt).map(l=>{let[u,p]=l.split(";");return{user:u.trim(),pass:p.trim()};});}catch{usuariosTXT=[{user:"admin",pass:"admin"}];}}
 
 function refreshStats(){if($("statClientes"))$("statClientes").textContent=DB.clientes.length;if($("statImpresoras"))$("statImpresoras").textContent=DB.impresoras.length;}
@@ -561,6 +562,17 @@ async function init(){
   await loadFile("productos","productos.txt",parseProductos);
   await loadFile("inventarios","inventarios.txt",parseInventarios);
   await loadFile("trabajos","trabajos.txt",parseTrabajos);
+
+await Promise.all([
+  loadDefaultFile("clientes","clientes.txt",parseClientes),
+  loadDefaultFile("impresoras","impresoras.txt",parseImpresoras),
+  loadDefaultFile("tecnicos","tecnicos.txt",parseTecnicos),
+  loadDefaultFile("trabajos","trabajos.txt",parseTrabajos),
+  loadDefaultFile("bodegas","bodegas.txt",parseBodegas),
+  loadDefaultFile("productos","productos.txt",parseProductos),
+  loadDefaultFile("inventarios","inventarios.txt",parseInventarios)]);
+
+  
   refreshStats();
   filterClientes();
   fillTecnicos();
