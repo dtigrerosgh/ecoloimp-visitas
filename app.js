@@ -421,7 +421,8 @@ async function guardarVisitaPDFCompleto(){
 
   // Detalle con lineas canvas
   y+=6;
-  doc.setFont(undefined,'bold'); doc.text("DETALLE / TRABAJO REALIZADO:", 10, y);
+  doc.setFont(undefined,'bold'); 
+  doc.text("DETALLE / TRABAJO REALIZADO:", 10, y);
   
   y+=1;
   doc.setDrawColor(180); 
@@ -443,7 +444,7 @@ async function guardarVisitaPDFCompleto(){
   y+=2;
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
   
-  y+=19;
+  y+=21;
   doc.line(10, y, 80, y); // linea para firma
   y+=5;
   doc.text(firmaNombre || "Firma cliente", 10, y);
