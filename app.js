@@ -426,7 +426,7 @@ async function guardarVisitaPDFCompleto(){
   
   y+=1;
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
-  let nLin = detLines.length * 4.5
+  let nLin = detLines.length+2
   doc.setDrawColor(180); 
   doc.rect(10, y, 180, y+nLin);
   doc.setFont(undefined,'normal'); 
@@ -443,8 +443,7 @@ async function guardarVisitaPDFCompleto(){
   doc.text("FIRMA DE CONFORMIDAD", 10, y); 
   doc.setDrawColor(15,23,42); 
   doc.setLineWidth(0.4);
- alert(y);
- alert(nlin);
+
   y+=2;
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
   
