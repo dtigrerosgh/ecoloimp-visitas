@@ -148,25 +148,34 @@ function activateSection(id){
   document.querySelectorAll("[data-section]").forEach(a=>a.classList.toggle("active",a.dataset.section===id));
   const nav=$("mainNav"),btn=$("menuToggle");if(window.innerWidth<=900&&nav?.classList.contains("open")){nav.classList.remove("open");if(btn)btn.textContent="☰";}
 }
-function setupNavigation(){
-  const nav=$("mainNav"),btn=$("menuToggle");
+function setupNavigation(){ 
   document.querySelectorAll("[data-section]").forEach(el=>{
     el.addEventListener("click",e=>{
       e.preventDefault();
       activateSection(el.dataset.section);
-      history.replaceState(null,"","#"+el.dataset.section);
-      nav?.classList.remove("open");
-      if(btn) btn.textContent="☰";
     });
+  }); 
+  // ESTO ES LO QUE FALTABA PARA CELULAR
+  $("menuToggle")?.addEventListener("click",()=>{
+    const nav = $("mainNav");
+    if(!nav) return;
+    const isOpen = nav.classList.toggle("open");
+    $("menuToggle").setAttribute("aria-expanded", isOpen ? "true" : "false");
   });
-  if(btn&&nav){
-    btn.addEventListener("click",e=>{
-      e.stopPropagation();
-      const open=nav.classList.toggle("open");
-      btn.textContent=open?"✕":"☰";
-    });
-  }
+  
+  // Cierra el menu si tocas fuera
+  document.addEventListener("click", (e)=>{
+    const nav = $("mainNav");
+    const btn = $("menuToggle");
+    if(!nav || !btn) return;
+    if(!nav.contains(e.target) && !btn.contains(e.target)){
+      nav.classList.remove("open");
+      btn.setAttribute("aria-expanded","false");
+    }
+  });
 }
+
+
 
 function selectedClientVisita(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
 function selectedClientConteo(){ return DB.clientes.find(c=>c.codigo===$("ctCliente")?.value); }
