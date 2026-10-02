@@ -431,9 +431,10 @@ async function guardarVisitaPDFCompleto(){
   doc.setFontSize(9);
   y+=9;
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
-  doc.text(detLines, 12, y);
+  doc.text(detLines, 12, y, {align:"justify", maxWidth:176});
+  y += detLines.length * 4.5; // para que la firma baje según lo largo del texto justificado
   
-  y += 50;
+  //y += 50;
 
   // Firma con linea canvas
   doc.setFont(undefined,'bold'); 
