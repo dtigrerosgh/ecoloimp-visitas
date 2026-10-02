@@ -446,7 +446,7 @@ async function guardarVisitaPDFCompleto(){
   doc.rect(10, y, 180, alturaCuadro);
 
   // texto justificado dentro
-  doc.text(detLines, 14, y+6, {align:"justify", maxWidth:172});
+  doc.text(detLines, 15, y+6, {align:"justify", maxWidth:165});
 
   y += alturaCuadro + 10; // deja espacio para firma
 
