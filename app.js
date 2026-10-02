@@ -260,7 +260,7 @@ Se ha realizado la visita técnica con el siguiente detalle:
 
 📝 DETALLE DEL TRABAJO REALIZADO:
 ──────────────────────────────────────────────────────────────────────────
-${justificar($("vtDetalle").value || "(Sin detalle registrado)", 78)}
+${justificar($("vtDetalle").value || "(Sin detalle registrado)", 106)}
 ──────────────────────────────────────────────────────────────────────────
 
 ✍️ CONFORMIDAD
@@ -315,7 +315,7 @@ ${$("pgCorreo")?.value || gcorreo}
 www.ecoloimp.com.ec`
     ;}
 
-function justificar(texto, ancho=82){
+function justificar(texto, ancho=110){
   const palabras = texto.split(/\s+/);
   let lineas = [], linea = "";
   palabras.forEach(p=>{
