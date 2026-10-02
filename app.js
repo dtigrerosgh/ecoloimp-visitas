@@ -425,16 +425,18 @@ async function guardarVisitaPDFCompleto(){
   doc.text("DETALLE / TRABAJO REALIZADO:", 10, y);
   
   y+=1;
+  let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
+  let nLin = detLines.length * 4.5
   doc.setDrawColor(180); 
-  doc.rect(10, y, 180, 50);
+  doc.rect(10, y, 180, y+nLin);
   doc.setFont(undefined,'normal'); 
   doc.setFontSize(9);
   y+=9;
-  let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
-  doc.text(detLines, 12, y, {align:"justify", maxWidth:176});
-  y += detLines.length * 4.5; // para que la firma baje según lo largo del texto justificado
   
-  //y += 50;
+  doc.text(detLines, 12, y, {align:"justify", maxWidth:176});
+  y +=  nLin  //detLines.length * 4.5; // para que la firma baje según lo largo del texto justificado
+  
+  y += 2;
 
   // Firma con linea canvas
   doc.setFont(undefined,'bold'); 
