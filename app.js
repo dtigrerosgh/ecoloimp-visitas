@@ -429,7 +429,7 @@ async function guardarVisitaPDFCompleto(){
 
   doc.setFont(undefined,'normal'); 
   doc.setFontSize(9);
-  let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
+  let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 165);
   let alturaTexto = detLines.length * 4.2 + 10;
   let alturaCuadro = Math.max(25, alturaTexto); // mínimo 25mm
 
