@@ -433,7 +433,7 @@ async function guardarVisitaPDFCompleto(){
   doc.setFontSize(9);
   y+=9;
   
-  doc.text(detLines, 12, y, {align:"justify", maxWidth:176});
+  doc.text(detLines, 12, y, {align:"left", maxWidth:176});
   y +=  nLin  //detLines.length * 4.5; // para que la firma baje según lo largo del texto justificado
   
   y += 2;
@@ -443,7 +443,9 @@ async function guardarVisitaPDFCompleto(){
   doc.text("FIRMA DE CONFORMIDAD", 10, y); 
   doc.setDrawColor(15,23,42); 
   doc.setLineWidth(0.4);
-  
+
+    doc.text(y, 10, y); 
+    doc.text(nlin, 10, y); 
   y+=2;
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
   
