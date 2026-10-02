@@ -426,14 +426,15 @@ async function guardarVisitaPDFCompleto(){
   
   y+=1;
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
-  let nLin = detLines.length+2
+  let nLin = detLines.length
+  doc.text(String(nLin), 10, y);
   doc.setDrawColor(180); 
   doc.rect(10, y, 180, y+nLin);
   doc.setFont(undefined,'normal'); 
   doc.setFontSize(9);
   y+=9;
   
-  doc.text(detLines, 12, y, {align:"left", maxWidth:176});
+  doc.text(detLines, 14, y, {align:"left", maxWidth:176});
   y +=  nLin  //detLines.length * 4.5; // para que la firma baje según lo largo del texto justificado
   
   y += 2;
