@@ -427,7 +427,8 @@ async function guardarVisitaPDFCompleto(){
   y+=1;
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
   let nLin = detLines.length+4
-  doc.text(String(y),6, y);
+  doc.text(String(y),4, y);
+  doc.text(String(nLin),7, y);
   doc.setDrawColor(180); 
   doc.rect(10, y, 180, y+nLin);
   doc.setFont(undefined,'normal'); 
