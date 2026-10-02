@@ -420,26 +420,35 @@ async function guardarVisitaPDFCompleto(){
   ];
   y = drawTable(10, y, 35, 145, 8, rows2) + 6;
 
-  // Detalle con lineas canvas
+  // --- DETALLE DINAMICO Y JUSTIFICADO ---
   y+=6;
   doc.setFont(undefined,'bold'); 
+  doc.setFontSize(10);
   doc.text("DETALLE / TRABAJO REALIZADO:", 10, y);
-  
-  y+=1;
-  let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
-  let nLin = detLines.length+4;
-  doc.text(String(y),4, y);
-  doc.text(String(nLin),9, y);
-  doc.setDrawColor(180); 
-  doc.rect(10, y, 180, y+nLin);
+  y+=4;
+
   doc.setFont(undefined,'normal'); 
   doc.setFontSize(9);
-  y+=9;
-  
-  doc.text(detLines, 14, y, {align:"left", maxWidth:176});
-  y +=  nLin;  //detLines.length * 4.5; // para que la firma baje según lo largo del texto justificado
-  
-  y += 2;
+  let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
+  let alturaTexto = detLines.length * 4.2 + 10;
+  let alturaCuadro = Math.max(25, alturaTexto); // mínimo 25mm
+
+  // si no entra, nueva página
+  if(y + alturaCuadro > 275){
+    doc.addPage();
+    if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,35,14);}catch{} }
+    y = 30;
+  }
+
+  // dibuja cuadro dinámico
+  doc.setDrawColor(180); 
+  doc.setLineWidth(0.3);
+  doc.rect(10, y, 180, alturaCuadro);
+
+  // texto justificado dentro
+  doc.text(detLines, 12, y+6, {align:"justify", maxWidth:176});
+
+  y += alturaCuadro + 10; // deja espacio para firma
 
   // Firma con linea canvas
   doc.setFont(undefined,'bold'); 
