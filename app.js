@@ -392,7 +392,7 @@ async function guardarVisitaPDFCompleto(){
   // Logo
   if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,35,14);}catch{} }
   doc.setFontSize(14); doc.setFont(undefined,'bold');
-  doc.text("REPORTE DE VISITA TECNICA", 50, 15);
+  doc.text("REPORTE DE VISITA TECNICA", 60, 15);
   doc.setLineWidth(0.6); doc.setDrawColor(15,23,42);
   doc.line(10, 24, 200, 24); // linea separacion principal con canvas
 
@@ -446,7 +446,7 @@ async function guardarVisitaPDFCompleto(){
   doc.rect(10, y, 180, alturaCuadro);
 
   // texto justificado dentro
-  doc.text(detLines, 12, y+6, {align:"justify", maxWidth:176});
+  doc.text(detLines, 14, y+6, {align:"justify", maxWidth:172});
 
   y += alturaCuadro + 10; // deja espacio para firma
 
