@@ -173,7 +173,33 @@ function selectedClientConteo(){ return DB.clientes.find(c=>c.codigo===$("ctClie
 
 function showMessage(id,msg,err=false){const el=$(id);if(!el)return;el.hidden=false;el.className="message"+(err?" error":"");el.textContent=msg;}
 function saveText(t,f){const b=new Blob([t],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
+
 function abrirGmail(to,cc,subj,body){window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&cc=${encodeURIComponent(cc||"")}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(body.substring(0,2000))}`,"_blank");}
+function abrirGmailUniversal(to, cc, subject, body){
+  let bodyCorto = body;
+  if(bodyCorto.length > 2000) bodyCorto = bodyCorto.substring(0,2000) + "\n\n[PDF EN DESCARGAS]";
+
+  const esPC = !/Android|iPhone|iPad/i.test(navigator.userAgent);
+
+  if(esPC){
+    // PC: si lleva encode
+    const enc = encodeURIComponent;
+    const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${enc(to)}&cc=${enc(cc||"")}&su=${enc(subject)}&body=${enc(bodyCorto)}`;
+    window.open(url, "_blank");
+  }else{
+    // CELULAR: SIN encode - texto plano, por eso ya no sale + ni %20
+    let mailto = `mailto:${to}?subject=${subject}&body=${bodyCorto}`;
+    if(cc) mailto += `&cc=${cc}`;
+    
+    const a = document.createElement("a");
+    a.href = mailto;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>a.remove(), 500);
+  }
+}
+
 async function getLogoBase64(){try{const r=await fetch("assets/logo.jpg?v="+Date.now(),{cache:"no-store"});const b=await r.blob();return await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(b);});}catch{return null;}}
 
 function buildVisitaSis(){
@@ -386,7 +412,7 @@ async function guardarVisitaPDFCompleto(){
   doc.text(firmaNombre || "Firma cliente", 10, y);
 
   const texto = "© 2026 DT Soluciones Informaticas                    Generado desde Ecoloimp Web";
-  doc.setFontSize(9);
+  doc.setFontSize(8);
 
 // 4. Calcular la posición 'Y' dinámica para el final de la página
 const coordenadaY = altoPagina - margenInferior;
@@ -565,11 +591,14 @@ function setupEvents(){
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
-  $("btnVisitaGuardar")?.addEventListener("click",async()=>{try{const email=$("vtEmail")?.value.trim();if(!email)throw new Error("Ingrese email cliente");abrirGmail($("pgCorreo").value||gcorreo,email,`Visita ${$("vtCliente").value} ${DB.visitaPrinter?.serie}`,buildVisitaText());setTimeout(()=>guardarVisitaPDFCompleto(),600);showMessage("vtMessage","Visita guardada");}catch(err){showMessage("vtMessage",err.message,true);}});
+  
+  $("btnVisitaGuardar")?.addEventListener("click",async()=>{try{const email=$("vtEmail")?.value.trim();
+    if(!email)throw new Error("Ingrese email cliente");
+    abrirGmailUniversal($("pgCorreo").value||gcorreo,email,`Visita ${$("vtCliente").value} ${DB.visitaPrinter?.serie}`,buildVisitaText());setTimeout(()=>guardarVisitaPDFCompleto(),600);showMessage("vtMessage","Visita guardada");}catch(err){showMessage("vtMessage",err.message,true);}});
   
   $("btnConteoGuardar")?.addEventListener("click",async()=>{try{const email=$("ctEmail")?.value.trim();
     if(!email)throw new Error("Ingrese email cliente conteo");
-    abrirGmail($("pgCorreo").value||gcorreo,email,`Conteo ${$("ctCliente").value} ${$("ctFecha").value}`,buildConteoText());setTimeout(()=>guardarConteoPDFCompleto(),600);showMessage("ctMessage","Conteo guardado");}catch(err){showMessage("ctMessage",err.message,true);}});
+    abrirGmailUniversal($("pgCorreo").value||gcorreo,email,`Conteo ${$("ctCliente").value} ${$("ctFecha").value}`,buildConteoText());setTimeout(()=>guardarConteoPDFCompleto(),600);showMessage("ctMessage","Conteo guardado");}catch(err){showMessage("ctMessage",err.message,true);}});
 
   // Sombrear fila en conteo al escribir
   const conteoBody = $("conteoBody");
