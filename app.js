@@ -184,6 +184,7 @@ function showMessage(id,msg,err=false){const el=$(id);if(!el)return;el.hidden=fa
 function saveText(t,f){const b=new Blob([t],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
 
 function abrirGmail(to,cc,subj,body){window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&cc=${encodeURIComponent(cc||"")}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(body.substring(0,2000))}`,"_blank");}
+
 function abrirGmailUniversal(to, cc, subject, body){
   let bodyCorto = body;
   if(bodyCorto.length > 2000) bodyCorto = bodyCorto.substring(0,2000) + "\n\n[PDF EN DESCARGAS]";
@@ -426,9 +427,9 @@ async function guardarVisitaPDFCompleto(){
   
   y+=1;
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 176);
-  let nLin = detLines.length+4
+  let nLin = detLines.length+4;
   doc.text(String(y),4, y);
-  doc.text(String(nLin),7, y);
+  doc.text(String(nLin),9, y);
   doc.setDrawColor(180); 
   doc.rect(10, y, 180, y+nLin);
   doc.setFont(undefined,'normal'); 
@@ -436,7 +437,7 @@ async function guardarVisitaPDFCompleto(){
   y+=9;
   
   doc.text(detLines, 14, y, {align:"left", maxWidth:176});
-  y +=  nLin  //detLines.length * 4.5; // para que la firma baje según lo largo del texto justificado
+  y +=  nLin;  //detLines.length * 4.5; // para que la firma baje según lo largo del texto justificado
   
   y += 2;
 
