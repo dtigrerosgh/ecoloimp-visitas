@@ -260,7 +260,7 @@ Se ha realizado la visita técnica con el siguiente detalle:
 
 📝 DETALLE DEL TRABAJO REALIZADO:
 ──────────────────────────────────────────────────────────────────────────
-${$("vtDetalle").value || "(Sin detalle registrado)"}
+${justificar($("vtDetalle").value || "(Sin detalle registrado)", 78)}
 ──────────────────────────────────────────────────────────────────────────
 
 ✍️ CONFORMIDAD
@@ -280,6 +280,7 @@ ${$("pgCorreo")?.value || gcorreo}
 www.ecoloimp.com.ec
 `;
 }
+
 function buildConteoText(){
   const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
   if(!c)throw new Error("Seleccione cliente conteo");
@@ -313,6 +314,33 @@ ECOLOIMP S.A.
 ${$("pgCorreo")?.value || gcorreo}
 www.ecoloimp.com.ec`
     ;}
+
+function justificar(texto, ancho=82){
+  const palabras = texto.split(/\s+/);
+  let lineas = [], linea = "";
+  palabras.forEach(p=>{
+    if((linea+" "+p).trim().length > ancho){
+      // justifica la linea
+      const ws = linea.split(" ");
+      if(ws.length > 1){
+        const espaciosFalta = ancho - linea.replace(/\s+/g,"").length;
+        const huecos = ws.length - 1;
+        const porHueco = Math.floor(espaciosFalta / huecos);
+        let extra = espaciosFalta % huecos;
+        linea = ws.map((w,i)=>{
+          if(i===ws.length-1) return w;
+          return w + " ".repeat(porHueco + (extra-- > 0 ? 1:0) + 1);
+        }).join("");
+      }
+      lineas.push(linea);
+      linea = p;
+    }else{
+      linea = (linea+" "+p).trim();
+    }
+  });
+  if(linea) lineas.push(linea);
+  return lineas.join("\n");
+}
 
 async function guardarVisitaPDFCompleto(){
   const c=selectedClientVisita("vtCliente"); const p=DB.visitaPrinter;
