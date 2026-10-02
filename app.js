@@ -444,8 +444,8 @@ async function guardarVisitaPDFCompleto(){
   doc.setDrawColor(15,23,42); 
   doc.setLineWidth(0.4);
 
-    doc.text(y, 10, y); 
-    doc.text(nlin, 10, y); 
+    doc.text(y.toString(), 10, y); 
+    doc.text(nlin.toString(), 10, y); 
   y+=2;
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
   
