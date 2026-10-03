@@ -360,7 +360,7 @@ function justificar(texto, ancho=110){
   return lineas.join("\n");
 }
 
-async function guardarVisitaPDFCompleto(){
+async function generarVisitaPDF(){
   const c=selectedClientVisita("vtCliente"); const p=DB.visitaPrinter;
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
@@ -546,7 +546,7 @@ async function enviarCorreoVisita(){
 
   // 1. PDF
   const docpdf = await generarVisitaPDF(); // 
-  const pdfBase64 = doc.output('datauristring').split(',')[1];
+  const pdfBase64 = docpdf.output('datauristring').split(',')[1];
 
   // 2. TXT DINAMICO
   const doctxt = await generarVisitaTXT(); // 
