@@ -395,12 +395,12 @@ async function guardarVisitaPDFCompleto(){
   if(logoBase64){
   try{
     let props = doc.getImageProperties(logoBase64);
-    let w = 30; // ancho fijo
+    let w = 45; // ancho fijo
     let h = (props.height * w) / props.width; // alto proporcional
     if(h > 14) { h = 14; w = (props.width * h) / props.height; } // limite alto
     doc.addImage(logoBase64,"JPEG",10,y, w, h);
   }catch(e){ 
-    try{ doc.addImage(logoBase64,"JPEG",10,y,20,14); }catch{} // fallback
+    try{ doc.addImage(logoBase64,"JPEG",10,y,45,14); }catch{} // fallback
   }
 }
   doc.setFontSize(14); doc.setFont(undefined,'bold');
@@ -464,7 +464,7 @@ async function guardarVisitaPDFCompleto(){
     if(logoBase64){
       try{
         let props = doc.getImageProperties(logoBase64);
-        let w = 30; let h = (props.height * w) / props.width;
+        let w = 45; let h = (props.height * w) / props.width;
         if(h > 14) { h = 14; w = (props.width * h) / props.height; }
         doc.addImage(logoBase64,"JPEG",10,8, w, h);
       }catch{}
