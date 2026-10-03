@@ -404,7 +404,7 @@ async function guardarVisitaPDFCompleto(){
   }
 }
   doc.setFontSize(14); doc.setFont(undefined,'bold');
-  doc.text("REPORTE DE VISITA TECNICA", 60, 15);
+  doc.text("REPORTE DE VISITA TECNICA", 70, 15);
 
 // USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
   doc.setFont(undefined,'bold');
