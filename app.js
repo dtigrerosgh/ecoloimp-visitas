@@ -353,7 +353,8 @@ async function guardarVisitaPDFCompleto(){
   const firmaData = $("vtFirmaCanvas")?.toDataURL ? (()=>{ try{ return firmaDibujada ? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })() : null;
   const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64().catch(()=>null);
-
+  
+  let usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
 
 // 1. GUARDA TXT PRIMERO, FUERA DEL TRY DEL PDF - ASÍ SIEMPRE GUARDA
   try{ saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT1",e); }
@@ -393,6 +394,19 @@ async function guardarVisitaPDFCompleto(){
   if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,8,35,14);}catch{} }
   doc.setFontSize(14); doc.setFont(undefined,'bold');
   doc.text("REPORTE DE VISITA TECNICA", 60, 15);
+
+// USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
+  doc.setFont(undefined,'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(30,64,175); // azul
+  doc.text(`Usuario: ${usuarioActual}`, 195, y+8, {align:"right"});
+
+  doc.setFont(undefined,'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(100);
+  doc.text(new Date().toLocaleString('es-EC'), 195, y+12, {align:"right"});
+
+  doc.setTextColor(0);  
   doc.setLineWidth(0.6); doc.setDrawColor(15,23,42);
   doc.line(10, 24, 200, 24); // linea separacion principal con canvas
 
@@ -464,7 +478,7 @@ async function guardarVisitaPDFCompleto(){
   y+=5;
   doc.text(firmaNombre || "Firma cliente", 10, y);
 
-  const texto = "© 2026 DT Soluciones Informaticas                    Generado desde Ecoloimp Web";
+  const texto = `© 2026 DT Soluciones Informaticas                    Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
   doc.setFontSize(8);
 
 // 4. Calcular la posición 'Y' dinámica para el final de la página
