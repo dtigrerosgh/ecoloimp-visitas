@@ -524,6 +524,7 @@ const coordenadaY = altoPagina - margenInferior;
 
 // 5. Escribir el texto (centrado horizontalmente a 105mm)
   doc.text(texto, 105, coordenadaY, { align: "center" });
+  return doc
 //  doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`.replaceAll("/","-"));
 // FIN
 }
@@ -543,7 +544,7 @@ async function enviarCorreoVisita(){
   const fechaSafe = fecha.replaceAll("/","-").replaceAll(" ","_");
   const horaSafe = hora.replaceAll(":","-");
 
-  const nombreBase = `(`VISITA TECNICA ${c.codigo}_${p.serie}_${fechaSafe}`.replaceAll("/","-")`;
+  const nombreBase = `VISITA TECNICA ${c.codigo}_${p.serie}_${fechaSafe}`.replaceAll("/","-");
   const pdfNombre = nombreBase + ".pdf";
   const txtNombre = nombreBase + ".txt";
 
@@ -552,7 +553,7 @@ async function enviarCorreoVisita(){
   const pdfBase64 = docpdf.output('datauristring').split(',')[1];
 
   // 2. TXT DINAMICO
-  const doctxt = await generarVisitaTXT(); // 
+  const doctxt = generarVisitaTXT(); // 
   const txtBase64 = btoa(unescape(encodeURIComponent(doctxt))); // convierte txt a base64  
   
   const txtContenido =  await generarVisitaCON(); // 
@@ -566,7 +567,7 @@ async function enviarCorreoVisita(){
         html: txtContenido,
         pdfBase64: pdfBase64,
         pdfNombre: pdfNombre,
-        txtContenido: txtBase64,
+        txtBase64: txtBase64,
         txtNombre: txtNombre
       })
     });
@@ -792,7 +793,9 @@ function setupEvents(){
 async function init(){
   if($("pgCorreo"))$("pgCorreo").value=gcorreo;
   if($("year"))$("year").textContent=new Date().getFullYear();
-  setupNavigation();setupEvents();initFirma();
+  setupNavigation();
+  setupEvents();
+  initFirma();
   const ahora=new Date();if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);if($("ctFecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);
   await cargarUsuarios();
   await loadFile("clientes","clientes.txt",parseClientes);
@@ -809,26 +812,8 @@ async function init(){
   fillTrabajos();
   updateVisitaPrinterTable();
   updateConteoPrinterTable();
-  initFirma();
   activateSection((location.hash||"#bienvenido").slice(1));
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
 }
 init();
 
-// MENU QUE NO SE CAE
-const btn = document.getElementById('menuToggle');
-const nav = document.getElementById('mainNav');
-
-btn?.addEventListener('click', (e)=>{
-  e.stopPropagation();
-  nav.classList.toggle('open');
-  btn.textContent = nav.classList.contains('open') ? '✕' : '☰';
-});
-
-// cerrar al hacer click en un link
-document.querySelectorAll('.main-nav a').forEach(a=>{
-  a.addEventListener('click', ()=>{
-    nav.classList.remove('open');
-    btn.textContent = '☰';
-  });
-});
