@@ -144,38 +144,41 @@ function selectVisitaPrinter(serie){
 }
 
 function activateSection(id){
-  document.querySelectorAll(".page-section").forEach(s=>{const on=s.id===id;s.classList.toggle("active",on);s.style.display=on?"block":"none";});
+  document.querySelectorAll(".page-section").forEach(s=>{
+    const on=s.id===id;
+    s.classList.toggle("active",on);
+    s.style.display=on?"block":"none";
+  });
   document.querySelectorAll("[data-section]").forEach(a=>a.classList.toggle("active",a.dataset.section===id));
-  const nav=$("mainNav"),btn=$("menuToggle");if(window.innerWidth<=900&&nav?.classList.contains("open")){nav.classList.remove("open");if(btn)btn.textContent="☰";}
 }
+
 function setupNavigation(){ 
+  const btn = $("menuToggle");
+  const nav = $("mainNav");
+
   document.querySelectorAll("[data-section]").forEach(el=>{
     el.addEventListener("click",e=>{
       e.preventDefault();
       activateSection(el.dataset.section);
+      nav?.classList.remove("open");
+      if(btn) btn.textContent="☰";
     });
   }); 
-  // ESTO ES LO QUE FALTABA PARA CELULAR
-  $("menuToggle")?.addEventListener("click",()=>{
-    const nav = $("mainNav");
-    if(!nav) return;
+
+  btn?.addEventListener("click",(e)=>{
+    e.stopPropagation();
     const isOpen = nav.classList.toggle("open");
-    $("menuToggle").setAttribute("aria-expanded", isOpen ? "true" : "false");
+    btn.textContent = isOpen ? "✕" : "☰";
   });
   
-  // Cierra el menu si tocas fuera
   document.addEventListener("click", (e)=>{
-    const nav = $("mainNav");
-    const btn = $("menuToggle");
     if(!nav || !btn) return;
     if(!nav.contains(e.target) && !btn.contains(e.target)){
       nav.classList.remove("open");
-      btn.setAttribute("aria-expanded","false");
+      btn.textContent="☰";
     }
   });
 }
-
-
 
 function selectedClientVisita(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
 function selectedClientConteo(){ return DB.clientes.find(c=>c.codigo===$("ctCliente")?.value); }
@@ -756,8 +759,9 @@ function setupEvents(){
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
   
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{try{const email=$("vtEmail")?.value.trim();
-    if(!email)throw new Error("Ingrese email cliente");
-    abrirGmailUniversal($("pgCorreo").value||gcorreo,email,`Visita ${$("vtCliente").value} ${DB.visitaPrinter?.serie}`,buildVisitaText());setTimeout(()=>guardarVisitaPDFCompleto(),600);showMessage("vtMessage","Visita guardada");}catch(err){showMessage("vtMessage",err.message,true);}});
+    if(!email)throw new Error("Ingrese email cliente");enviarCorreoVisita())
+                                                                
+//    abrirGmailUniversal($("pgCorreo").value||gcorreo,email,`Visita ${$("vtCliente").value} ${DB.visitaPrinter?.serie}`,buildVisitaText());setTimeout(()=>guardarVisitaPDFCompleto(),600);showMessage("vtMessage","Visita guardada");}catch(err){showMessage("vtMessage",err.message,true);}});
   
   $("btnConteoGuardar")?.addEventListener("click",async()=>{try{const email=$("ctEmail")?.value.trim();
     if(!email)throw new Error("Ingrese email cliente conteo");
