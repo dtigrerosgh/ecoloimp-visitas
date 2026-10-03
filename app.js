@@ -212,16 +212,33 @@ function abrirGmailUniversal(to, cc, subject, body){
 
 async function getLogoBase64(){try{const r=await fetch("assets/logo.jpg?v="+Date.now(),{cache:"no-store"});const b=await r.blob();return await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(b);});}catch{return null;}}
 
-function buildVisitaSis(){
+function generarVisitaTXT(){
   const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);
   const p=DB.visitaPrinter;
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:""};
   
   if(!c||!p||!t||!tr)throw new Error("Falta cliente/impresora/tecnico/trabajo");
-  return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;}
+  return`${
+    $("vtFecha").value};
+    ${$("vtHora").value};
+    ${c.codigo};
+    ${p.codigo};
+    ${p.serie};
+    ${p.sede};
+    ${p.ubicacion};
+    ${p.ip};
+    ${p.bodega};
+    ${t.codigo};
+    ${$("vtTipo").value};
+    ${tr.codigo};
+    ${$("vtEstado").value};
+    ${$("vtEmail")?.value||""};
+    ${$("vtNombreFirma")?.value||""};
+    ${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
+}
 
-function buildVisitaText(){
+function generarVisitaCON(){
   const c=selectedClientVisita(); const p=DB.visitaPrinter;
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
@@ -348,8 +365,8 @@ async function guardarVisitaPDFCompleto(){
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
-  const textoPlano = buildVisitaText(); 
-  const textoSis = buildVisitaSis();
+  //const textoPlano = buildVisitaText(); 
+  //const textoSis = buildVisitaSis();
   const firmaData = $("vtFirmaCanvas")?.toDataURL ? (()=>{ try{ return firmaDibujada ? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })() : null;
   const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64().catch(()=>null);
@@ -357,8 +374,8 @@ async function guardarVisitaPDFCompleto(){
   let usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
 
 // 1. GUARDA TXT PRIMERO, FUERA DEL TRY DEL PDF - ASÍ SIEMPRE GUARDA
-  try{ saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT1",e); }
-  try{ saveText(buildVisitaSis(), `VT_${c.codigo}_${p.serie}_${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT2",e); }
+  //try{ saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT1",e); }
+  //try{ saveText(buildVisitaSis(), `VT_${c.codigo}_${p.serie}_${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT2",e); }
 
   if(!window.jspdf) return;
   const { jsPDF } = window.jspdf; 
@@ -504,8 +521,69 @@ const coordenadaY = altoPagina - margenInferior;
 
 // 5. Escribir el texto (centrado horizontalmente a 105mm)
   doc.text(texto, 105, coordenadaY, { align: "center" });
-  doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`);
+//  doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`.replaceAll("/","-"));
+// FIN
 }
+
+//-----------------------------------------
+const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbywKxv5jOW9154FxdDnYevv6CkvwEAlyz5CJdzKc_M1AoiH4Wf2evvi_X9FhwVYtLG5EQ/exec";
+
+async function enviarCorreoVisita(){
+  const para = document.getElementById("vtEmail").value.trim();
+  if(!para) return alert("Falta email del cliente");
+  
+  toast("Enviando PDF y TXT...","info");
+
+  const c = selectedClientVisita("vtCliente");
+  const fecha = document.getElementById("vtFecha").value;
+  const hora = document.getElementById("vtHora").value;
+  const fechaSafe = fecha.replaceAll("/","-").replaceAll(" ","_");
+  const horaSafe = hora.replaceAll(":","-");
+
+  const nombreBase = `(`VISITA TECNICA ${c.codigo}_${p.serie}_${fechaSafe}`.replaceAll("/","-")`;
+  const pdfNombre = nombreBase + ".pdf";
+  const txtNombre = nombreBase + ".txt";
+
+  // 1. PDF
+  const docpdf = await generarVisitaPDF(); // 
+  const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+  // 2. TXT DINAMICO
+  const doctxt = await generarVisitaTXT(); // 
+  const txtBase64 = btoa(unescape(encodeURIComponent(doctxt))); // convierte txt a base64  
+  
+  const txtContenido =  await generarVisitaCON(); // 
+
+  try{
+    const res = await fetch(URL_APPS_SCRIPT, {
+      method: 'POST',
+      body: JSON.stringify({
+        para: para,
+        asunto: `Visita Tecnica ${c.nombre} - ${fecha}`,
+        html: txtContenido,
+        pdfBase64: pdfBase64,
+        pdfNombre: pdfNombre,
+        txtContenido: txtBase64,
+        txtNombre: txtNombre
+      })
+    });
+    
+    const j = await res.json();
+    if(j.ok){
+      alert(`OK Enviado a ${para}\n${pdfNombre}\n${txtNombre}`);
+      // LIMPIAR
+      $("vtDetalle").value=""; $("vtEmail").value=""; $("vtNombreFirma").value="";
+      const canvas = $("vtFirmaCanvas");
+      canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+      firmaDibujada=false;
+    } else alert("Error Gmail");
+  }catch(err){
+    alert("Error: "+err.message);
+  }
+}
+//-----------------------------------------
+
+
 
 // GRABA CONTEO DE IMPRESIONES
 async function guardarConteoPDFCompleto(){
