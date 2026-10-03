@@ -45,10 +45,17 @@
         <a href="#conteo" data-section="conteo">Conteo de Impresiones</a>
         <a href="#inventario" data-section="inventario">Toma de Inventarios</a>
         <a href="#contacto" data-section="contacto">Contacto</a>
-        <a href="#" onclick="localStorage.removeItem('ecoloimp_session');location.reload();return false;" style="color:#dc2626">Salir</a>        
+
+        <div style="display:flex; align-items:center; gap:8px; margin-left:10px;">
+          <span id="userHeader" style="font-size:12px;font-weight:bold;color:#1e40af;background:#dbeafe;padding:5px 12px;border-radius:20px;">👤</span>
+          <a href="#" id="btnLogout" style="color:#dc2626; font-size:13px;">Salir</a>
+        </div>
+        
+        <!--  <a href="#" onclick="localStorage.removeItem('ecoloimp_session');location.reload();return false;" style="color:#dc2626">Salir</a> -->       
       </nav>
     </div>
   </header>
+  
 
   <main class="container">
     <section id="bienvenido" class="page-section active">
@@ -438,6 +445,13 @@
 
   cargarUsuariosTXT();
 
+// mostrar usuario en header si ya hay sesión
+let sesUser = localStorage.getItem(SESS);
+if(sesUser){
+  let uh = document.getElementById("userHeader");
+  if(uh) uh.textContent = "👤 " + sesUser;
+}
+  
   document.getElementById('showRegister').onclick = e=>{
     e.preventDefault();
     document.getElementById('loginForm').style.display='none';
@@ -461,12 +475,21 @@
 
     let found = todos.find(x=> x.user.toLowerCase()===u.toLowerCase() && x.pass===p);
 
-    if(found){
-      localStorage.setItem(SESS, found.user);
-      scr.style.display='none';
+if(found){
+  localStorage.setItem(SESS, found.user);
+  scr.style.display='none';
+  document.getElementById("userHeader").textContent = "👤 " + found.user;
+  
+  // registrar login en txt/log
+  const ahora = new Date();
+  const linea = `${found.user};${ahora.toLocaleDateString('es-EC')};${ahora.toLocaleTimeString('es-EC')}\n`;
+  let logs = localStorage.getItem("ecoloimp_logins") || "";
+  logs += linea;
+  localStorage.setItem("ecoloimp_logins", logs);
     }else{
-      showMsg('Usuario no existe o clave incorrecta');
-    }
+      showMsg('Usuario no existe o clave incorrecta');  
+}
+    
   };
 
   // REGISTRO - GRABA EN usuarios.txt (descarga)
