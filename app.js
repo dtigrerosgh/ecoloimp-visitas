@@ -411,7 +411,7 @@ async function guardarVisitaPDFCompleto(){
   doc.setFontSize(10);
   doc.setTextColor(30,64,175); // azul
   doc.text(`Usuario: ${usuarioActual}`, 195, y+5, {align:"right"});
-
+ 
   doc.setFont(undefined,'normal');
   doc.setFontSize(7);
   doc.setTextColor(100);
