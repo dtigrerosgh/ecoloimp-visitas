@@ -3,7 +3,7 @@ const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyt_oMY9tunCMxu
 
 // app.js FINAL - MENU + TXT + VISITA + CONTEO SEPARADOS
 const DB = { clientes:[], impresoras:[], tecnicos:[], bodegas:[], productos:[], inventarios:[], trabajos:[], visitaPrinter:null };
-const gcorreo = "dennistigreros@gmail.com";
+const gcorreo = "administracion@ecoloimp.com, servicio@ecoloimp.com";
 let usuariosTXT=[], firmaDibujada=false, firmaDibujadaCt=false;
 const $=id=>document.getElementById(id);
 const norm=s=>(s??"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -301,7 +301,7 @@ Atentamente,
 Departamento Técnico
 ECOLOIMP S.A.
 ${$("pgCorreo")?.value || gcorreo}
-www.ecoloimp.com.ec
+www.ecoloimp.com
 `;
 }
 
@@ -336,7 +336,7 @@ Atentamente,
 Departamento Técnico
 ECOLOIMP S.A.
 ${$("pgCorreo")?.value || gcorreo}
-www.ecoloimp.com.ec`
+www.ecoloimp.com`
     ;}
 
 function justificar(texto, ancho=110){
@@ -536,8 +536,9 @@ const coordenadaY = altoPagina - margenInferior;
 //-----------------------------------------
 
 async function enviarCorreoVisita(){
-  const para = $("vtEmail").value.trim();
-  if(!para) return alert("Falta email");
+  const paraPrincipal = $("pgCorreo")?.value || gcorreo; // tu correo
+  const conCopia = $("vtEmail").value.trim(); // correo cliente  
+
   if(!DB.visitaPrinter) return alert("Seleccione impresora");
   
   showMessage("vtMessage","Generando PDF...");
@@ -556,7 +557,9 @@ async function enviarCorreoVisita(){
 
     // fetch sin preflight para evitar error
     const payload = JSON.stringify({
-        para: para,
+        para: paraPrincipal, // PARA = tu correo
+        cc: conCopia,        // CC = cliente
+        replyTo: conCopia,   // si respondes le respondes al cliente
         asunto: `Visita Tecnica ${c.nombre} - ${$("vtFecha").value}`,
         html: txtContenido.replace(/\n/g,"<br>"),
         pdfBase64: pdfBase64,
