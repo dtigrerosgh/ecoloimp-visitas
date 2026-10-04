@@ -569,7 +569,7 @@ async function enviarCorreoVisita(){
       })
       
 fetch(URL_APPS_SCRIPT, { method: "POST", mode: "no-cors", body: payload });
-    showMessage("vtMessage","✅ PDF guardado y correo en camino a "+para);
+    showMessage("vtMessage","✅ PDF guardado y correo en camino a "+paraPrincipal);
   }catch(e){
     console.error(e);
     showMessage("vtMessage","Error: "+e.message, true);
