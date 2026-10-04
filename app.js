@@ -24,7 +24,8 @@ async function loadFile(type,file,parser){
     const r=await fetch("./data/"+file+"?v="+Date.now(),{cache:"no-store"});
     if(!r.ok)throw 0;const b=await r.arrayBuffer();
     const txt=new TextDecoder("windows-1252").decode(b);
-    DB[type]=parser(txt);console.log(file,DB[type].length);
+    DB[type]=parser(txt);
+    console.log(file,DB[type].length);
   }
   catch{
     DB[type]=[];
