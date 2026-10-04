@@ -20,14 +20,29 @@ const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nom
 const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],nombre:r[2]||"",cantidad:Number((r[3]||"0").replace(",","."))||0}));
 
 async function loadFile(type,file,parser){
+  const url = "./data/"+file+"?v="+Date.now();
   try{
-    const r=await fetch("./data/"+file+"?v="+Date.now(),{cache:"no-store"});
-    if(!r.ok)throw 0;const b=await r.arrayBuffer();
-    const txt=new TextDecoder("windows-1252").decode(b);
-    DB[type]=parser(txt);
-    console.log(file,DB[type].length);
-  }
-  catch{
+    console.log("Cargando", url);
+    showMessage("loginMsg","Cargando "+file+"...");
+
+    const r = await fetch(url,{cache:"no-store"});
+    console.log(file, "status:", r.status, r.ok);
+
+    if(!r.ok) throw new Error(file+" no existe en "+url+" status "+r.status);
+
+    const b = await r.arrayBuffer();
+    const txt = new TextDecoder("windows-1252").decode(b);
+
+    console.log(file+" bytes:", b.byteLength, "texto:", txt.substring(0,50));
+
+    DB[type] = parser(txt);
+    console.log(file+" OK:", DB[type].length);
+
+    if(DB[type].length === 0) throw new Error(file+" vacío o mal formato ;");
+
+  }catch(e){
+    console.error("ERROR", file, e);
+    showMessage("loginMsg","ERROR "+file+": "+e.message+" - Revisa https://dtigrerosgh.github.io/data/"+file, true);
     DB[type]=[];
   }
 }
