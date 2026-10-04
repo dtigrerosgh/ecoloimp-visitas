@@ -135,6 +135,24 @@ button{cursor:pointer}
   z-index:10000;
 }
 
+/* --- FIX MOVIL FIRMA --- */
+#vtSignaturePad, #firmaCanvas {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 220px !important;
+  display: block;
+  touch-action: none;
+  box-sizing: border-box;
+}
+
+/* contenedor de la firma */
+.firma-box, .signature-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
 @media (max-width: 768px){
   .menu-toggle{display:flex;align-items:center;justify-content:center}
   
@@ -268,4 +286,23 @@ button{cursor:pointer}
   #vtPrinterDetails div:last-child{
     grid-column:span 1!important;
   }
+
+  .btn-row, .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-row button, .actions button, 
+  button[onclick*="enviar"], button[onclick*="Gmail"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    word-wrap: break-word;
+    box-sizing: border-box;
+  }
+  /* los inputs también */
+  input, select, textarea {
+    max-width: 100%;
+    box-sizing: border-box;
+  }  
 }
