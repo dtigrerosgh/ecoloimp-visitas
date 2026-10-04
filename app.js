@@ -535,56 +535,57 @@ const coordenadaY = altoPagina - margenInferior;
 const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbw5PtYo2XfmUaWDkVtdN62OqrOyZyudxnQY2rObBKMs_fe59RUsKnV5OAqDIWUIV_EEFQ/exec";
 
 async function enviarCorreoVisita(){
-  const para = document.getElementById("vtEmail").value.trim();
-  if(!para) return alert("Falta email del cliente");
+  const para = $("vtEmail").value.trim();
+  if(!para) return alert("Falta email");
+  if(!DB.visitaPrinter) return alert("Seleccione impresora");
   
-  toast("Enviando PDF y TXT...","info");
-  const p = DB.visitaPrinter;
+  showMessage("vtMessage","Generando PDF...");
+
   const c = selectedClientVisita();
-  const fecha = document.getElementById("vtFecha").value;
-  const hora = document.getElementById("vtHora").value;
-  const fechaSafe = fecha.replaceAll("/","-").replaceAll(" ","_");
-  const horaSafe = hora.replaceAll(":","-");
-
-  const nombreBase = `VISITA TECNICA ${c.codigo}_${p.serie}_${fechaSafe}`.replaceAll("/","-");
-  const pdfNombre = nombreBase + ".pdf";
-  const txtNombre = nombreBase + ".txt";
-
-  // 1. PDF
-  const docpdf = await generarVisitaPDF(); // 
-  const pdfBase64 = docpdf.output('datauristring').split(',')[1];
-
-  // 2. TXT DINAMICO
-  const doctxt = generarVisitaTXT(); // 
-  const txtBase64 = btoa(unescape(encodeURIComponent(doctxt))); // convierte txt a base64  
-  
-  const txtContenido =  await generarVisitaCON(); // 
+  const p = DB.visitaPrinter;
+  const fechaSafe = $("vtFecha").value.replaceAll("/","-");
+  const nombreBase = `VISITA_TECNICA_${c.codigo}_${p.serie}_${fechaSafe}`.replace(/[^a-zA-Z0-9_\-]/g,"_");
 
   try{
+    const docpdf = await generarVisitaPDF();
+    const pdfBase64 = docpdf.output('datauristring').split(',')[1];
+    const doctxt = generarVisitaTXT();
+    const txtBase64 = btoa(unescape(encodeURIComponent(doctxt)));
+    const txtContenido = generarVisitaCON();
+
+    // fetch sin preflight para evitar error
     const res = await fetch(URL_APPS_SCRIPT, {
       method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
       body: JSON.stringify({
         para: para,
-        asunto: `Visita Tecnica ${c.nombre} - ${fecha}`,
-        html: txtContenido,
+        asunto: `Visita Tecnica ${c.nombre} - ${$("vtFecha").value}`,
+        html: txtContenido.replace(/\n/g,"<br>"),
         pdfBase64: pdfBase64,
-        pdfNombre: pdfNombre,
+        pdfNombre: nombreBase + ".pdf",
         txtBase64: txtBase64,
-        txtNombre: txtNombre
+        txtNombre: nombreBase + ".txt"
       })
     });
     
     const j = await res.json();
     if(j.ok){
-      alert(`OK Enviado a ${para}\n${pdfNombre}\n${txtNombre}`);
-      // LIMPIAR
-      $("vtDetalle").value=""; $("vtEmail").value=""; $("vtNombreFirma").value="";
-      const canvas = $("vtFirmaCanvas");
-      canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
-      firmaDibujada=false;
-    } else alert("Error Gmail");
+      // GRABA SIN PREGUNTAR UBICACION
+      docpdf.save(nombreBase + ".pdf");
+      saveText(doctxt, nombreBase + ".txt");
+      showMessage("vtMessage",`OK Enviado a ${para}`);
+      $("vtDetalle").value=""; 
+      const canvas=$("vtFirmaCanvas"); canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height); firmaDibujada=false;
+    } else {
+      alert("Error Gmail: "+j.error);
+    }
   }catch(err){
-    alert("Error: "+err.message);
+    console.error(err);
+    // Si falla el fetch igual guarda local sin preguntar
+    const docpdf = await generarVisitaPDF();
+    docpdf.save(nombreBase + ".pdf");
+    saveText(generarVisitaTXT(), nombreBase + ".txt");
+    showMessage("vtMessage","Sin internet: PDF guardado local en Descargas",true);
   }
 }
 //-----------------------------------------
