@@ -222,23 +222,7 @@ function generarVisitaTXT(){
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:""};
   
   if(!c||!p||!t||!tr)throw new Error("Falta cliente/impresora/tecnico/trabajo");
-  return`${
-    $("vtFecha").value};
-    ${$("vtHora").value};
-    ${c.codigo};
-    ${p.codigo};
-    ${p.serie};
-    ${p.sede};
-    ${p.ubicacion};
-    ${p.ip};
-    ${p.bodega};
-    ${t.codigo};
-    ${$("vtTipo").value};
-    ${tr.codigo};
-    ${$("vtEstado").value};
-    ${$("vtEmail")?.value||""};
-    ${$("vtNombreFirma")?.value||""};
-    ${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
+  return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
 }
 
 function generarVisitaCON(){
