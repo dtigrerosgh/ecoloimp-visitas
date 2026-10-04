@@ -559,7 +559,7 @@ async function enviarCorreoVisita(){
     const payload = JSON.stringify({
         para: paraPrincipal, // PARA = tu correo
         cc: conCopia,        // CC = cliente
-        replyTo: conCopia,   // si respondes le respondes al cliente
+        replyTo: paraPrincipal,   // si respondes le respondes a ECOLOIMP
         asunto: `Visita Tecnica ${c.nombre} - ${$("vtFecha").value}`,
         html: txtContenido.replace(/\n/g,"<br>"),
         pdfBase64: pdfBase64,
