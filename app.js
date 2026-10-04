@@ -21,7 +21,7 @@ const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],c
 
 async function loadFile(type,file,parser){
   try{
-    const r=await fetch("data/"+file+"?v="+Date.now(),{cache:"no-store"});
+    const r=await fetch("./data/"+file+"?v="+Date.now(),{cache:"no-store"});
     if(!r.ok)throw 0;const b=await r.arrayBuffer();
     const txt=new TextDecoder("windows-1252").decode(b);
     DB[type]=parser(txt);console.log(file,DB[type].length);
