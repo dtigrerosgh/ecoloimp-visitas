@@ -517,6 +517,7 @@ const coordenadaY = altoPagina - margenInferior;
 
 //-----------------------------------------
 const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwdZneaJ1EpeW4OuXfVkWiYJCtdTPiQ_8tnKgRpSnrn-Sxi7meguiX8DcTLzFdAOLho7g/exec";
+
 async function enviarCorreoVisita(){
   const para = $("vtEmail").value.trim();
   if(!para) return alert("Falta email");
@@ -552,6 +553,10 @@ async function enviarCorreoVisita(){
     });
     
     const j = await res.json();
+    const txt = await res.text();
+    console.log("Respuesta Apps Script:", txt);
+    showMessage("vtMessage","Enviado a "+para+" - "+txt);
+    
     if(j.ok){
       // GRABA SIN PREGUNTAR UBICACION
       docpdf.save(nombreBase + ".pdf");
