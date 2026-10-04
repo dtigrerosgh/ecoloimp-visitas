@@ -565,13 +565,12 @@ async function enviarCorreoVisita(){
         txtNombre: nombreBase + ".txt"
       })
       
-    fetch(URL_APPS_SCRIPT, {
-        method: "POST",
-        mode: "no-cors", // <--- CLAVE PARA GITHUB
-        body: payload
-      });
-
-      showMessage("vtMessage","✅ PDF guardado en Descargas y correo en camino a "+para+" (llega en 10s, revisa spam)");
+fetch(URL_APPS_SCRIPT, { method: "POST", mode: "no-cors", body: payload });
+    showMessage("vtMessage","✅ PDF guardado y correo en camino a "+para);
+  }catch(e){
+    console.error(e);
+    showMessage("vtMessage","Error: "+e.message, true);
+  }
 }
 //-----------------------------------------
 
