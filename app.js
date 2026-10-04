@@ -555,8 +555,6 @@ async function enviarCorreoVisita(){
       });
 
       showMessage("vtMessage","✅ PDF guardado en Descargas y correo en camino a "+para+" (llega en 10s, revisa spam)");
-    });
-
 }
 //-----------------------------------------
 
