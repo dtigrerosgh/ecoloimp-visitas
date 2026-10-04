@@ -303,7 +303,7 @@ button{cursor:pointer}
     flex-direction: column;
     gap: 10px;
   }
-  .btn.primary{background:var(--danger);color:#082b0a}
+
   .btn-row button, .actions button, 
   button[onclick*="enviar"], button[onclick*="Gmail"] {
     width: 100% !important;
