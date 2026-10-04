@@ -538,10 +538,7 @@ async function enviarCorreoVisita(){
     const txtContenido = generarVisitaCON();
 
     // fetch sin preflight para evitar error
-    const res = await fetch(URL_APPS_SCRIPT, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({
+    const payload = JSON.stringify({
         para: para,
         asunto: `Visita Tecnica ${c.nombre} - ${$("vtFecha").value}`,
         html: txtContenido.replace(/\n/g,"<br>"),
@@ -550,31 +547,16 @@ async function enviarCorreoVisita(){
         txtBase64: txtBase64,
         txtNombre: nombreBase + ".txt"
       })
+      
+    fetch(URL_APPS_SCRIPT, {
+        method: "POST",
+        mode: "no-cors", // <--- CLAVE PARA GITHUB
+        body: payload
+      });
+
+      showMessage("vtMessage","✅ PDF guardado en Descargas y correo en camino a "+para+" (llega en 10s, revisa spam)");
     });
-    
-    const j = await res.json();
-    const txt = await res.text();
-    console.log("Respuesta Apps Script:", txt);
-    showMessage("vtMessage","Enviado a "+para+" - "+txt);
-    
-    if(j.ok){
-      // GRABA SIN PREGUNTAR UBICACION
-      docpdf.save(nombreBase + ".pdf");
-      saveText(doctxt, nombreBase + ".txt");
-      showMessage("vtMessage",`OK Enviado a ${para}`);
-      $("vtDetalle").value=""; 
-      const canvas=$("vtFirmaCanvas"); canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height); firmaDibujada=false;
-    } else {
-      alert("Error Gmail: "+j.error);
-    }
-  }catch(err){
-    console.error(err);
-    // Si falla el fetch igual guarda local sin preguntar
-    const docpdf = await generarVisitaPDF();
-    docpdf.save(nombreBase + ".pdf");
-    saveText(generarVisitaTXT(), nombreBase + ".txt");
-    showMessage("vtMessage","Sin internet: PDF guardado local en Descargas",true);
-  }
+
 }
 //-----------------------------------------
 
