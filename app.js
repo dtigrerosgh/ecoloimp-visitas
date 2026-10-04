@@ -532,7 +532,7 @@ const coordenadaY = altoPagina - margenInferior;
 }
 
 //-----------------------------------------
-const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyQXGXm0Lh-vcMKE7n-FeoOkw2xJclbx56Itz0tJYk3peMyzdhbBzW5NwS8r1eDVJ52Aw/exec";
+const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzAG7L9rjUhnusrNxWIrfCkXYYdrM2To1fmvfyzeBp3kPM-Y-UhgczGX5MduLT8LxTegA/exec";
 
 async function enviarCorreoVisita(){
   const para = $("vtEmail").value.trim();
