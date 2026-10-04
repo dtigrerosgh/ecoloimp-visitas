@@ -242,7 +242,8 @@ function generarVisitaTXT(){
 }
 
 function generarVisitaCON(){
-  const c=selectedClientVisita(); const p=DB.visitaPrinter;
+  const c=selectedClientVisita(); 
+  const p=DB.visitaPrinter;
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
   
@@ -364,7 +365,8 @@ function justificar(texto, ancho=110){
 }
 
 async function generarVisitaPDF(){
-  const c=selectedClientVisita("vtCliente"); const p=DB.visitaPrinter;
+  const c=selectedClientVisita(); 
+  const p=DB.visitaPrinter;
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
@@ -524,7 +526,7 @@ const coordenadaY = altoPagina - margenInferior;
 
 // 5. Escribir el texto (centrado horizontalmente a 105mm)
   doc.text(texto, 105, coordenadaY, { align: "center" });
-  return doc
+  return doc;
 //  doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`.replaceAll("/","-"));
 // FIN
 }
@@ -537,8 +539,8 @@ async function enviarCorreoVisita(){
   if(!para) return alert("Falta email del cliente");
   
   toast("Enviando PDF y TXT...","info");
-
-  const c = selectedClientVisita("vtCliente");
+  const p = DB.visitaPrinter;
+  const c = selectedClientVisita();
   const fecha = document.getElementById("vtFecha").value;
   const hora = document.getElementById("vtHora").value;
   const fechaSafe = fecha.replaceAll("/","-").replaceAll(" ","_");
@@ -760,7 +762,8 @@ function setupEvents(){
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
   
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{try{const email=$("vtEmail")?.value.trim();
-    if(!email)throw new Error("Ingrese email cliente");enviarCorreoVisita())
+    if(!email)throw new Error("Ingrese email cliente");
+    await enviarCorreoVisita()
                                                                 
 //    abrirGmailUniversal($("pgCorreo").value||gcorreo,email,`Visita ${$("vtCliente").value} ${DB.visitaPrinter?.serie}`,buildVisitaText());setTimeout(()=>guardarVisitaPDFCompleto(),600);showMessage("vtMessage","Visita guardada");}catch(err){showMessage("vtMessage",err.message,true);}});
   
