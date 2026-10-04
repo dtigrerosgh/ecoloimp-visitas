@@ -752,6 +752,12 @@ function initFirma(){
                      ctx.stroke();
                      last=p;setter(true);e.preventDefault();}function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
 
+function toast(m,t){
+  console.log(t+": "+m); 
+  if($("vtMessage")) 
+    showMessage("vtMessage",m, t==="error");
+}
+
 function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
   $("ctClienteFilter")?.addEventListener("input",filterClientes);
@@ -761,17 +767,24 @@ function setupEvents(){
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
   
-  $("btnVisitaGuardar")?.addEventListener("click",async()=>{try{const email=$("vtEmail")?.value.trim();
-    if(!email)throw new Error("Ingrese email cliente");
-    await enviarCorreoVisita()
-                                                                
-//    abrirGmailUniversal($("pgCorreo").value||gcorreo,email,`Visita ${$("vtCliente").value} ${DB.visitaPrinter?.serie}`,buildVisitaText());setTimeout(()=>guardarVisitaPDFCompleto(),600);showMessage("vtMessage","Visita guardada");}catch(err){showMessage("vtMessage",err.message,true);}});
+  $("btnVisitaGuardar")?.addEventListener("click",async()=>{
+    try{
+      const email=$("vtEmail")?.value.trim();
+      if(!email) throw new Error("Ingrese email cliente");
+      await enviarCorreoVisita();
+    }catch(err){
+      showMessage("vtMessage",err.message,true);
+    }
+  });
   
-  $("btnConteoGuardar")?.addEventListener("click",async()=>{try{const email=$("ctEmail")?.value.trim();
-    if(!email)throw new Error("Ingrese email cliente conteo");
-    abrirGmailUniversal($("pgCorreo").value||gcorreo,email,`Conteo ${$("ctCliente").value} ${$("ctFecha").value}`,buildConteoText());setTimeout(()=>guardarConteoPDFCompleto(),600);showMessage("ctMessage","Conteo guardado");}catch(err){showMessage("ctMessage",err.message,true);}});
+  $("btnConteoGuardar")?.addEventListener("click",async()=>{
+    try{
+      await guardarConteoPDFCompleto();
+    }catch(err){
+      showMessage("ctMessage",err.message,true);
+    }
+  });
 
-  // Sombrear fila en conteo al escribir
   const conteoBody = $("conteoBody");
   if(conteoBody){
     conteoBody.addEventListener("focusin", (e)=>{
@@ -779,15 +792,6 @@ function setupEvents(){
         conteoBody.querySelectorAll("tr.selected").forEach(tr=>tr.classList.remove("selected"));
         const tr = e.target.closest("tr[data-serie]");
         if(tr) tr.classList.add("selected");
-      }
-    });
-    conteoBody.addEventListener("input", (e)=>{
-      if(e.target.matches('input[data-campo]')){
-        const tr = e.target.closest("tr[data-serie]");
-        if(tr && !tr.classList.contains("selected")){
-          conteoBody.querySelectorAll("tr.selected").forEach(r=>r.classList.remove("selected"));
-          tr.classList.add("selected");
-        }
       }
     });
   }
