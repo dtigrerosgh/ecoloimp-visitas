@@ -515,7 +515,7 @@ async function generarVisitaPDF(){
 
 // 4. Calcular la posición 'Y' dinámica para el final de la página
 const coordenadaY = altoPagina - margenInferior;
-
+ 
 // 5. Escribir el texto (centrado horizontalmente a 105mm)
   doc.text(texto, 105, coordenadaY, { align: "center" });
   return doc;
