@@ -152,6 +152,35 @@ button{cursor:pointer}
   box-sizing: border-box;
 }
 
+/* FIX CONTACTO MOVIL */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* contenedor principal */
+.contact-section, #contacto, .contacto-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  margin: 0 auto !important;
+}
+
+/* la tarjeta blanca */
+.contact-card, .info-box {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  word-wrap: break-word;
+}
+
+/* el email largo que se ve en tu foto */
+.contact-card a, .contact-card p {
+  word-break: break-all !important;
+  overflow-wrap: anywhere !important;
+}
+
 @media (max-width: 768px){
   .menu-toggle{display:flex;align-items:center;justify-content:center}
   
@@ -320,4 +349,19 @@ button{cursor:pointer}
     max-width: 100%;
     box-sizing: border-box;
   }  
+
+    /* que las 2 tarjetas no queden lado a lado */
+  .contact-grid, .contact-info-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+
+  /* títulos */
+  h2, .titulo-contacto {
+    font-size: 24px !important;
+    padding-left: 16px !important;
+    white-space: normal !important;
+  }
 }
