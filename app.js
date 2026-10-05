@@ -808,7 +808,9 @@ function setupEvents(){
   
   $("btnConteoGuardar")?.addEventListener("click",async()=>{
     try{
-      await guardarConteoPDFCompleto();
+      const email=$("ctEmail")?.value.trim();
+      if(!email) throw new Error("Ingrese email cliente");
+      await enviarCorreoConteo();
     }catch(err){
       showMessage("ctMessage",err.message,true);
     }
