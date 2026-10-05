@@ -306,6 +306,10 @@ html, body {
   #vtPrinterBody td:nth-child(2) {
     display: none !important;
   }
+  #ConteoHead th:nth-child(1),
+  #ConteoBody td:nth-child(1) {
+    display: none !important;
+  }  
   
   /* DATOS SELECCIONADA EN COLUMNAS */
   #vtPrinterDetails{
