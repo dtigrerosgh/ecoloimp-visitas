@@ -21,20 +21,19 @@ const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nom
 const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],nombre:r[2]||"",cantidad:Number((r[3]||"0").replace(",","."))||0}));
 
 async function loadFile(type,file,parser){
-  const url = "data/"+file+"?v="+Date.now(); // sin./ para github.io
+  const url = "data/"+file+"?v="+Date.now();
   try{
     const r = await fetch(url,{cache:"no-store"});
-    if(!r.ok) throw new Error(file+" status "+r.status);
+    if(!r.ok) throw new Error(file+" no existe status "+r.status);
     const b = await r.arrayBuffer();
     const txt = new TextDecoder("windows-1252").decode(b);
     DB[type] = parser(txt);
     console.log(file+" OK:", DB[type].length);
-    refreshStats(); // <-- actualiza cada que carga uno
   }catch(e){
     console.error("ERROR", file, e);
     DB[type]=[];
-    refreshStats();
   }
+  refreshStats(); // siempre actualiza, aunque falle
 }
 
 async function cargarUsuarios(){
@@ -51,28 +50,15 @@ async function cargarUsuarios(){
 }
 
 function refreshStats(){
-  // 1. Para tu diseño nuevo de la foto (solo numeros)
-  const cards = document.querySelectorAll('.stat-card strong');
-  if(cards.length >= 7){
-    cards[0].textContent = DB.clientes.length;
-    cards[1].textContent = DB.impresoras.length;
-    cards[2].textContent = DB.tecnicos.length;
-    cards[3].textContent = DB.bodegas.length;
-    cards[4].textContent = DB.productos.length;
-    cards[5].textContent = DB.inventarios.length;
-    cards[6].textContent = DB.trabajos.length;
-  }
-  // 2. Para si usas los textos largos
-  if($("statClientes")) $("statClientes").textContent=`${DB.clientes.length} registros`;
-  if($("statImpresoras")) $("statImpresoras").textContent=`${DB.impresoras.length} registros`;
-  if($("statTecnicos")) $("statTecnicos").textContent=`${DB.tecnicos.length} registros`;
-  if($("statBodegas")) $("statBodegas").textContent=`${DB.bodegas.length} registros`;
-  if($("statProductos")) $("statProductos").textContent=`${DB.productos.length} registros`;
-  if($("statInventarios")) $("statInventarios").textContent=`${DB.inventarios.length} registros`;
-  if($("statTrabajos")) $("statTrabajos").textContent=`${DB.trabajos.length} registros`;
-
-  console.log("STATS:", DB.clientes.length, DB.impresoras.length);
+  if($("statClientes")) $("statClientes").textContent = DB.clientes.length;
+  if($("statImpresoras")) $("statImpresoras").textContent = DB.impresoras.length;
+  if($("statTecnicos")) $("statTecnicos").textContent = DB.tecnicos.length;
+  if($("statBodegas")) $("statBodegas").textContent = DB.bodegas.length;
+  if($("statProductos")) $("statProductos").textContent = DB.productos.length;
+  if($("statInventarios")) $("statInventarios").textContent = DB.inventarios.length;
+  if($("statTrabajos")) $("statTrabajos").textContent = DB.trabajos.length;
 }
+
 
 
 function options(sel,rows,ph){if(!sel)return;sel.innerHTML=`<option value="">${ph}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join("");}
