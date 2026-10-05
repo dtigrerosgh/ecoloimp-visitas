@@ -21,7 +21,7 @@ const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nom
 const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],nombre:r[2]||"",cantidad:Number((r[3]||"0").replace(",","."))||0}));
 
 async function loadFile(type,file,parser){
-  const url = "data/"+file+"?v="+Date.now();
+  const url = "./data/"+file+"?v="+Date.now();
 
   try{
     console.log("Cargando", url);
