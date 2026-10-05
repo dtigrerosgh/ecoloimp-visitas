@@ -573,7 +573,7 @@ async function enviarCorreoVisita(){
   const paraPrincipal = $("pgCorreo")?.value || gcorreo; // tu correo
   const conCopia = $("ctEmail").value.trim(); // correo cliente  
  
-  showMessage("vtMessage","Generando PDF...");
+  showMessage("ctMessage","Generando PDF...");
 
   const c = selectedClientConteo();
   const fechaSafe = $("ctFecha").value.replaceAll("/","-");
@@ -779,7 +779,10 @@ function initFirma(){
                      ctx.moveTo(last.x,last.y);
                      ctx.lineTo(p.x,p.y);
                      ctx.stroke();
-                     last=p;setter(true);e.preventDefault();}function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
+                     last=p;setter(true);e.preventDefault();}
+    function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}
+  activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);
+  activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
 
 function toast(m,t){
   console.log(t+": "+m); 
