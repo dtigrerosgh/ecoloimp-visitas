@@ -181,6 +181,23 @@ html, body {
   overflow-wrap: anywhere !important;
 }
 
+/* FIX SCROLL CONTEO + STATS */
+#conteo.table-wrap{
+  max-height: 55vh!important;
+  overflow-y: auto!important;
+  overflow-x: auto!important;
+  display: block!important;
+}
+#conteo.data-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #111827;
+}
+.printer-selection-wrap{
+  max-height: 58vh!important;
+}
+
 #conteoBody tr.selected{
   background:#d1fae5 !important;
   outline:2px solid #20e52b;
