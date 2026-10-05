@@ -270,7 +270,7 @@ html, body {
   tr.selected {
     outline: 2px solid var(--green);
     box-shadow: 0 0 10px rgba(0,230,118,0.5);
-  }  
+  }   
   #vtPrinterTable{min-width:520px}
   #vtPrinterTable th, #vtPrinterTable td{
     padding:10px 12px;
