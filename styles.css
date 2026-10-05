@@ -286,8 +286,8 @@ html, body {
     font-weight:800;
   }
   /* Ocultar columnas que no necesitas para elegir */
-  #vtPrinterBody th:nth-child(1),
-  #vtPrinterBody td:nth-child(1) {
+  #vtPrinterBody th:nth-child(2),
+  #vtPrinterBody td:nth-child(2) {
     display: none !important;
   }
   
