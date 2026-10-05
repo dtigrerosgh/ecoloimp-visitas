@@ -21,31 +21,19 @@ const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nom
 const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],nombre:r[2]||"",cantidad:Number((r[3]||"0").replace(",","."))||0}));
 
 async function loadFile(type,file,parser){
-  const url = "./data/"+file+"?v="+Date.now();
-
+  const url = "data/"+file+"?v="+Date.now(); // sin./ para github.io
   try{
-    console.log("Cargando", url);
-    showMessage("loginMsg","Cargando "+file+"...");
-
     const r = await fetch(url,{cache:"no-store"});
-    console.log(file, "status:", r.status, r.ok);
-
-    if(!r.ok) throw new Error(file+" no existe en "+url+" status "+r.status);
-
+    if(!r.ok) throw new Error(file+" status "+r.status);
     const b = await r.arrayBuffer();
     const txt = new TextDecoder("windows-1252").decode(b);
-
-    console.log(file+" bytes:", b.byteLength, "texto:", txt.substring(0,50));
-
     DB[type] = parser(txt);
     console.log(file+" OK:", DB[type].length);
-
-    if(DB[type].length === 0) throw new Error(file+" vacío o mal formato ;");
-
+    refreshStats(); // <-- actualiza cada que carga uno
   }catch(e){
     console.error("ERROR", file, e);
-    showMessage("loginMsg","ERROR "+file+": "+e.message+" - Revisa https://dtigrerosgh.github.io/data/"+file, true);
     DB[type]=[];
+    refreshStats();
   }
 }
 
@@ -63,14 +51,29 @@ async function cargarUsuarios(){
 }
 
 function refreshStats(){
-  if($("statClientes")) $("statClientes").textContent=`${DB.clientes.length} registros de clientes`;
-  if($("statImpresoras")) $("statImpresoras").textContent=`${DB.impresoras.length} registros de impresoras`;
-  if($("statTecnicos")) $("statTecnicos").textContent=`${DB.tecnicos.length} registros de tecnicos`;
-  if($("statBodegas")) $("statBodegas").textContent=`${DB.bodegas.length} registros de bodegas`;
-  if($("statProductos")) $("statProductos").textContent=`${DB.productos.length} registros de productos`;
-  if($("statInventarios")) $("statInventarios").textContent=`${DB.inventarios.length} registros de inventarios`;
-  if($("statTrabajos")) $("statTrabajos").textContent=`${DB.trabajos.length} registros de trabajos`;
+  // 1. Para tu diseño nuevo de la foto (solo numeros)
+  const cards = document.querySelectorAll('.stat-card strong');
+  if(cards.length >= 7){
+    cards[0].textContent = DB.clientes.length;
+    cards[1].textContent = DB.impresoras.length;
+    cards[2].textContent = DB.tecnicos.length;
+    cards[3].textContent = DB.bodegas.length;
+    cards[4].textContent = DB.productos.length;
+    cards[5].textContent = DB.inventarios.length;
+    cards[6].textContent = DB.trabajos.length;
+  }
+  // 2. Para si usas los textos largos
+  if($("statClientes")) $("statClientes").textContent=`${DB.clientes.length} registros`;
+  if($("statImpresoras")) $("statImpresoras").textContent=`${DB.impresoras.length} registros`;
+  if($("statTecnicos")) $("statTecnicos").textContent=`${DB.tecnicos.length} registros`;
+  if($("statBodegas")) $("statBodegas").textContent=`${DB.bodegas.length} registros`;
+  if($("statProductos")) $("statProductos").textContent=`${DB.productos.length} registros`;
+  if($("statInventarios")) $("statInventarios").textContent=`${DB.inventarios.length} registros`;
+  if($("statTrabajos")) $("statTrabajos").textContent=`${DB.trabajos.length} registros`;
+
+  console.log("STATS:", DB.clientes.length, DB.impresoras.length);
 }
+
 
 function options(sel,rows,ph){if(!sel)return;sel.innerHTML=`<option value="">${ph}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join("");}
 
