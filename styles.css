@@ -275,7 +275,6 @@ html, body {
 .table-h-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 #vtPrinterTable{width:100%;border-collapse:collapse}
 
-.table-h-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 
 @media (max-width: 768px){
  .table-h-scroll{
