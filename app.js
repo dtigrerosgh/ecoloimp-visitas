@@ -63,13 +63,13 @@ async function cargarUsuarios(){
 }
 
 function refreshStats(){
-  if($("statClientes")) $("statClientes").textContent=DB.clientes.length;
-  if($("statImpresoras")) $("statImpresoras").textContent=DB.impresoras.length;
-  if($("statTecnicos")) $("statTecnicos").textContent=DB.tecnicos.length;
-  if($("statBodegas")) $("statBodegas").textContent=DB.bodegas.length;
-  if($("statProductos")) $("statProductos").textContent=DB.productos.length;
-  if($("statInventarios")) $("statInventarios").textContent=DB.inventarios.length;
-  if($("statTrabajos")) $("statTrabajos").textContent=DB.trabajos.length;
+  if($("statClientes")) $("statClientes").textContent=`${DB.clientes.length} registros de clientes`;
+  if($("statImpresoras")) $("statImpresoras").textContent=`${DB.impresoras.length} registros de impresoras`;
+  if($("statTecnicos")) $("statTecnicos").textContent=`${DB.tecnicos.length} registros de tecnicos`;
+  if($("statBodegas")) $("statBodegas").textContent=`${DB.bodegas.length} registros de bodegas`;
+  if($("statProductos")) $("statProductos").textContent=`${DB.productos.length} registros de productos`;
+  if($("statInventarios")) $("statInventarios").textContent=`${DB.inventarios.length} registros de inventarios`;
+  if($("statTrabajos")) $("statTrabajos").textContent=`${DB.trabajos.length} registros de trabajos`;
 }
 
 function options(sel,rows,ph){if(!sel)return;sel.innerHTML=`<option value="">${ph}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join("");}
