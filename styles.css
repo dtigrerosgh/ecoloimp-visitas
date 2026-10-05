@@ -181,6 +181,21 @@ html, body {
   overflow-wrap: anywhere !important;
 }
 
+#conteoBody tr.selected{
+  background:#d1fae5 !important;
+  outline:2px solid #20e52b;
+  box-shadow: inset 4px 0 0 #0da516;
+}
+#conteoBody tr.selected td{
+  font-weight:800;
+  background:#d1fae5 !important;
+}
+#conteoBody tr.selected input{
+  background:#fff;
+  border-color:#0da516;
+  box-shadow:0 0 0 2px rgba(32,229,43,.3);
+}
+
 @media (max-width: 768px){
   .menu-toggle{display:flex;align-items:center;justify-content:center}
   
