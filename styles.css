@@ -287,7 +287,7 @@ html, body {
   }
   /* Ocultar columnas que no necesitas para elegir */
   #vtPrinterTable th:nth-child(1),
-  #vtPrinterTable td:nth-child(1), {
+  #vtPrinterTable td:nth-child(1) {
     display: none !important;
   }
   
