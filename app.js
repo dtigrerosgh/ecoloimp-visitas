@@ -71,6 +71,7 @@ function refreshStats(){
   if($("statInventarios")) $("statInventarios").textContent=DB.inventarios.length;
   if($("statTrabajos")) $("statTrabajos").textContent=DB.trabajos.length;
 }
+
 function options(sel,rows,ph){if(!sel)return;sel.innerHTML=`<option value="">${ph}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join("");}
 
 function filterClientes(){
