@@ -272,6 +272,7 @@ html, body {
   .stats-grid{grid-template-columns:1fr 1fr;gap:8px}.stat-card{padding:12px}.stat-card strong{font-size:23px}
   .hero-actions,.actions{flex-direction:column}.btn{width:100%;justify-content:center}
   #vtFirmaCanvas{height:180px}
+  #ctFirmaCanvas{height:180px}
 }
 
 @media (max-width: 768px) and (orientation: portrait) {
