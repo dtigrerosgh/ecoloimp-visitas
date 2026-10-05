@@ -605,7 +605,7 @@ fetch(URL_APPS_SCRIPT, { method: "POST", mode: "no-cors", body: payload });
     console.error(e);
     showMessage("ctMessage","Error: "+e.message, true);
   }
-}|
+}
 //-----------------------------------------
 
 // GRABA CONTEO DE IMPRESIONES
