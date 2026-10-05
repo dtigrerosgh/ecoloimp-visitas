@@ -580,14 +580,14 @@ async function enviarCorreoVisita(){
   const nombreBase = `CONTEO_IMPRESIONES_${c.codigo}_${fechaSafe}`.replace(/[^a-zA-Z0-9_\-]/g,"_");
 
   try{
-    const docpdf = await generarConteoPDF();
-    const pdfBase64 = docpdf.output('datauristring').split(',')[1];
-    const doctxt = generarConteoTXT();
-    const txtBase64 = btoa(unescape(encodeURIComponent(doctxt)));
-    const txtContenido = ""; // generarVisitaCON();
+      const docpdf = await generarConteoPDF();
+      const pdfBase64 = docpdf.output('datauristring').split(',')[1];
+      const doctxt = generarConteoTXT();
+      const txtBase64 = btoa(unescape(encodeURIComponent(doctxt)));
+      const txtContenido = ""; // generarVisitaCON();
 
-    // fetch sin preflight para evitar error
-    const payload = JSON.stringify({
+      // fetch sin preflight para evitar error
+      const payload = JSON.stringify({
         para: paraPrincipal, // PARA = tu correo
         cc: conCopia,        // CC = cliente
         replyTo: paraPrincipal,   // si respondes le respondes a ECOLOIMP
@@ -599,14 +599,14 @@ async function enviarCorreoVisita(){
         txtNombre: nombreBase + ".txt"
       })
       
-fetch(URL_APPS_SCRIPT, { method: "POST", mode: "no-cors", body: payload });
-    showMessage("ctMessage","✅ PDF guardado y correo en camino a "+paraPrincipal);
-  }catch(e){
-    console.error(e);
-    showMessage("ctMessage","Error: "+e.message, true);
-  }
-}
-//-----------------------------------------
+      fetch(URL_APPS_SCRIPT, { method: "POST", mode: "no-cors", body: payload });
+          showMessage("ctMessage","✅ PDF guardado y correo en camino a "+paraPrincipal);
+      }catch(e){
+          console.error(e);
+          showMessage("ctMessage","Error: "+e.message, true);
+      }
+    }
+
 
 // GRABA CONTEO DE IMPRESIONES
 async function generarConteoPDF(){
