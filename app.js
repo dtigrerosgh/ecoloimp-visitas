@@ -774,15 +774,18 @@ function setupEvents(){
     }
   });
 
-  const conteoBody = $("conteoBody");
-  if(conteoBody){
-    conteoBody.addEventListener("focusin", (e)=>{
-      if(e.target.matches('input[data-campo]')){
-        conteoBody.querySelectorAll("tr.selected").forEach(tr=>tr.classList.remove("selected"));
-        const tr = e.target.closest("tr[data-serie]");
-        if(tr) tr.classList.add("selected");
-      }
-    });
+const conteoBody = $("conteoBody");
+if(conteoBody){
+  conteoBody.addEventListener("focusin", (e)=>{
+    if(!e.target.matches('input[data-campo]')) return;
+    conteoBody.querySelectorAll("tr.selected").forEach(tr=>tr.classList.remove("selected"));
+    e.target.closest("tr[data-serie]")?.classList.add("selected");
+  });
+  conteoBody.addEventListener("input", (e)=>{
+    if(!e.target.matches('input[data-campo]')) return;
+    conteoBody.querySelectorAll("tr.selected").forEach(tr=>tr.classList.remove("selected"));
+    e.target.closest("tr[data-serie]")?.classList.add("selected");
+  });
   }
 }
 
