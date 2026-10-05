@@ -578,10 +578,49 @@ fetch(URL_APPS_SCRIPT, { method: "POST", mode: "no-cors", body: payload });
 }
 //-----------------------------------------
 
+//-----------------------------------------
+// CORREO CONTEO
+async function enviarCorreoVisita(){
+  const paraPrincipal = $("pgCorreo")?.value || gcorreo; // tu correo
+  const conCopia = $("ctEmail").value.trim(); // correo cliente  
+ 
+  showMessage("vtMessage","Generando PDF...");
 
+  const c = selectedClientConteo();
+  const fechaSafe = $("ctFecha").value.replaceAll("/","-");
+  const nombreBase = `CONTEO_IMPRESIONES_${c.codigo}_${fechaSafe}`.replace(/[^a-zA-Z0-9_\-]/g,"_");
+
+  try{
+    const docpdf = await generarConteoPDF();
+    const pdfBase64 = docpdf.output('datauristring').split(',')[1];
+    const doctxt = generarConteoTXT();
+    const txtBase64 = btoa(unescape(encodeURIComponent(doctxt)));
+    const txtContenido = ""; // generarVisitaCON();
+
+    // fetch sin preflight para evitar error
+    const payload = JSON.stringify({
+        para: paraPrincipal, // PARA = tu correo
+        cc: conCopia,        // CC = cliente
+        replyTo: paraPrincipal,   // si respondes le respondes a ECOLOIMP
+        asunto: `Conteo Impresiones ${c.nombre} - ${$("ctFecha").value}`,
+        html: txtContenido.replace(/\n/g,"<br>"),
+        pdfBase64: pdfBase64,
+        pdfNombre: nombreBase + ".pdf",
+        txtBase64: txtBase64,
+        txtNombre: nombreBase + ".txt"
+      })
+      
+fetch(URL_APPS_SCRIPT, { method: "POST", mode: "no-cors", body: payload });
+    showMessage("ctMessage","✅ PDF guardado y correo en camino a "+paraPrincipal);
+  }catch(e){
+    console.error(e);
+    showMessage("ctMessage","Error: "+e.message, true);
+  }
+}|
+//-----------------------------------------
 
 // GRABA CONTEO DE IMPRESIONES
-async function guardarConteoPDFCompleto(){
+async function generarConteoPDF(){
   const fmt = (n) => (
     parseInt(String(n).replace(/\./g,''))||0).toLocaleString('es-EC')
     ;  
@@ -609,7 +648,20 @@ async function guardarConteoPDFCompleto(){
   function drawHeader(){
     doc.setFillColor(255,255,255);
     doc.rect(0,0,pageW,22,"F");
+    
     if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,8,35,14); }catch{}
+    // Logo
+    if(logoBase64){
+      try{
+        let props = doc.getImageProperties(logoBase64);
+        let w = 45; // ancho fijo
+        let h = (props.height * w) / props.width; // alto proporcional
+        if(h > 14) { h = 14; w = (props.width * h) / props.height; } // limite alto
+        doc.addImage(logoBase64,"JPEG",10,8, w, h);
+      }catch(e){ 
+        try{ doc.addImage(logoBase64,"JPEG",10,8,45,14); }catch{} // fallback
+      }
+    }
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFontSize(12); doc.setFont("Arial","bold");
     doc.text("CONTEO DE IMPRESIONES", 60, 11);
@@ -718,7 +770,6 @@ async function guardarConteoPDFCompleto(){
     doc.text(`© 2026 DT Soluciones Informaticas           Generado desde ECOLOIMP Web`, 10, pageH-5);
     doc.text(`Pag ${i}/${totalPages}`, pageW-10, pageH-5, {align:"right"});
   }
-  doc.save(`CONTEO ${c.codigo} ${$("ctFecha")?.value||""}.pdf`);
   showMessage("ctMessage",`PDF generado: ${totalPages} página(s)`);
 }
 
