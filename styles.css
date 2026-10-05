@@ -98,8 +98,8 @@ button{cursor:pointer}
 .data-loader-grid{grid-template-columns:repeat(3,1fr)}
 .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
 .stat-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:0 5px 18px rgba(16,24,40,.04)}
-.stat-card span{display:block;color:var(--muted);font-size:13px}
-.stat-card strong{display:block;font-size:28px;margin-top:4px}
+.stat-card span{display:block;color:var(--muted);font-size:28px}
+.stat-card strong{display:block;font-size:13px;margin-top:4px}
 
 .loader-card label{display:flex;flex-direction:column;gap:10px;font-weight:800}
 .loader-card input{font-weight:normal}
