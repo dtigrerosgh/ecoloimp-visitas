@@ -288,12 +288,9 @@ html, body {
   /* Ocultar columnas que no necesitas para elegir */
   #vtPrinterBody th:nth-child(2),
   #vtPrinterBody td:nth-child(2),
-  .printer-selection-table th:nth-child(2),
-  .printer-selection-table td:nth-child(2){
+  #vtPrinterHead th:nth-child(2),
+  #vtPrinterHead td:nth-child(2),{
     display: none !important;
-    width: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
   }
   
   /* DATOS SELECCIONADA EN COLUMNAS */
