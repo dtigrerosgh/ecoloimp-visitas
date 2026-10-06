@@ -295,19 +295,25 @@ www.ecoloimp.com
 `;
 }
 
-function generarConrteoTXT(){
-  const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
-  if(!c)throw new Error("Seleccione cliente conteo");
-  const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;
-  let filas=[];
+function generarConteoTXT(){
+  const c = DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
+  if(!c) throw new Error("Seleccione cliente conteo");
+  const fecha = $("ctFecha")?.value || new Date().toISOString().slice(0,10);
+  const tecnico = $("ctTecnico")?.value || "";
+  let filas = [];
   document.querySelectorAll("#conteoBody tr[data-serie]").forEach(tr=>{
-    const serie=tr.dataset.serie;                                                                   
-    const n=tr.querySelector('[data-campo="negro"]')?.value||"0";
-    const co=tr.querySelector('[data-campo="color"]')?.value||"0";
-    const sc=tr.querySelector('[data-campo="scan"]')?.value||"0";
-    const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";
-    filas.push(`${c.codigo};${serie};${n};${co};${sc};${a3}`);});
-  return${filas.join("\n")||"(Sin contadores)";}
+    const serie = tr.dataset.serie;
+    const n  = tr.querySelector('[data-campo="negro"]')?.value||"0";
+    const co = tr.querySelector('[data-campo="color"]')?.value||"0";
+    const sc = tr.querySelector('[data-campo="scan"]')?.value||"0";
+    const a3 = tr.querySelector('[data-campo="a3"]')?.value||"0";
+    filas.push(`${c.codigo};${serie};${n};${co};${sc};${a3}`);
+  });
+  
+  if(filas.length === 0) throw new Error("Ingrese al menos un contador");
+  
+  return filas.push(`${$("ctFecha").value};${c.codigo};${$("ctTecnico").value};${serie};${n};${co};${sc};${a3}`);
+}
   
 function generarConrteoCON(){
   const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
