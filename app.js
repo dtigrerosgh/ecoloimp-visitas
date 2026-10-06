@@ -306,11 +306,12 @@ function generarConteoTXT(){
   let filas = [];
   document.querySelectorAll("#conteoBody tr[data-serie]").forEach(tr=>{
     const serie = tr.dataset.serie;
+    const codImp = tr.dataset.codigo || "";
     const n  = tr.querySelector('[data-campo="negro"]')?.value||"0";
     const co = tr.querySelector('[data-campo="color"]')?.value||"0";
     const sc = tr.querySelector('[data-campo="scan"]')?.value||"0";
     const a3 = tr.querySelector('[data-campo="a3"]')?.value||"0";
-    filas.push(`${c.codigo};$("ctFecha").value};${t.codigo};${serie};${n};${co};${sc};${a3}`);
+    filas.push(`${c.codigo};$(Fecha)};${t.codigo};${codImp};${serie};${n};${co};${sc};${a3}`);
   });
 
   if(filas.length === 0) throw new Error("Ingrese al menos un contador");
@@ -318,7 +319,7 @@ function generarConteoTXT(){
   return filas.join("\n");
 }
   
-function generarConrteoCON(){
+function generarConteoCON(){
   const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
   if(!c)throw new Error("Seleccione cliente conteo");
   const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;
@@ -330,9 +331,12 @@ function generarConrteoCON(){
     const sc=tr.querySelector('[data-campo="scan"]')?.value||"0";
     const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";
     filas.push(`${c.codigo};${serie};${n};${co};${sc};${a3}`);});
-  return`ECOLOIMP - CONTEO\n
-  Cliente: ${c.codigo} - ${c.nombre} (${total} imp.)\n
-  Fecha: ${$("ctFecha")?.value}\n\n
+  return`ECOLOIMP S.A. - CONTEO DE IMPRESIONES
+  ══════════════════════════════════════════
+  Fecha   : ${$("ctFecha")?.value}
+  Cliente : ${c.codigo} - ${c.nombre}
+  Equipos : (${total} impresoras)
+  
   ${filas.join("\n")||"(Sin contadores)"}\n\n
 
 ✍️ CONFORMIDAD
@@ -430,18 +434,18 @@ async function generarVisitaPDF(){
    let y = 10;
   // Logo
   if(logoBase64){
-  try{
-    let props = doc.getImageProperties(logoBase64);
-    let w = 45; // ancho fijo
-    let h = (props.height * w) / props.width; // alto proporcional
-    if(h > 14) { h = 14; w = (props.width * h) / props.height; } // limite alto
-    doc.addImage(logoBase64,"JPEG",10,y, w, h);
-  }catch(e){ 
-    try{ doc.addImage(logoBase64,"JPEG",10,y,45,14); }catch{} // fallback
+    try{
+      let props = doc.getImageProperties(logoBase64);
+      let w = 45; // ancho fijo
+      let h = (props.height * w) / props.width; // alto proporcional
+      if(h > 14) { h = 14; w = (props.width * h) / props.height; } // limite alto
+      doc.addImage(logoBase64,"JPEG",10,y, w, h);
+    }catch(e){ 
+      try{ doc.addImage(logoBase64,"JPEG",10,y,45,14); }catch{} // fallback
+    }
   }
-}
   doc.setFontSize(14); doc.setFont(undefined,'bold');
-  doc.text("REPORTE DE VISITA TECNICA", 70, 15);
+  doc.text("REPORTE DE VISITA TECNICA", 70, y+5);
 
 // USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
   doc.setFont(undefined,'bold');
@@ -607,7 +611,7 @@ async function enviarCorreoConteo(){
       const pdfBase64 = docpdf.output('datauristring').split(',')[1];
       const doctxt = generarConteoTXT();
       const txtBase64 = btoa(unescape(encodeURIComponent(doctxt)));
-      const txtContenido = ""; // generarVisitaCON();
+      const txtContenido = generarConteoCON();
 
       // fetch sin preflight para evitar error
       const payload = JSON.stringify({
@@ -661,7 +665,6 @@ async function generarConteoPDF(){
     doc.setFillColor(255,255,255);
     doc.rect(0,0,pageW,22,"F");
     
-    if(logoBase64) try{ doc.addImage(logoBase64,"JPEG",10,8,35,14); }catch{}
     // Logo
     if(logoBase64){
       try{
@@ -674,12 +677,27 @@ async function generarConteoPDF(){
         try{ doc.addImage(logoBase64,"JPEG",10,8,45,14); }catch{} // fallback
       }
     }
+    
     doc.setTextColor(0,0,0); // NEGRO
-    doc.setFontSize(12); doc.setFont("Arial","bold");
-    doc.text("CONTEO DE IMPRESIONES", 60, 11);
-    doc.setFontSize(9); doc.setFont("Arial","normal");
+    doc.setFontSize(14); doc.setFont("Arial","bold");
+    doc.text("CONTEO DE IMPRESIONES", 60, 12);
+
+    // USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
+    doc.setFont(undefined,'bold');
+    doc.setFontSize(9); 
+    doc.setTextColor(30,64,175); // azul
+    doc.text(`Usuario: ${usuarioActual}`, 195, 12, {align:"right"});
+
+    doc.setFont(undefined,'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text(new Date().toLocaleString('es-EC'), 195, 14, {align:"right"});
+    
+    doc.setFontSize(12); 
+    doc.setFont(undefined,"normal");
     doc.text(`Cliente: ${c.codigo} - ${c.nombre.substring(0,55)}`, 60, 16);
-    doc.text(`Fecha: ${$("ctFecha")?.value||""} ${$("ctHora")?.value||""} | Equipos: ${impresorasConteo.length}`, 60, 20);
+    doc.text(`Fecha  : ${$("ctFecha")?.value||""} ${$("ctHora")?.value||""}`, 60, 18);
+    doc.text(`Equipos: ${impresorasConteo.length}`, 60, 20);
   }
 
   drawHeader();
