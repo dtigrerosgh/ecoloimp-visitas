@@ -312,7 +312,7 @@ function generarConteoTXT(){
     const a3 = tr.querySelector('[data-campo="a3"]')?.value||"0";
     filas.push(`${c.codigo};$("ctFecha").value};${t.codigo};${serie};${n};${co};${sc};${a3}`);
   });
-  
+
   if(filas.length === 0) throw new Error("Ingrese al menos un contador");
   
   return filas.join("\n");
