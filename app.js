@@ -786,7 +786,7 @@ async function generarConteoPDF(){
   doc.setFontSize(8);
   doc.rect(10,y,tableW,7,"FD");
   doc.text(`TOT: N:${fmt(totRaw.n)} C:${fmt(totRaw.c)} S:${fmt(totRaw.s)} A3:${fmt(totRaw.a3)} EQ:${rows.length}`, 12, y+4.5);
-  y+=13;
+  y+=14;
 
   // Firma
 
@@ -798,9 +798,9 @@ async function generarConteoPDF(){
   doc.setTextColor(0,0,0); // NEGRO
   doc.setDrawColor(0,0,0);
   doc.line(10,y+11,60,y+11);
-  if(firmaData) try{ doc.addImage(firmaData,"PNG",10,y-2,50,14);}catch{}
+  if(firmaData) try{ doc.addImage(firmaData,"PNG",10,y+2,50,14);}catch{}
   doc.setFontSize(8); doc.setFont("Arial","normal");
-  doc.text($("ctNombreFirma")?.value||"Firma", 12, y+14);
+  doc.text($("ctNombreFirma")?.value||"Firma", 12, y+16);
 
   // --- FOOTER CON PAGINA X DE Y EN TODAS LAS PAGINAS ---
   const totalPages = doc.internal.getNumberOfPages();
