@@ -295,7 +295,21 @@ www.ecoloimp.com
 `;
 }
 
-function buildConteoText(){
+function generarConrteoTXT(){
+  const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
+  if(!c)throw new Error("Seleccione cliente conteo");
+  const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;
+  let filas=[];
+  document.querySelectorAll("#conteoBody tr[data-serie]").forEach(tr=>{
+    const serie=tr.dataset.serie;                                                                   
+    const n=tr.querySelector('[data-campo="negro"]')?.value||"0";
+    const co=tr.querySelector('[data-campo="color"]')?.value||"0";
+    const sc=tr.querySelector('[data-campo="scan"]')?.value||"0";
+    const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";
+    filas.push(`${c.codigo};${serie};${n};${co};${sc};${a3}`);});
+  return${filas.join("\n")||"(Sin contadores)";}
+  
+function generarConrteoCON(){
   const c=DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
   if(!c)throw new Error("Seleccione cliente conteo");
   const total=DB.impresoras.filter(x=>x.cliente===c.codigo).length;
