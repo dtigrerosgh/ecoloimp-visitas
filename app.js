@@ -759,7 +759,7 @@ async function generarConteoPDF(){
     doc.text(`© 2026 DT Soluciones Informaticas           Generado desde ECOLOIMP Web`, 10, pageH-5);
     doc.text(`Pag ${i}/${totalPages}`, pageW-10, pageH-5, {align:"right"});
   }
-  showMessage("ctMessage",`PDF generado: ${totalPages} página(s)`);
+  return doc;
 }
 
 function initFirma(){
