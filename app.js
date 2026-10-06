@@ -569,7 +569,7 @@ fetch(URL_APPS_SCRIPT, { method: "POST", mode: "no-cors", body: payload });
 
 //-----------------------------------------
 // CORREO CONTEO
-async function enviarCorreoVisita(){
+async function enviarCorreoConteo(){
   const paraPrincipal = $("pgCorreo")?.value || gcorreo; // tu correo
   const conCopia = $("ctEmail").value.trim(); // correo cliente  
  
