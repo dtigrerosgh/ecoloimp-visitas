@@ -634,6 +634,11 @@ async function enviarCorreoConteo(){
       }
     }
 
+function fmtMiles(v){
+  const num = Number(String(v||"0").replace(/\D/g,"")) || 0;
+  return num.toLocaleString('en-US'); // te da 1.234
+  // si lo quieres con coma 1,234 usa: return num.toLocaleString('en-US');
+}
 
 // GRABA CONTEO DE IMPRESIONES
 async function generarConteoPDF(){
@@ -643,7 +648,8 @@ async function generarConteoPDF(){
   const clientCode = $("ctCliente")?.value;
   const c = DB.clientes.find(x=>x.codigo===clientCode);
   if(!c){ showMessage("ctMessage","Seleccione cliente",true); return; }
-
+  
+  let usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
   const datos = Array.from(document.querySelectorAll("#conteoBody input[data-campo]")).reduce((acc, inp)=>{
   const serie = inp.dataset.serie;
   if(!acc[serie]) acc[serie] = {negro:0,color:0,scan:0,a3:0};
@@ -732,10 +738,10 @@ async function generarConteoPDF(){
       serie,
       (p.sede||""),
       (p.ubicacion||""),
-      fmt(datos[serie].negro),
-      fmt(datos[serie].color),
-      fmt(datos[serie].scan),
-      fmt(datos[serie].a3)
+      fmtMiles(datos[serie].negro),
+      fmtMiles(datos[serie].color),
+      fmtMiles(datos[serie].scan),
+      fmtMiles(datos[serie].a3)
     ];
   });
 
