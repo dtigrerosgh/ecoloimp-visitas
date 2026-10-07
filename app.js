@@ -690,40 +690,40 @@ async function generarConteoPDF(){
 
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFontSize(14); 
-    doc.setFont('helvetica','bold');
+    doc.setFont(undefined,'bold');
     doc.text("CONTEO DE IMPRESIONES", 70, 12);
 
     // USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
-    doc.setFont('helvetica','bold');
+    doc.setFont(undefined,'bold');
     doc.setFontSize(8); 
     doc.setTextColor(30,64,175); // azul
     doc.text(`Usuario: ${usuarioActual}`, 195, 12, {align:"right"});
 
-    doc.setFont('helvetica','normal');
+    doc.setFont(undefined,'normal');
     doc.setTextColor(100);
     doc.text(new Date().toLocaleString('es-EC'), 195, 15, {align:"right"});
     
 
     doc.setFontSize(10); 
-    doc.setFont('helvetica','bold');
+    doc.setFont(undefined,'bold');
     doc.text("Cliente ", 10, 22);
-    doc.setFont('helvetica','normal');
+    doc.setFont(undefined,'normal');
     doc.text(`${c.codigo} - ${c.nombre.substring(0,55)}`, 30, 22);
     
-    doc.setFont('helvetica','bold');
+    doc.setFont(undefined,'bold');
     doc.text("Fecha   ", 10, 25);    
-    doc.setFont('helvetica','normal');
+    doc.setFont(undefined,'normal');
     doc.text(`${$("ctFecha")?.value||""} ${$("ctHora")?.value||""}`, 30, 25);
     
-    doc.setFont('helvetica','bold');
+    doc.setFont(undefined,'bold');
     doc.text("Equipos ", 10, 28);
-    doc.setFont('helvetica','normal');
+    doc.setFont(undefined,'normal');
     doc.text(`${impresorasConteo.length} impresoras`, 30, 28);
   }
 
   drawHeader();
   let y = 30;
-  const colW = [10, 30, 26, 30, 35, 14, 14, 14, 14]; // AREA 50mm
+  const colW = [10, 30, 26, 30, 35, 12, 12, 12, 12]; // AREA 50mm
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
@@ -739,7 +739,7 @@ async function generarConteoPDF(){
       doc.text(h, x+colW[i]/2, yy+4, {align:"center"});
       x+=colW[i];
     });
-    doc.setFont('helvetica','normal');
+    doc.setFont(undefined,'normal');
     return yy+6;
   }
   
@@ -792,7 +792,7 @@ async function generarConteoPDF(){
   doc.setFillColor(255,255,255);
   doc.setDrawColor(0,0,0);
   doc.setTextColor(0,0,0);
-  doc.setFont('helvetica','bold');
+  doc.setFont(undefined,'bold');
   doc.setFontSize(8);
   doc.rect(10,y,tableW,7,"FD");
   doc.text(`TOT: N:${fmt(totRaw.n)} C:${fmt(totRaw.c)} S:${fmt(totRaw.s)} A3:${fmt(totRaw.a3)} EQ:${rows.length}`, 12, y+4.5);
@@ -800,7 +800,7 @@ async function generarConteoPDF(){
 
   // Firma
 
-  doc.setFont('helvetica','bold');
+  doc.setFont(undefined,'bold');
   doc.text("FIRMA DE CONFORMIDAD", 10, y); 
 
   
@@ -818,7 +818,7 @@ async function generarConteoPDF(){
   
   y+=3;
   doc.setFontSize(8); 
-  doc.setFont('helvetica','normal');
+  doc.setFont(undefined,'normal');
   doc.text($("ctNombreFirma")?.value||"Firma", 12, y);
 
   // --- FOOTER CON PAGINA X DE Y EN TODAS LAS PAGINAS ---
