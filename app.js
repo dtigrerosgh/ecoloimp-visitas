@@ -690,7 +690,7 @@ async function generarConteoPDF(){
 
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFontSize(14); 
-    doc.setFont("Arial","bold");
+    doc.setFont('helvetica','bold');
     doc.text("CONTEO DE IMPRESIONES", 70, 12);
 
     // USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
