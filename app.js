@@ -677,10 +677,10 @@ async function generarConteoPDF(){
         let props = doc.getImageProperties(logoBase64);
         let w = 55; // ancho fijo
         let h = (props.height * w) / props.width; // alto proporcional
-        if(h > 17) { h = 17; w = (props.width * h) / props.height; } // limite alto
+        if(h > 20) { h = 20; w = (props.width * h) / props.height; } // limite alto
         doc.addImage(logoBase64,"JPEG",10,8, w, h);
       }catch(e){ 
-        try{ doc.addImage(logoBase64,"JPEG",10,8,55,17); }catch{} // fallback
+        try{ doc.addImage(logoBase64,"JPEG",10,8,55,20); }catch{} // fallback
       }
     }
 
@@ -691,39 +691,39 @@ async function generarConteoPDF(){
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFontSize(14); 
     doc.setFont(undefined,'bold');
-    doc.text("CONTEO DE IMPRESIONES", 70, 12);
+    doc.text("CONTEO DE IMPRESIONES", 80, 13);
 
     // USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
     doc.setFont(undefined,'bold');
     doc.setFontSize(8); 
     doc.setTextColor(30,64,175); // azul
-    doc.text(`Usuario: ${usuarioActual}`, 195, 12, {align:"right"});
+    doc.text(`Usuario: ${usuarioActual}`, 195, 13, {align:"right"});
 
     doc.setFont(undefined,'normal');
     doc.setTextColor(100);
-    doc.text(new Date().toLocaleString('es-EC'), 195, 15, {align:"right"});
+    doc.text(new Date().toLocaleString('es-EC'), 195, 16, {align:"right"});
     
 
     doc.setFontSize(10); 
     doc.setFont(undefined,'bold');
-    doc.text("Cliente ", 10, 22);
+    doc.text("Cliente ", 10, 24);
     doc.setFont(undefined,'normal');
     doc.text(`${c.codigo} - ${c.nombre.substring(0,55)}`, 30, 22);
     
     doc.setFont(undefined,'bold');
-    doc.text("Fecha   ", 10, 25);    
+    doc.text("Fecha   ", 10, 27);    
     doc.setFont(undefined,'normal');
     doc.text(`${$("ctFecha")?.value||""} ${$("ctHora")?.value||""}`, 30, 25);
     
     doc.setFont(undefined,'bold');
-    doc.text("Equipos ", 10, 28);
+    doc.text("Equipos ", 10, 30);
     doc.setFont(undefined,'normal');
     doc.text(`${impresorasConteo.length} impresoras`, 30, 28);
   }
 
   drawHeader();
-  let y = 30;
-  const colW = [10, 30, 26, 30, 35, 12, 12, 12, 12]; // AREA 50mm
+  let y = 32;
+  const colW = [10, 30, 26, 30, 30, 12, 12, 12, 12]; // AREA 50mm
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
@@ -765,7 +765,7 @@ async function generarConteoPDF(){
     const areaLines = doc.splitTextToSize(r[4], colW[4]-2);
     const rowH = Math.max(7, areaLines.length * 4 + 3);
 
-    if(y + rowH > pageH-28){ doc.addPage(); drawHeader(); y=28; y=drawTableHeader(y); }
+    if(y + rowH > pageH-32){ doc.addPage(); drawHeader(); y=32; y=drawTableHeader(y); }
 
     let x=10;
     doc.setDrawColor(0,0,0); doc.setTextColor(0,0,0);
