@@ -312,7 +312,7 @@ function generarConteoTXT(){
     const co = tr.querySelector('[data-campo="color"]')?.value||"0";
     const sc = tr.querySelector('[data-campo="scan"]')?.value||"0";
     const a3 = tr.querySelector('[data-campo="a3"]')?.value||"0";
-    filas.push(`${c.codigo};$(Fecha)};${t.codigo};${codImp};${serie};${n};${co};${sc};${a3}`);
+    filas.push(`${c.codigo};${Fecha};${t.codigo};${codImp};${serie};${n};${co};${sc};${a3}`);
   });
 
   if(filas.length === 0) throw new Error("Ingrese al menos un contador");
@@ -333,13 +333,12 @@ function generarConteoCON(){
     const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";
     filas.push(`${c.codigo};${serie};${n};${co};${sc};${a3}`);});
   return`ECOLOIMP S.A. - CONTEO DE IMPRESIONES
-  ══════════════════════════════════════════
+  ═════════════════════════════════════
+  
   Fecha   : ${$("ctFecha")?.value}
   Cliente : ${c.codigo} - ${c.nombre}
   Equipos : (${total} impresoras)
   
-  ${filas.join("\n")||"(Sin contadores)"}\n\n
-
 ✍️ CONFORMIDAD
 • Firmado por: ${$("ctNombreFirma")?.value || "Cliente"}
 • Firma digital: ${firmaDibujadaCt ? "Sí, registrada en PDF" : "No registrada"}  
