@@ -706,19 +706,19 @@ async function generarConteoPDF(){
 
     doc.setFontSize(10); 
     doc.setFont('helvetica','bold');
-    doc.text("Cliente: ", 10, 22);
+    doc.text("Cliente ", 10, 22);
     doc.setFont('helvetica','normal');
     doc.text(`${c.codigo} - ${c.nombre.substring(0,55)}`, 30, 22);
     
     doc.setFont('helvetica','bold');
-    doc.text("Fecha  : ", 10, 25);    
+    doc.text("Fecha   ", 10, 25);    
     doc.setFont('helvetica','normal');
     doc.text(`${$("ctFecha")?.value||""} ${$("ctHora")?.value||""}`, 30, 25);
     
     doc.setFont('helvetica','bold');
-    doc.text("Equipos: ", 10, 28);
+    doc.text("Equipos ", 10, 28);
     doc.setFont('helvetica','normal');
-    doc.text(`${impresorasConteo.length}`, 30, 28);
+    doc.text(`${impresorasConteo.length} impresoras`, 30, 28);
   }
 
   drawHeader();
@@ -788,7 +788,7 @@ async function generarConteoPDF(){
     n:a.n+datos[s].negro, c:a.c+datos[s].color,
     s:a.s+datos[s].scan, a3:a.a3+datos[s].a3
   }), {n:0,c:0,s:0,a3:0});
-
+ 
   doc.setFillColor(255,255,255);
   doc.setDrawColor(0,0,0);
   doc.setTextColor(0,0,0);
@@ -816,7 +816,7 @@ async function generarConteoPDF(){
   doc.setDrawColor(0,0,0);
   doc.line(10,y,60,y);
   
-  y+=2;
+  y+=3;
   doc.setFontSize(8); 
   doc.setFont('helvetica','normal');
   doc.text($("ctNombreFirma")?.value||"Firma", 12, y);
