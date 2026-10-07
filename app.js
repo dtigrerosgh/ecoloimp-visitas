@@ -812,14 +812,14 @@ async function generarConteoPDF(){
     doc.addImage(firmaData,"PNG",10,y,50,14);
   }catch{}
 
-  y+=12;
+  y+=14;
   doc.setDrawColor(0,0,0);
   doc.line(10,y,60,y);
   
   y+=2;
   doc.setFontSize(8); 
   doc.setFont('helvetica','normal');
-  doc.text($("ctNombreFirma")?.value||"Firma", 12, y+16);
+  doc.text($("ctNombreFirma")?.value||"Firma", 12, y);
 
   // --- FOOTER CON PAGINA X DE Y EN TODAS LAS PAGINAS ---
   const totalPages = doc.internal.getNumberOfPages();
