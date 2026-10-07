@@ -691,29 +691,32 @@ async function generarConteoPDF(){
 
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFontSize(14); doc.setFont("Arial","bold");
-    doc.text("CONTEO DE IMPRESIONES", 60, 12);
+    doc.text("CONTEO DE IMPRESIONES", 70, 12);
 
     // USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
     doc.setFont("Arial",'bold');
-    doc.setFontSize(9); 
+    doc.setFontSize(8); 
     doc.setTextColor(30,64,175); // azul
     doc.text(`Usuario: ${usuarioActual}`, 195, 12, {align:"right"});
 
     doc.setFont("Arial",'normal');
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor(100);
     doc.text(new Date().toLocaleString('es-EC'), 195, 15, {align:"right"});
     
-    doc.setFontSize(12); 
+    doc.setFontSize(11); 
     doc.setFont("Arial","normal");
-    doc.text(`Cliente: ${c.codigo} - ${c.nombre.substring(0,55)}`, 10, 22);
-    doc.text(`Fecha  : ${$("ctFecha")?.value||""} ${$("ctHora")?.value||""}`, 10, 25);
-    doc.text(`Equipos: ${impresorasConteo.length}`, 10, 28);
+    doc.text("Cliente: ", 10, 22);
+    doc.text(`${c.codigo} - ${c.nombre.substring(0,55)}`, 30, 22);
+    doc.text("Fecha  : ", 10, 25);
+    doc.text(`${$("ctFecha")?.value||""} ${$("ctHora")?.value||""}`, 30, 25);
+    doc.text("Equipos: ", 10, 28);
+    doc.text(`${impresorasConteo.length}`, 30, 28);
   }
 
   drawHeader();
   let y = 30;
-  const colW = [10, 28, 26, 20, 50, 14, 14, 14, 14]; // AREA 50mm
+  const colW = [10, 28, 26, 30, 40, 14, 14, 14, 14]; // AREA 50mm
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
@@ -751,7 +754,7 @@ async function generarConteoPDF(){
   });
 
   rows.forEach((r)=>{
-    doc.setFontSize(8); // <--- 8 AQUI
+    doc.setFontSize(7); // <--- 8 AQUI
     const areaLines = doc.splitTextToSize(r[4], colW[4]-2);
     const rowH = Math.max(7, areaLines.length * 4 + 3);
 
@@ -765,7 +768,7 @@ async function generarConteoPDF(){
       if(i===4){
         doc.text(areaLines, x+1, y+4.5);
       } else {
-        doc.text(String(val), i>=5? x+colW[i]/2 : x+1, y+5, {align:i>=5?"center":"left"});
+        doc.text(String(val), i>=5? x+colW[i]/2 : x+1, y+5, {align:i>=5?"right":"left"});
       }
       x+=colW[i];
     });
@@ -773,7 +776,7 @@ async function generarConteoPDF(){
   });
 
   // Totales
-  if(y > pageH-35){ doc.addPage(); drawHeader(); y=28; }
+  if(y > pageH-35){ doc.addPage(); drawHeader(); y=30; }
   const totRaw = impresorasConteo.reduce((a,s)=>({
     n:a.n+datos[s].negro, c:a.c+datos[s].color,
     s:a.s+datos[s].scan, a3:a.a3+datos[s].a3
@@ -796,9 +799,17 @@ async function generarConteoPDF(){
   
   const firmaData = (()=>{ try{ return (typeof firmaDibujadaCt!== 'undefined' && firmaDibujadaCt)? $("ctFirmaCanvas").toDataURL("image/png"):null;}catch{return null;} })();
   doc.setTextColor(0,0,0); // NEGRO
+
+  y+=2;
+  if(firmaData) try{ 
+    doc.addImage(firmaData,"PNG",10,y,50,14);
+  }catch{}
+
+  y+=12;
   doc.setDrawColor(0,0,0);
-  doc.line(10,y+11,60,y+11);
-  if(firmaData) try{ doc.addImage(firmaData,"PNG",10,y+2,50,14);}catch{}
+  doc.line(10,y,60,y);
+  
+  y+=2;
   doc.setFontSize(8); doc.setFont("Arial","normal");
   doc.text($("ctNombreFirma")?.value||"Firma", 12, y+16);
 
