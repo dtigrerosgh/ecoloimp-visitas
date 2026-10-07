@@ -723,7 +723,7 @@ async function generarConteoPDF(){
 
   drawHeader();
   let y = 30;
-  const colW = [10, 28, 26, 30, 40, 14, 14, 14, 14]; // AREA 50mm
+  const colW = [10, 28, 26, 35, 40, 14, 14, 14, 14]; // AREA 50mm
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
