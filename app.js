@@ -684,9 +684,9 @@ async function generarConteoPDF(){
       }
     }
 
-    doc.addFileToVFS("Arial.ttf", ARIAL_BASE64);
-    doc.addFont("Arial.ttf", "Arial", "normal");
-    doc.addFont("Arial.ttf", "Arial", "bold");
+    //doc.addFileToVFS("Arial.ttf", ARIAL_BASE64);
+    //doc.addFont("Arial.ttf", "Arial", "normal");
+    //doc.addFont("Arial.ttf", "Arial", "bold");
 
     doc.setTextColor(0,0,0); // NEGRO
     doc.setFontSize(14); 
