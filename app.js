@@ -675,12 +675,12 @@ async function generarConteoPDF(){
     if(logoBase64){
       try{
         let props = doc.getImageProperties(logoBase64);
-        let w = 45; // ancho fijo
+        let w = 55; // ancho fijo
         let h = (props.height * w) / props.width; // alto proporcional
-        if(h > 14) { h = 14; w = (props.width * h) / props.height; } // limite alto
+        if(h > 17) { h = 17; w = (props.width * h) / props.height; } // limite alto
         doc.addImage(logoBase64,"JPEG",10,8, w, h);
       }catch(e){ 
-        try{ doc.addImage(logoBase64,"JPEG",10,8,45,14); }catch{} // fallback
+        try{ doc.addImage(logoBase64,"JPEG",10,8,55,17); }catch{} // fallback
       }
     }
 
@@ -723,7 +723,7 @@ async function generarConteoPDF(){
 
   drawHeader();
   let y = 30;
-  const colW = [10, 30, 26, 30, 40, 14, 14, 14, 14]; // AREA 50mm
+  const colW = [10, 30, 26, 30, 35, 14, 14, 14, 14]; // AREA 50mm
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
