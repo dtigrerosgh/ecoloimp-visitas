@@ -333,7 +333,7 @@ function generarConteoCON(){
     const a3=tr.querySelector('[data-campo="a3"]')?.value||"0";
     filas.push(`${c.codigo};${serie};${n};${co};${sc};${a3}`);});
   return`ECOLOIMP S.A. - CONTEO DE IMPRESIONES
-  ═════════════════════════════════════
+  ════════════════════════════════
   
   Fecha   : ${$("ctFecha")?.value}
   Cliente : ${c.codigo} - ${c.nombre}
