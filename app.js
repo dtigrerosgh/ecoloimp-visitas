@@ -642,22 +642,21 @@ function fmtMiles(v){
 
 // GRABA CONTEO DE IMPRESIONES
 async function generarConteoPDF(){
-  const fmt = (n) => (
-    parseInt(String(n).replace(/\./g,''))||0).toLocaleString('es-EC')
-    ;  
+  const fmtMiles = (n) => (parseInt(String(n).replace(/\./g,''))||0).toLocaleString('es-EC');
+  const fmt = fmtMiles; // compatibilidad
+
   const clientCode = $("ctCliente")?.value;
   const c = DB.clientes.find(x=>x.codigo===clientCode);
   if(!c){ showMessage("ctMessage","Seleccione cliente",true); return; }
   
   let usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
   const datos = Array.from(document.querySelectorAll("#conteoBody input[data-campo]")).reduce((acc, inp)=>{
-  const serie = inp.dataset.serie;
-  if(!acc[serie]) acc[serie] = {negro:0,color:0,scan:0,a3:0};
-  acc[serie][inp.dataset.campo] = parseInt(inp.value)||0;
-  return acc;
+    const serie = inp.dataset.serie;
+    if(!acc[serie]) acc[serie] = {negro:0,color:0,scan:0,a3:0};
+    acc[serie][inp.dataset.campo] = parseInt(inp.value)||0;
+    return acc;
   },{});
-  // const impresorasConteo = Object.keys(datos).filter(s=> datos[s].negro>0||datos[s].color>0||datos[s].scan>0||datos[s].a3>0 );
-  // CAMBIO: TODAS, tengan o no conteo
+
   const impresorasConteo = Object.keys(datos);
   if(impresorasConteo.length===0){ showMessage("ctMessage","No hay impresoras para este cliente",true); return; }
   
@@ -669,78 +668,67 @@ async function generarConteoPDF(){
 
   function drawHeader(){
     doc.setFillColor(255,255,255);
-    doc.rect(0,0,pageW,22,"F");
+    doc.rect(0,0,pageW,30,"F");
     
-    // Logo
     if(logoBase64){
       try{
         let props = doc.getImageProperties(logoBase64);
-        let w = 55; // ancho fijo
-        let h = (props.height * w) / props.width; // alto proporcional
-        if(h > 20) { h = 20; w = (props.width * h) / props.height; } // limite alto
-        doc.addImage(logoBase64,"JPEG",10,8, w, h);
+        let w = 45; 
+        let h = (props.height * w) / props.width;
+        if(h > 18) { h = 18; w = (props.width * h) / props.height; }
+        doc.addImage(logoBase64,"JPEG",10,4, w, h);
       }catch(e){ 
-        try{ doc.addImage(logoBase64,"JPEG",10,8,55,20); }catch{} // fallback
+        try{ doc.addImage(logoBase64,"JPEG",10,4,45,15); }catch{} 
       }
     }
 
-    //doc.addFileToVFS("Arial.ttf", ARIAL_BASE64);
-    //doc.addFont("Arial.ttf", "Arial", "normal");
-    //doc.addFont("Arial.ttf", "Arial", "bold");
-
-    doc.setTextColor(0,0,0); // NEGRO
+    doc.setTextColor(0,0,0);
     doc.setFontSize(14); 
     doc.setFont(undefined,'bold');
-    doc.text("CONTEO DE IMPRESIONES", 80, 13);
+    doc.text("CONTEO DE IMPRESIONES", pageW/2, 12, {align:"center"});
 
-    // USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
-    doc.setFont(undefined,'bold');
     doc.setFontSize(8); 
-    doc.setTextColor(30,64,175); // azul
-    doc.text(`Usuario: ${usuarioActual}`, 195, 13, {align:"right"});
+    doc.setTextColor(30,64,175);
+    doc.text(`Usuario: ${usuarioActual}`, pageW-10, 10, {align:"right"});
 
     doc.setFont(undefined,'normal');
     doc.setTextColor(100);
-    doc.text(new Date().toLocaleString('es-EC'), 195, 16, {align:"right"});
+    doc.setFontSize(7);
+    doc.text(new Date().toLocaleString('es-EC'), pageW-10, 14, {align:"right"});
     
-
-    doc.setFontSize(10); 
-    doc.setFont(undefined,'bold');
-    doc.text("Cliente ", 10, 24);
-    doc.setFont(undefined,'normal');
-    doc.text(`${c.codigo} - ${c.nombre.substring(0,55)}`, 30, 22);
-    
-    doc.setFont(undefined,'bold');
-    doc.text("Fecha   ", 10, 27);    
-    doc.setFont(undefined,'normal');
-    doc.text(`${$("ctFecha")?.value||""} ${$("ctHora")?.value||""}`, 30, 25);
-    
-    doc.setFont(undefined,'bold');
-    doc.text("Equipos ", 10, 30);
-    doc.setFont(undefined,'normal');
-    doc.text(`${impresorasConteo.length} impresoras`, 30, 28);
+    let yInfo = 22;
+    doc.setTextColor(0,0,0);
+    doc.setFontSize(9);
+    doc.setFont(undefined,'bold'); doc.text("Cliente:", 10, yInfo);
+    doc.setFont(undefined,'normal'); doc.text(`${c.codigo} - ${c.nombre.substring(0,60)}`, 26, yInfo);
+    yInfo+=5;
+    doc.setFont(undefined,'bold'); doc.text("Fecha:", 10, yInfo);
+    doc.setFont(undefined,'normal'); doc.text(`${$("ctFecha")?.value||""} ${$("ctHora")?.value||""}`, 26, yInfo);
+    yInfo+=5;
+    doc.setFont(undefined,'bold'); doc.text("Equipos:", 10, yInfo);
+    doc.setFont(undefined,'normal'); doc.text(`${impresorasConteo.length} impresoras`, 26, yInfo);
   }
 
   drawHeader();
-  let y = 32;
-  const colW = [10, 30, 26, 30, 30, 12, 12, 12, 12]; // AREA 50mm
+  let y = 36;
+  const colW = [12, 32, 26, 32, 32, 14, 14, 14, 14]; // SUMA = 190 - CUADRA PERFECTO EN A4 (10mm margen izq + 10 der)
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
   function drawTableHeader(yy){
     let x=10;
-    doc.setTextColor(0,0,0);
-    doc.setFont("Arial","bold"); 
-    doc.setFontSize(8);
+    doc.setFont(undefined,'bold'); 
+    doc.setFontSize(7.5);
     doc.setDrawColor(0,0,0);
+    doc.setTextColor(0,0,0);
     headers.forEach((h,i)=>{
-      doc.setFillColor(255,255,255); // BLANCO
-      doc.rect(x,yy,colW[i],6,"FD"); // FD = Fill blanco + Borde negro
-      doc.text(h, x+colW[i]/2, yy+4, {align:"center"});
+      doc.setFillColor(230,230,230); // gris clarito para que se vea cuadrado
+      doc.rect(x,yy,colW[i],7,"FD");
+      doc.text(h, x+colW[i]/2, yy+4.5, {align:"center"});
       x+=colW[i];
     });
     doc.setFont(undefined,'normal');
-    return yy+6;
+    return yy+7;
   }
   
   y = drawTableHeader(y);
@@ -761,21 +749,25 @@ async function generarConteoPDF(){
   });
 
   rows.forEach((r)=>{
-    doc.setFontSize(7); // <--- 8 AQUI
+    doc.setFontSize(7);
     const areaLines = doc.splitTextToSize(r[4], colW[4]-2);
-    const rowH = Math.max(7, areaLines.length * 4 + 3);
+    const rowH = Math.max(6, areaLines.length * 3.5 + 2.5);
 
-    if(y + rowH > pageH-32){ doc.addPage(); drawHeader(); y=32; y=drawTableHeader(y); }
+    if(y + rowH > pageH-28){ doc.addPage(); drawHeader(); y=36; y=drawTableHeader(y); }
 
     let x=10;
-    doc.setDrawColor(0,0,0); doc.setTextColor(0,0,0);
+    doc.setDrawColor(180,180,180); 
+    doc.setTextColor(0,0,0);
     r.forEach((val,i)=>{
       doc.setFillColor(255,255,255);
       doc.rect(x,y,colW[i],rowH,"FD");
       if(i===4){
-        doc.text(areaLines, x+1, y+4.5);
+        doc.text(areaLines, x+1, y+3.5);
+      } else if(i>=5){
+        // FIX CUADRE: derecha real
+        doc.text(String(val), x+colW[i]-1, y+4, {align:"right"});
       } else {
-        doc.text(String(val), i>=5? x+colW[i]/2 : x+1, y+5, {align:i>=5?"right":"left"});
+        doc.text(String(val).substring(0,20), x+1, y+4, {align:"left"});
       }
       x+=colW[i];
     });
@@ -783,51 +775,39 @@ async function generarConteoPDF(){
   });
 
   // Totales
-  if(y > pageH-35){ doc.addPage(); drawHeader(); y=30; }
+  if(y > pageH-35){ doc.addPage(); drawHeader(); y=38; }
   const totRaw = impresorasConteo.reduce((a,s)=>({
     n:a.n+datos[s].negro, c:a.c+datos[s].color,
     s:a.s+datos[s].scan, a3:a.a3+datos[s].a3
   }), {n:0,c:0,s:0,a3:0});
  
-  doc.setFillColor(255,255,255);
+  doc.setFillColor(240,240,240);
   doc.setDrawColor(0,0,0);
   doc.setTextColor(0,0,0);
   doc.setFont(undefined,'bold');
   doc.setFontSize(8);
   doc.rect(10,y,tableW,7,"FD");
-  doc.text(`TOT: N:${fmt(totRaw.n)} C:${fmt(totRaw.c)} S:${fmt(totRaw.s)} A3:${fmt(totRaw.a3)} EQ:${rows.length}`, 12, y+4.5);
-  y+=14;
+  doc.text(`TOT: N:${fmt(totRaw.n)} | C:${fmt(totRaw.c)} | S:${fmt(totRaw.s)} | A3:${fmt(totRaw.a3)} | EQ:${rows.length}`, 12, y+4.5);
+  y+=12;
 
   // Firma
-
-  doc.setFont(undefined,'bold');
+  doc.setFont(undefined,'bold'); doc.setFontSize(9);
   doc.text("FIRMA DE CONFORMIDAD", 10, y); 
-
-  
-  const firmaData = (()=>{ try{ return (typeof firmaDibujadaCt!== 'undefined' && firmaDibujadaCt)? $("ctFirmaCanvas").toDataURL("image/png"):null;}catch{return null;} })();
-  doc.setTextColor(0,0,0); // NEGRO
-
   y+=2;
-  if(firmaData) try{ 
-    doc.addImage(firmaData,"PNG",10,y,50,14);
-  }catch{}
-
+  const firmaData = (()=>{ try{ return (typeof firmaDibujadaCt!== 'undefined' && firmaDibujadaCt)? $("ctFirmaCanvas").toDataURL("image/png"):null;}catch{return null;} })();
+  if(firmaData) try{ doc.addImage(firmaData,"PNG",10,y,50,14); }catch{}
   y+=14;
-  doc.setDrawColor(0,0,0);
-  doc.line(10,y,60,y);
-  
-  y+=3;
-  doc.setFontSize(8); 
-  doc.setFont(undefined,'normal');
-  doc.text($("ctNombreFirma")?.value||"Firma", 12, y);
+  doc.setDrawColor(0,0,0); doc.line(10,y,65,y);
+  y+=4;
+  doc.setFontSize(8); doc.setFont(undefined,'normal');
+  doc.text($("ctNombreFirma")?.value||"Firma Cliente", 12, y);
 
-  // --- FOOTER CON PAGINA X DE Y EN TODAS LAS PAGINAS ---
   const totalPages = doc.internal.getNumberOfPages();
   for(let i=1; i<=totalPages; i++){
     doc.setPage(i);
-    doc.setFontSize(6); doc.setTextColor(0,0,0);
+    doc.setFontSize(6); doc.setTextColor(100);
     doc.setDrawColor(180); doc.line(10, pageH-10, pageW-10, pageH-10);
-    doc.text(`© 2026 DT Soluciones Informaticas           Generado desde ECOLOIMP Web`, 10, pageH-5);
+    doc.text(`© 2026 DT Soluciones Informaticas - ECOLOIMP Web`, 10, pageH-5);
     doc.text(`Pag ${i}/${totalPages}`, pageW-10, pageH-5, {align:"right"});
   }
   return doc;
