@@ -872,6 +872,31 @@ function toast(m,t){
     showMessage("vtMessage",m, t==="error");
 }
 
+
+function cerrarSesion(){
+  if(!confirm("¿Cerrar sesión y salir de ECOLOIMP?")) return;
+
+  // 1. Borra todo rastro de sesión
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // 2. Borra cookies de sesión si usas
+  document.cookie.split(";").forEach(c => {
+    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date(0).toUTCString() + ";path=/");
+  });
+
+  // 3. Intenta cerrar la pestaña / ventana
+  // Truco para que deje cerrar aunque no se abrió por script
+  window.open('', '_self').close();
+  window.close();
+
+  // 4. Si el navegador bloquea el cierre (Chrome lo bloquea), redirige a página en blanco
+  setTimeout(() => {
+    document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;font-family:sans-serif'>Sesión cerrada correctamente<br><small>Puede cerrar esta pestaña</small></h1>";
+    window.location.href = "about:blank";
+  }, 300);
+}
+
 function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
   $("ctClienteFilter")?.addEventListener("input",filterClientes);
