@@ -80,7 +80,7 @@ async function cargarUsuarios(){
     }
   }
 }
-
+ 
 function refreshStats(){
   if($("statClientes")) $("statClientes").textContent = DB.clientes.length;
   if($("statImpresoras")) $("statImpresoras").textContent = DB.impresoras.length;
