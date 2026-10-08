@@ -460,22 +460,48 @@
   cargarUsuariosTXT();
 
 // mostrar usuario en header si ya hay sesión
-let sesUser = localStorage.getItem(SESS);
-if(sesUser){
-  let uh = document.getElementById("userHeader");
-  if(uh) uh.textContent = "👤 " + sesUser;
-}
-  
-  document.getElementById('showRegister').onclick = e=>{
+document.addEventListener("DOMContentLoaded", () => {
+  const userHeader = document.getElementById("userHeader");
+  const btnLogout = document.getElementById("btnLogout");
+
+  // 1. Mostrar usuario logueado
+  let sesion = JSON.parse(localStorage.getItem("ecoloimp_sesion") || "null");
+  if(sesion && sesion.user){
+    userHeader.textContent = "👤 " + sesion.user;
+  } else {
+    userHeader.textContent = "👤 Invitado";
+  }
+
+  // 2. Al hacer click en Salir
+  btnLogout.addEventListener("click", (e) => {
     e.preventDefault();
-    document.getElementById('loginForm').style.display='none';
-    document.getElementById('registerForm').style.display='block';
-  };
-  document.getElementById('showLogin').onclick = e=>{
-    e.preventDefault();
-    document.getElementById('registerForm').style.display='none';
-    document.getElementById('loginForm').style.display='block';
-  };
+    
+    // Opcional: Confirmación
+    if(!confirm("¿Deseas cerrar sesión y salir?")) return;
+
+    // Borra sesión
+    localStorage.removeItem("ecoloimp_sesion");
+    localStorage.removeItem("ecoloimp_usuarios");
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Mensaje visual
+    document.body.innerHTML = `
+      <div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;flex-direction:column;">
+        <h2 style="color:#1e40af;">Sesión cerrada</h2>
+        <p>Gracias por usar ECOLOIMP</p>
+      </div>
+    `;
+
+    // Intenta cerrar la pestaña
+    setTimeout(() => {
+      window.open('', '_self');
+      window.close();
+      // Si no deja cerrar, manda a login
+      window.location.href = "about:blank";
+    }, 500);
+  });
+});
 
   // LOGIN
   document.getElementById('btnLogin').onclick = async()=>{
