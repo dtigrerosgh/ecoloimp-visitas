@@ -40,14 +40,44 @@ async function loadFile(type,file,parser){
 
 async function cargarUsuarios(){
   try{
-    const r=await fetch("data/usuarios.txt?v="+Date.now(),{cache:"no-store"});
-    const txt=await r.text();
-    usuariosTXT=splitLines(txt).map(l=>{let[u,p]=l.split(";");
-    return{user:u.trim(),pass:p.trim()};});
-  }
-  catch
-  {
-    usuariosTXT=[{user:"admin",pass:"admin"}];
+    const r = await fetch("data/usuarios.txt?v="+Date.now(), {cache:"no-store"});
+    if(!r.ok) throw new Error("No se encontró usuarios.txt: " + r.status);
+
+    const txt = await r.text();
+    console.log("TXT crudo:", txt); // para que veas que sí lo descargó
+
+    usuariosTXT = splitLines(txt)
+     .map(l => l.trim()) // quita espacios
+     .filter(l => l.length > 0) // quita líneas vacías
+     .filter(l =>!l.startsWith("#") &&!l.startsWith("//")) // ignora comentarios
+     .map(l => {
+        // permite ; o, como separador
+        let partes = l.includes(";")? l.split(";") : l.split(",");
+        let u = (partes[0] || "").trim();
+        let p = (partes[1] || "").trim();
+        // ignora líneas sin usuario o sin clave
+        if(!u ||!p) {
+          console.warn("Línea ignorada por formato:", l);
+          return null;
+        }
+        return {user: u, pass: p};
+      })
+     .filter(Boolean); // quita los null
+
+    if(usuariosTXT.length === 0) throw new Error("TXT vacío después de filtrar");
+
+    console.log("Usuarios cargados:", usuariosTXT.length, usuariosTXT);
+    localStorage.setItem('ecoloimp_usuarios', JSON.stringify(usuariosTXT));
+
+  } catch(err){
+    console.error("Error cargando usuarios:", err);
+    let guardado = localStorage.getItem('ecoloimp_usuarios');
+    if(guardado){
+      usuariosTXT = JSON.parse(guardado);
+      console.log("Usando caché de respaldo:", usuariosTXT.length);
+    } else {
+      usuariosTXT = [{user:"admin",pass:"admin"}];
+    }
   }
 }
 
