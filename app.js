@@ -971,6 +971,7 @@ function setupEvents(){
     try{
       limpiarVisitaTecnica();
       updateVisitaPrinterTable();
+      $("vtPrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
     }catch(err){
       showMessage("vtMessage",err.message,true);
     }
