@@ -972,7 +972,7 @@ function setupEvents(){
       showMessage("vtMessage",err.message,true);
     }
   });
-  
+   
   $("btnConteoGuardar")?.addEventListener("click",async()=>{
     try{
       const email=$("ctEmail")?.value.trim();
