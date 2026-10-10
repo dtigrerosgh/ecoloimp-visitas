@@ -1010,6 +1010,8 @@ function setupEvents(){
     try{
       const email=$("vtEmail")?.value.trim();
       if(!email) throw new Error("Ingrese email cliente");
+      if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
+      if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
       await enviarCorreoVisita();
     }catch(err){
       showMessage("vtMessage",err.message,true);
@@ -1020,6 +1022,8 @@ function setupEvents(){
     try{
       limpiarVisitaTecnica();
       updateVisitaPrinterTable();
+      if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
+      if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
       $("vtPrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
     }catch(err){
       showMessage("vtMessage",err.message,true);
@@ -1040,6 +1044,7 @@ function setupEvents(){
     try{
       limpiarConteo();
       updateConteoPrinterTable();
+      if($("ctFecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);      
     }catch(err){
       showMessage("ctMessage",err.message,true);
     }
@@ -1067,7 +1072,10 @@ async function init(){
   setupNavigation();
   setupEvents();
   initFirma();
-  const ahora=new Date();if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);if($("ctFecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);
+  const ahora=new Date();
+  if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
+  if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
+  if($("ctFecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);
   await cargarUsuarios();
   await loadFile("clientes","clientes.txt",parseClientes);
   await loadFile("impresoras","impresoras.txt",parseImpresoras);
