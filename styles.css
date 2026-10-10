@@ -86,6 +86,7 @@ button{cursor:pointer}
 .btn:hover{transform:translateY(-1px)}
 .btn.primary{background:var(--green);color:#082b0a}
 .btn.secondary{background:var(--ink);color:white}
+.btn.secondary:hover{background:var(--line);color:white}
 .btn.ghost{background:white;color:var(--ink);border:1px solid var(--line)}.btn.full{width:100%}
 .signature-wrap{border:1px dashed var(--line);border-radius:var(--radius);padding:8px;background:var(--white)}
 .signature-wrap canvas{width:100%;max-width:100%;touch-action:none;background:#fff;border-radius:10px}
