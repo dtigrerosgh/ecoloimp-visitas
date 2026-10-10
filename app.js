@@ -970,6 +970,7 @@ function setupEvents(){
   $("btnVisitaLimpiar")?.addEventListener("click",async()=>{
     try{
       limpiarVisitaTecnica();
+      updateVisitaPrinterTable();
     }catch(err){
       showMessage("vtMessage",err.message,true);
     }
