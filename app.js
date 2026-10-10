@@ -915,6 +915,16 @@ function setupEvents(){
       showMessage("vtMessage",err.message,true);
     }
   });
+
+  $("btnVisitaGuardar")?.addEventListener("click",async()=>{
+    try{
+      const email=$("vtEmail")?.value.trim();
+      if(!email) throw new Error("Ingrese email cliente");
+      await enviarCorreoVisita();
+    }catch(err){
+      showMessage("vtMessage",err.message,true);
+    }
+  });
   
   $("btnConteoGuardar")?.addEventListener("click",async()=>{
     try{
