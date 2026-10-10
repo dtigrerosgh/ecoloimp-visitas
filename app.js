@@ -895,6 +895,55 @@ function limpiarVisitaTecnica(){
 }
 
 
+function limpiarConteo(){
+  if(!confirm("¿Limpiar toda la pantalla de Conteo de Impresiones?\nSe borrarán contadores, fotos e impresoras.")) return;
+
+  const sec = document.getElementById("conteo");
+  if(!sec) return;
+
+  // 1. Inputs, selects, textarea
+  sec.querySelectorAll('input:not([type="file"]), select, textarea').forEach(el => {
+    if(el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+    else if(el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
+
+  // 2. Archivos y previews de fotos
+  sec.querySelectorAll('input[type="file"]').forEach(f => f.value = '');
+  sec.querySelectorAll('#previewConteo, #fotosConteo, .preview-foto').forEach(c => {
+    if(c.tagName === 'IMG'){ c.src = ''; c.style.display = 'none'; }
+    else c.innerHTML = '';
+  });
+
+  // 3. Tablas de impresoras / conteos
+  const selectoresTabla = [
+    "#tablaConteo tbody",
+    "#conteo tbody",
+    "#tablaConteoImpresoras tbody",
+    "#listaConteo tbody",
+    "#conteo table tbody"
+  ];
+  selectoresTabla.forEach(sel => {
+    document.querySelectorAll(sel).forEach(tbody => tbody.innerHTML = '');
+  });
+
+  // 4. Contenedores de impresoras de clientes en conteo
+  document.querySelectorAll('#contenedorConteo, #impresorasConteo, #listaImpresorasConteo').forEach(c => c.innerHTML = '');
+
+  // 5. Arrays en memoria
+  if(window.conteos) window.conteos = [];
+  if(window.impresorasConteo) window.impresorasConteo = [];
+  if(window.listaConteo) window.listaConteo = [];
+
+  // 6. Borra storage solo de conteo
+  localStorage.removeItem("conteo_borrador");
+  localStorage.removeItem("ecoloimp_conteo");
+  localStorage.removeItem("conteo_fotos");
+  localStorage.removeItem("conteo_impresoras");
+
+  console.log("✅ Conteo limpio");
+}
+
 function initFirma(){
   function activar(cid,bid,setter){
     const canvas=$(cid);if(!canvas)return;
