@@ -952,7 +952,7 @@ function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
   $("ctClienteFilter")?.addEventListener("input",filterClientes);
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
-  $("ctCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateConteoPrinterTable();});
+  $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
@@ -987,6 +987,16 @@ function setupEvents(){
     }
   });
 
+  $("btnConteoLimpiar")?.addEventListener("click",async()=>{
+    try{
+      limpiarConteo();
+      updateConteoPrinterTable();
+    }catch(err){
+      showMessage("vtMessage",err.message,true);
+    }
+  });
+
+  
 const conteoBody = $("conteoBody");
 if(conteoBody){
   conteoBody.addEventListener("focusin", (e)=>{
