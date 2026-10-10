@@ -967,7 +967,7 @@ function setupEvents(){
 
   $("btnVisitaLimpiar")?.addEventListener("click",async()=>{
     try{
-      await limpiarVisitaTecnica();
+      limpiarVisitaTecnica();
     }catch(err){
       showMessage("vtMessage",err.message,true);
     }
