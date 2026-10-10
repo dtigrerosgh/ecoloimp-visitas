@@ -844,6 +844,55 @@ async function generarConteoPDF(){
   return doc;
 }
 
+function limpiarVisitaTecnica(){
+  if(!confirm("¿Seguro que quieres limpiar toda la Visita Técnica?\nSe borrarán fotos y firma.")) return;
+
+  const sec = document.getElementById("visita");
+
+  // 1. Inputs, selects, textarea
+  sec.querySelectorAll('input:not([type="file"]), select, textarea').forEach(el => {
+    if(el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+    else if(el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
+
+  // 2. Inputs de fotos / archivos
+  sec.querySelectorAll('input[type="file"]').forEach(f => {
+    f.value = '';
+  });
+
+  // 3. Previews de fotos (img, divs donde muestras foto)
+  sec.querySelectorAll('img').forEach(img => {
+    // Si son previews de visita, ocúltalas
+    if(img.id.includes('preview') || img.classList.contains('preview-foto')){
+      img.src = '';
+      img.style.display = 'none';
+    }
+  });
+  // Si usas contenedores de fotos
+  sec.querySelectorAll('.contenedor-fotos, #previewFotos, #listaFotos').forEach(c => c.innerHTML = '');
+
+  // 4. Firma digital - limpia canvas
+  const canvasFirma = document.getElementById('canvasFirma') || document.getElementById('firmaCanvas') || sec.querySelector('canvas');
+  if(canvasFirma){
+    const ctx = canvasFirma.getContext('2d');
+    ctx.clearRect(0, 0, canvasFirma.width, canvasFirma.height);
+  }
+  // Si usas librería SignaturePad
+  if(window.signaturePad) window.signaturePad.clear();
+  if(window.pad) window.pad.clear();
+
+  // 5. Borra borradores de visita del storage
+  localStorage.removeItem("visita_borrador");
+  localStorage.removeItem("ecoloimp_visita");
+  localStorage.removeItem("visita_fotos");
+  localStorage.removeItem("visita_firma");
+  sessionStorage.removeItem("visita_borrador");
+
+  console.log("✅ Visita Técnica limpia por completo");
+}
+
+
 function initFirma(){
   function activar(cid,bid,setter){
     const canvas=$(cid);if(!canvas)return;
@@ -916,11 +965,9 @@ function setupEvents(){
     }
   });
 
-  $("btnVisitaGuardar")?.addEventListener("click",async()=>{
+  $("btnVisitaLimpiar")?.addEventListener("click",async()=>{
     try{
-      const email=$("vtEmail")?.value.trim();
-      if(!email) throw new Error("Ingrese email cliente");
-      await enviarCorreoVisita();
+      await limpiarVisitaTecnica();
     }catch(err){
       showMessage("vtMessage",err.message,true);
     }
