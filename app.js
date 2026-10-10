@@ -871,6 +871,8 @@ function limpiarVisitaTecnica(){
   });
   // Si usas contenedores de fotos
   sec.querySelectorAll('.contenedor-fotos, #previewFotos, #listaFotos').forEach(c => c.innerHTML = '');
+    // Divs / contenedores de impresoras
+  document.querySelectorAll('#contenedorImpresoras, #listaImpresoras, #impresorasContainer').forEach(c => c.innerHTML = '');
 
   // 4. Firma digital - limpia canvas
   const canvasFirma = document.getElementById('canvasFirma') || document.getElementById('firmaCanvas') || sec.querySelector('canvas');
