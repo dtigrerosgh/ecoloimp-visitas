@@ -1041,7 +1041,7 @@ function setupEvents(){
       limpiarConteo();
       updateConteoPrinterTable();
     }catch(err){
-      showMessage("vtMessage",err.message,true);
+      showMessage("ctMessage",err.message,true);
     }
   });
 
