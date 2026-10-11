@@ -179,122 +179,91 @@ function updateConteoPrinterTable(){
 }
 
 function updateInvPrinterTable(){
-  const clientCode = $("ivCliente")?.value || "";
-  const clientObj = DB.clientes.find(c=>c.codigo===clientCode);
-  const clientNombre = clientObj? norm(clientObj.nombre) : "";
-  const qBodega = norm($("ivBodegaFilter")?.value||"");
-  const qProducto = norm($("ivProductoFilter")?.value||"");
-
+  const client = $("ivCliente")?.value || "";
   const selBodega = $("ivBodega");
+  const bodegaSel = selBodega?.value || "";
+  const qBodega = norm($("ivBodegaFilter")?.value||"");
+  const qProd = norm($("ivProductoFilter")?.value||"");
 
-  // SI CAMBIA DE CLIENTE, LLENA BODEGAS DE ESE CLIENTE
-  if(selBodega && selBodega.dataset.cliente!== clientCode){
-    let bodegasCliente = [];
+  // 1. CLIENTE -> LLENA BODEGAS DE ESE CLIENTE
+  if(selBodega && selBodega.dataset.cliente!== client){
+    // Bodegas sacadas de impresoras.txt (es lo más fiable: cliente + bodega)
+    const impresorasCliente = DB.impresoras.filter(p=>p.cliente===client);
+    const bodegasPorImpresoras = [...new Set(impresorasCliente.map(p=>p.bodega).filter(Boolean))].sort();
 
-    if(clientCode){
-      bodegasCliente = DB.bodegas.filter(b=>{
-        // 3 formas de saber si la bodega es de ese cliente:
-        // 1) campo cliente parseado
-        // 2) el texto contiene el codigo del cliente
-        // 3) el texto contiene parte del nombre del cliente
+    // Si tu bodegas.txt tiene el cliente en el nombre, también las agrega
+    let bodegasPorTxt = [];
+    if(client){
+      const cliObj = DB.clientes.find(c=>c.codigo===client);
+      const nomCli = cliObj? norm(cliObj.nombre).split(" ")[0] : "";
+      bodegasPorTxt = DB.bodegas.filter(b=>{
         const txt = norm(b.codigo+" "+b.nombre);
-        return b.cliente === clientCode ||
-               txt.includes(norm(clientCode)) ||
-               (clientNombre && txt.includes(clientNombre.split(" ")[0])) ||
-               DB.inventarios.some(inv=>inv.bodega===b.codigo && DB.bodegas.find(x=>x.codigo===inv.bodega)) // fallback
-      });
-
-      // Si aún no encontró, usa las bodegas que tienen inventario y cuyo código aparece en impresoras de ese cliente
-      if(bodegasCliente.length === 0){
-        const bodegasPorImpresoras = [...new Set(DB.impresoras.filter(p=>p.cliente===clientCode).map(p=>p.bodega).filter(Boolean))];
-        bodegasCliente = DB.bodegas.filter(b=>bodegasPorImpresoras.includes(b.codigo));
-        // si aún vacío, muestra todas las que empiezan con el cliente o todas
-        if(bodegasCliente.length === 0) bodegasCliente = DB.bodegas.filter(b=>norm(b.nombre).includes(norm(clientCode)));
-      }
+        return txt.includes(norm(client)) || (nomCli && txt.includes(nomCli));
+      }).map(b=>b.codigo);
     }
 
-    const lista = clientCode? bodegasCliente : DB.bodegas;
-    const filtradas = qBodega? lista.filter(b=>norm(b.codigo+" "+b.nombre).includes(qBodega)) : lista;
+    const todasBodegasCliente = [...new Set([...bodegasPorImpresoras,...bodegasPorTxt])].sort();
 
-    selBodega.innerHTML = `<option value="">-- Seleccione bodega (${filtradas.length}) --</option>` +
-      filtradas.map(b=>`<option value="${esc(b.codigo)}">${esc(b.codigo)} · ${esc(b.nombre)}</option>`).join("");
-    selBodega.dataset.cliente = clientCode;
-    console.log(`Inventario: cliente ${clientCode} tiene ${filtradas.length} bodegas`, filtradas);
+    // Aplica filtro de texto de bodega
+    let listaFinal = todasBodegasCliente;
+    if(qBodega){
+      listaFinal = listaFinal.filter(cod=>{
+        const b = DB.bodegas.find(x=>x.codigo===cod);
+        return norm(cod+" "+(b?.nombre||"")).includes(qBodega);
+      });
+    }
+
+    selBodega.innerHTML = `<option value="">-- Seleccione bodega (${listaFinal.length}) --</option>` +
+      listaFinal.map(cod=>{
+        const b = DB.bodegas.find(x=>x.codigo===cod);
+        const nombre = b? b.nombre : cod;
+        return `<option value="${esc(cod)}">${esc(cod)} · ${esc(nombre)}</option>`;
+      }).join("");
+
+    selBodega.dataset.cliente = client;
+    console.log(`CLIENTE ${client} -> BODEGAS:`, listaFinal);
+
+    // Limpia tabla hasta que elija bodega
+    if(!bodegaSel && $("inventarioBody")){
+      $("inventarioBody").innerHTML = `<tr><td colspan="5">Cliente tiene ${listaFinal.length} bodegas. Seleccione una.</td></tr>`;
+      return;
+    }
   }
 
-  // Filtra tabla de inventario por bodega seleccionada
-  const bodegaSel = selBodega?.value || "";
-  let invRows = DB.inventarios;
-  if(bodegaSel) invRows = invRows.filter(i=>i.bodega===bodegaSel);
-  else if(clientCode){
-    // si no hay bodega seleccionada, muestra todo el inventario de las bodegas de ese cliente
-    const codsBodegas = [...selBodega.options].map(o=>o.value).filter(Boolean);
-    if(codsBodegas.length>0) invRows = invRows.filter(i=>codsBodegas.includes(i.bodega));
+  // 2. BODEGA -> MUESTRA SALDOS DE INVENTARIO DE ESA BODEGA
+  if(!bodegaSel){
+    // si está filtrando por texto de bodega, vuelve a generar lista
+    if(qBodega && selBodega){
+       selBodega.dataset.cliente = ""; // fuerza recarga
+       updateInvPrinterTable();
+    }
+    return;
   }
 
-  if(qProducto){
-    invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProducto));
+  let invRows = DB.inventarios.filter(i=>i.bodega===bodegaSel);
+
+  if(qProd){
+    invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProd));
   }
 
   if($("inventarioBody")){
-    $("inventarioBody").innerHTML = invRows.length? invRows.slice(0,200).map(i=>`
+    $("inventarioBody").innerHTML = invRows.length? invRows.map(i=>`
       <tr>
-        <td>${esc(i.codigo)}</td>
+        <td><b>${esc(i.codigo)}</b></td>
         <td>${esc(i.nombre)}</td>
-        <td style="text-align:center">${i.cantidad}</td>
-        <td><input type="number" min="0" value="${i.cantidad}" data-inv="${esc(i.codigo)}" style="width:70px"></td>
-        <td><button class="btn ghost" data-del-inv="${esc(i.codigo)}">X</button></td>
-      </tr>`).join("") : `<tr><td colspan="5">${clientCode? (bodegaSel? "Bodega sin stock" : "Seleccione bodega") : "Seleccione cliente"}</td></tr>`;
-  }
-
-  // Llena productos para búsqueda
-  if($("ivProducto")){
-    const rowsProd = DB.productos.filter(p=>norm(p.codigo+" "+p.nombre).includes(qProducto)).slice(0,100);
-    options($("ivProducto"), rowsProd.map(p=>({value:p.codigo, label:`${p.codigo} · ${p.nombre}`})), "Seleccione producto...");
-  }
-}
-
-  // Llena select bodega
-  if($("ivBodega")){
-    const rowsBod = bodegasCliente.filter(b=>norm(b.codigo+" "+b.nombre).includes(qBodega));
-    options($("ivBodega"), rowsBod.map(b=>({value:b.codigo, label:`${b.codigo} · ${b.nombre}`})), "Seleccione bodega...");
-  }
-
-  // 2. Filtra inventario real de esa bodega
-  const bodegaSel = $("ivBodega")?.value;
-  let invRows = DB.inventarios;
-  if(bodegaSel) invRows = invRows.filter(i=>i.bodega===bodegaSel);
-  if(client && bodegaSel === "") {
-     // si aún no eligió bodega pero sí cliente, muestra todas las bodegas de ese cliente
-     const codigosBodegasCliente = DB.bodegas.filter(b=>norm(b.nombre).includes(norm(client)) || b.codigo.startsWith(client)).map(b=>b.codigo);
-     // si tu relación cliente-bodega no es por código, muestra todo el inventario
-  }
-  
-  if(qProducto){
-    invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProducto));
-  }
-
-  // 3. Pinta tabla inventarioBody
-  if($("inventarioBody")){
-    $("inventarioBody").innerHTML = invRows.length ? invRows.map(i=>`
-      <tr>
-        <td>${esc(i.codigo)}</td>
-        <td>${esc(i.nombre)}</td>
-        <td style="text-align:center">${i.cantidad}</td>
-        <td><input type="number" min="0" value="${i.cantidad}" data-inv="${esc(i.codigo)}" style="width:70px"></td>
-        <td><button class="btn ghost" data-del-inv="${esc(i.codigo)}">X</button></td>
+        <td style="text-align:center;background:#f1f5f9"><b>${i.cantidad}</b></td>
+        <td><input type="number" min="0" value="${i.cantidad}" data-inv-codigo="${esc(i.codigo)}" data-inv-bodega="${esc(i.bodega)}" style="width:80px"></td>
+        <td><button class="btn ghost" onclick="this.closest('tr').remove()">X</button></td>
       </tr>
-    `).join("") : `<tr><td colspan="5">${client?"Seleccione bodega o no hay stock para esa bodega":"Seleccione cliente primero"}</td></tr>`;
+    `).join("") : `<tr><td colspan="5">Bodega ${esc(bodegaSel)} sin saldos en inventarios.txt</td></tr>`;
   }
 
-  // 4. Llena select productos para agregar
+  // Llena buscador de productos para agregar
   if($("ivProducto")){
-    const rowsProd = DB.productos.filter(p=>norm(p.codigo+" "+p.nombre).includes(qProducto)).slice(0,100);
-    options($("ivProducto"), rowsProd.map(p=>({value:p.codigo, label:`${p.codigo} · ${p.nombre}`})), "Seleccione producto...");
+    const rowsProd = DB.productos.filter(p=>norm(p.codigo+" "+p.nombre).includes(qProd)).slice(0,100);
+    options($("ivProducto"), rowsProd.map(p=>({value:p.codigo, label:`${p.codigo} · ${p.nombre}`})), "Buscar y agregar producto...");
   }
 }
-
-
 function selectVisitaPrinter(serie){
   const p = DB.impresoras.find(x=>x.serie===serie);
   if(!p) return;
@@ -1128,16 +1097,16 @@ function setupEvents(){
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
   //$("ivCliente")?.addEventListener("change",()=>{DB.invPrinter=null;updateInvPrinterTable();});//
+// INVENTARIO: Cliente -> Bodegas -> Saldos
 $("ivCliente")?.addEventListener("change",()=>{
-  const sel = $("ivBodega");
-  if(sel){ sel.dataset.cliente = ""; } // fuerza recarga
+  $("ivBodega").dataset.cliente = ""; // resetea cache
+  $("ivBodega").value = "";
   $("ivBodegaFilter").value = "";
   updateInvPrinterTable();
 });
 $("ivBodega")?.addEventListener("change",()=>updateInvPrinterTable());
 $("ivBodegaFilter")?.addEventListener("input",()=>{
-  // borra el cache para que vuelva a filtrar
-  $("ivBodega").dataset.cliente = "";
+  $("ivBodega").dataset.cliente = ""; // al escribir, refiltra bodegas
   updateInvPrinterTable();
 });
 $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
