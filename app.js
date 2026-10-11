@@ -215,14 +215,19 @@ function updateInvPrinterTable(){
 
   if(!bodegaSel) return;
 
-  // 2. BODEGA -> SALDOS (solo inventarios.txt)
+    // 2. BODEGA -> SALDOS (solo inventarios.txt)
   let listaBodegas = [];
   try{ listaBodegas = JSON.parse(selBodega.dataset.bodegas || "[]"); }catch(e){ listaBodegas = []; }
 
   let invRows = [];
   if(bodegaSel === "999"){
-    // Todas las bodegas del cliente
-    invRows = DB.inventarios.filter(i=> listaBodegas.includes((i.bodega||"").trim()));
+    // Todas las bodegas del cliente, SIN AGRUPAR, bodega por bodega
+    invRows = DB.inventarios.filter(i=> listaBodegas.includes((i.bodega||"").trim()))
+      .sort((a,b)=>{
+        const c = (a.bodega||"").localeCompare(b.bodega||"");
+        if(c!==0) return c;
+        return (a.codigo||"").localeCompare(b.codigo||"");
+      });
   }else{
     invRows = DB.inventarios.filter(i=> (i.bodega||"").trim() === bodegaSel);
   }
@@ -231,19 +236,7 @@ function updateInvPrinterTable(){
     invRows = invRows.filter(i=>norm(i.codigo+" "+(i.alterno||"")+" "+(i.nombre||"")).includes(qProd));
   }
 
-  // Si es 999, agrupar por producto sumando cantidades
-  if(bodegaSel === "999"){
-    const map = {};
-    invRows.forEach(i=>{
-      const cod = (i.codigo||"").trim();
-      if(!map[cod]){
-        map[cod] = {...i, cantidad: 0, bodega: "999" };
-      }
-      map[cod].cantidad += Number(i.cantidad||0);
-    });
-    invRows = Object.values(map);
-  }
-
+  // YA NO AGRUPAMOS POR CODIGO, mostramos cada fila tal cual
   if($("inventarioBody")){
     $("inventarioBody").innerHTML = invRows.length? invRows.map(i=>{
       const codigo = (i.codigo||"").trim();
