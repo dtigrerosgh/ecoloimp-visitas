@@ -1000,11 +1000,11 @@ function cerrarSesion(){
 function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
   $("ctClienteFilter")?.addEventListener("input",filterClientes);
-  $("inClienteFilter")?.addEventListener("input",filterClientes);
+  $("ivClienteFilter")?.addEventListener("input",filterClientes);
   
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
-  $("inCliente")?.addEventListener("change",()=>{DB.inventarioPrinter=null;updateInvPrinterTable();});
+  $("ivCliente")?.addEventListener("change",()=>{DB.inventarioPrinter=null;updateInvPrinterTable();});
   
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
