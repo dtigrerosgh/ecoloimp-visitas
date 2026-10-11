@@ -111,6 +111,7 @@ function filterClientes(){
 
 function fillTecnicos(){const rows=DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label));options($("vtTecnico"),rows,"Seleccione técnico...");options($("ctTecnico"),rows,"Seleccione técnico...");}
 function fillTrabajos(){options($("vtTrabajo"),DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)),"Seleccione trabajo...");}
+function fillProductos(){options($("ivProducto"),DB.productos.map(p=>({value:p.codigo,label:`${p.codigo} · ${p.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)),"Seleccione producto...");}
 
 function updateVisitaPrinterTable(){
   const client = $("vtCliente")?.value;
@@ -1194,6 +1195,7 @@ async function init(){
   filterClientes();
   fillTecnicos();
   fillTrabajos();
+  fillProductos();
   updateVisitaPrinterTable();
   updateConteoPrinterTable();
   updateInvPrinterTable();
