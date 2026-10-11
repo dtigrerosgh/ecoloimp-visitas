@@ -308,6 +308,7 @@ function setupNavigation(){
 function selectedClientVisita(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
 function selectedClientConteo(){ return DB.clientes.find(c=>c.codigo===$("ctCliente")?.value); }
 function selectedClientInv(){ return DB.clientes.find(c=>c.codigo===$("ivCliente")?.value); }
+function selectedProductoInv(){ return DB.productos.find(c=>c.codigo===$("ivProducto")?.value); }
 
 function showMessage(id,msg,err=false){const el=$(id);if(!el)return;el.hidden=false;el.className="message"+(err?" error":"");el.textContent=msg;}
 function saveText(t,f){const b=new Blob([t],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
