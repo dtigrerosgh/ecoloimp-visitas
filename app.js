@@ -232,7 +232,7 @@ function updateInvPrinterTable(){
         <td><input type="number" min="0" value="${i.cantidad}" data-inv-codigo="${esc(i.codigo)}" data-inv-bodega="${esc(i.bodega)}" style="width:80px"></td>
         <td><button class="btn ghost" onclick="this.closest('tr').remove()">X</button></td>
       </tr>
-    `).join("") : `<tr><td colspan="5">Bodega ${esc(bodegaSel)} sin saldos en inventarios.txt</td></tr>`;
+    `).join("") : `<tr><td colspan="7">Bodega ${esc(bodegaSel)} sin saldos en inventarios.txt</td></tr>`;
   }
 }
 
