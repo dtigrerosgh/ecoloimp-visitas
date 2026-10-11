@@ -1004,7 +1004,6 @@ function setupEvents(){
   
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
-  $("ivCliente")?.addEventListener("change",()=>{DB.inventarioPrinter=null;updateInvPrinterTable();});
   
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
