@@ -183,7 +183,7 @@ function updateInvPrinterTable(){
   const selBodega = $("ivBodega");
   const bodegaSel = (selBodega?.value || "").trim();
   const qProd = norm($("ivProductoFilter")?.value||"");
-
+  alert(client);
   // 1. CLIENTE -> BODEGAS SOLO POR CODIGO EXACTO
   if(selBodega && selBodega.dataset.cliente !== client){
     const bodegasDelCliente = [...new Set(
