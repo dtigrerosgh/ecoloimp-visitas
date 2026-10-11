@@ -184,9 +184,8 @@ function updateInvPrinterTable(){
   const bodegaSel = (selBodega?.value || "").trim();
   const qProd = norm($("ivProductoFilter")?.value||"");
 
-  // 1. CLIENTE -> BODEGAS SOLO POR CODIGO
+  // 1. CLIENTE -> BODEGAS SOLO POR CODIGO EXACTO
   if(selBodega && selBodega.dataset.cliente !== client){
-    // SOLO impresoras donde cliente == codigo exacto
     const bodegasDelCliente = [...new Set(
       DB.impresoras
         .filter(p => (p.cliente||"").trim() === client)
@@ -194,7 +193,7 @@ function updateInvPrinterTable(){
         .filter(Boolean)
     )].sort((a,b)=>a.localeCompare(b,'es'));
 
-    console.log(`[INV] Cliente [${client}] -> ${bodegasDelCliente.length} bodegas:`, bodegasDelCliente);
+    console.log(`[INV] Cliente [${client}] -> ${bodegasDelCliente.length} bodegas`, bodegasDelCliente);
 
     selBodega.innerHTML = `<option value="">-- Seleccione bodega (${bodegasDelCliente.length}) --</option>` +
       bodegasDelCliente.map(cod=>{
@@ -210,14 +209,16 @@ function updateInvPrinterTable(){
         ? `<tr><td colspan="5">Cliente ${esc(client)} tiene ${bodegasDelCliente.length} bodegas. Seleccione una.</td></tr>`
         : `<tr><td colspan="5">Seleccione cliente</td></tr>`;
     }
-    if(bodegasDelCliente.length === 0) return;
+    if(!bodegaSel) return;
   }
 
   if(!bodegaSel) return;
 
   // 2. BODEGA -> SALDOS
   let invRows = DB.inventarios.filter(i=> (i.bodega||"").trim() === bodegaSel);
-  if(qProd) invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProd));
+  if(qProd){
+    invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProd));
+  }
 
   if($("inventarioBody")){
     $("inventarioBody").innerHTML = invRows.length ? invRows.map(i=>`
@@ -230,37 +231,8 @@ function updateInvPrinterTable(){
       </tr>
     `).join("") : `<tr><td colspan="5">Bodega ${esc(bodegaSel)} sin saldos en inventarios.txt</td></tr>`;
   }
-}
 
-  // 2. BODEGA -> MUESTRA SALDOS DE INVENTARIO DE ESA BODEGA
-  if(!bodegaSel){
-    // si está filtrando por texto de bodega, vuelve a generar lista
-    if(qBodega && selBodega){
-       selBodega.dataset.cliente = ""; // fuerza recarga
-       updateInvPrinterTable();
-    }
-    return;
-  }
-
-  let invRows = DB.inventarios.filter(i=>i.bodega===bodegaSel);
-
-  if(qProd){
-    invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProd));
-  }
-
-  if($("inventarioBody")){
-    $("inventarioBody").innerHTML = invRows.length? invRows.map(i=>`
-      <tr>
-        <td><b>${esc(i.codigo)}</b></td>
-        <td>${esc(i.nombre)}</td>
-        <td style="text-align:center;background:#f1f5f9"><b>${i.cantidad}</b></td>
-        <td><input type="number" min="0" value="${i.cantidad}" data-inv-codigo="${esc(i.codigo)}" data-inv-bodega="${esc(i.bodega)}" style="width:80px"></td>
-        <td><button class="btn ghost" onclick="this.closest('tr').remove()">X</button></td>
-      </tr>
-    `).join("") : `<tr><td colspan="5">Bodega ${esc(bodegaSel)} sin saldos en inventarios.txt</td></tr>`;
-  }
-
-  // Llena buscador de productos para agregar
+  // Buscador productos
   if($("ivProducto")){
     const rowsProd = DB.productos.filter(p=>norm(p.codigo+" "+p.nombre).includes(qProd)).slice(0,100);
     options($("ivProducto"), rowsProd.map(p=>({value:p.codigo, label:`${p.codigo} · ${p.nombre}`})), "Buscar y agregar producto...");
