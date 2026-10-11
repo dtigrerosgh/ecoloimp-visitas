@@ -179,20 +179,80 @@ function updateConteoPrinterTable(){
 }
 
 function updateInvPrinterTable(){
-  const client = $("ivCliente")?.value;
-  const qCliente = norm($("ivClienteFilter")?.value||"");
+  const clientCode = $("ivCliente")?.value || "";
+  const clientObj = DB.clientes.find(c=>c.codigo===clientCode);
+  const clientNombre = clientObj? norm(clientObj.nombre) : "";
   const qBodega = norm($("ivBodegaFilter")?.value||"");
   const qProducto = norm($("ivProductoFilter")?.value||"");
 
-  // 1. Filtra bodegas de ese cliente
-  const bodegasCliente = DB.bodegas.filter(b => {
-    if(!client) return true;
-    // tu bodega viene como "bodega;cliente - nombre"
-    return norm(b.codigo+" "+b.nombre).includes(norm(client)) || 
-           norm(b.nombre).includes(qCliente) === false && b.codigo.includes(client) || 
-           b.nombre.toLowerCase().includes(client.toLowerCase()) ||
-           true; // si tu txt de bodegas no trae codigo cliente, muestra todas y filtramos por texto
-  });
+  const selBodega = $("ivBodega");
+
+  // SI CAMBIA DE CLIENTE, LLENA BODEGAS DE ESE CLIENTE
+  if(selBodega && selBodega.dataset.cliente!== clientCode){
+    let bodegasCliente = [];
+
+    if(clientCode){
+      bodegasCliente = DB.bodegas.filter(b=>{
+        // 3 formas de saber si la bodega es de ese cliente:
+        // 1) campo cliente parseado
+        // 2) el texto contiene el codigo del cliente
+        // 3) el texto contiene parte del nombre del cliente
+        const txt = norm(b.codigo+" "+b.nombre);
+        return b.cliente === clientCode ||
+               txt.includes(norm(clientCode)) ||
+               (clientNombre && txt.includes(clientNombre.split(" ")[0])) ||
+               DB.inventarios.some(inv=>inv.bodega===b.codigo && DB.bodegas.find(x=>x.codigo===inv.bodega)) // fallback
+      });
+
+      // Si aún no encontró, usa las bodegas que tienen inventario y cuyo código aparece en impresoras de ese cliente
+      if(bodegasCliente.length === 0){
+        const bodegasPorImpresoras = [...new Set(DB.impresoras.filter(p=>p.cliente===clientCode).map(p=>p.bodega).filter(Boolean))];
+        bodegasCliente = DB.bodegas.filter(b=>bodegasPorImpresoras.includes(b.codigo));
+        // si aún vacío, muestra todas las que empiezan con el cliente o todas
+        if(bodegasCliente.length === 0) bodegasCliente = DB.bodegas.filter(b=>norm(b.nombre).includes(norm(clientCode)));
+      }
+    }
+
+    const lista = clientCode? bodegasCliente : DB.bodegas;
+    const filtradas = qBodega? lista.filter(b=>norm(b.codigo+" "+b.nombre).includes(qBodega)) : lista;
+
+    selBodega.innerHTML = `<option value="">-- Seleccione bodega (${filtradas.length}) --</option>` +
+      filtradas.map(b=>`<option value="${esc(b.codigo)}">${esc(b.codigo)} · ${esc(b.nombre)}</option>`).join("");
+    selBodega.dataset.cliente = clientCode;
+    console.log(`Inventario: cliente ${clientCode} tiene ${filtradas.length} bodegas`, filtradas);
+  }
+
+  // Filtra tabla de inventario por bodega seleccionada
+  const bodegaSel = selBodega?.value || "";
+  let invRows = DB.inventarios;
+  if(bodegaSel) invRows = invRows.filter(i=>i.bodega===bodegaSel);
+  else if(clientCode){
+    // si no hay bodega seleccionada, muestra todo el inventario de las bodegas de ese cliente
+    const codsBodegas = [...selBodega.options].map(o=>o.value).filter(Boolean);
+    if(codsBodegas.length>0) invRows = invRows.filter(i=>codsBodegas.includes(i.bodega));
+  }
+
+  if(qProducto){
+    invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProducto));
+  }
+
+  if($("inventarioBody")){
+    $("inventarioBody").innerHTML = invRows.length? invRows.slice(0,200).map(i=>`
+      <tr>
+        <td>${esc(i.codigo)}</td>
+        <td>${esc(i.nombre)}</td>
+        <td style="text-align:center">${i.cantidad}</td>
+        <td><input type="number" min="0" value="${i.cantidad}" data-inv="${esc(i.codigo)}" style="width:70px"></td>
+        <td><button class="btn ghost" data-del-inv="${esc(i.codigo)}">X</button></td>
+      </tr>`).join("") : `<tr><td colspan="5">${clientCode? (bodegaSel? "Bodega sin stock" : "Seleccione bodega") : "Seleccione cliente"}</td></tr>`;
+  }
+
+  // Llena productos para búsqueda
+  if($("ivProducto")){
+    const rowsProd = DB.productos.filter(p=>norm(p.codigo+" "+p.nombre).includes(qProducto)).slice(0,100);
+    options($("ivProducto"), rowsProd.map(p=>({value:p.codigo, label:`${p.codigo} · ${p.nombre}`})), "Seleccione producto...");
+  }
+}
 
   // Llena select bodega
   if($("ivBodega")){
