@@ -220,7 +220,7 @@ function updateInvPrinterTable(){
   if(qProd){
     invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProd));
   }
- 
+  
   if($("inventarioBody")){
     $("inventarioBody").innerHTML = invRows.length ? invRows.map(i=>`
       <tr>
