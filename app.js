@@ -1068,20 +1068,23 @@ function setupEvents(){
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
   //$("ivCliente")?.addEventListener("change",()=>{DB.invPrinter=null;updateInvPrinterTable();});//
-    $("ivCliente")?.addEventListener("change",()=>{
-    $("ivBodega").selectedIndex = 0;
-    updateInvPrinterTable();
-  });
-  $("ivBodega")?.addEventListener("change",()=>updateInvPrinterTable());
-  $("ivBodegaFilter")?.addEventListener("input",()=>updateInvPrinterTable());
-  $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
-  $("ivProducto")?.addEventListener("change",()=>{
-    if($("ivCodigoNuevo")) $("ivCodigoNuevo").value = $("ivProducto").value;
-  });
+$("ivCliente")?.addEventListener("change",()=>{
+  const sel = $("ivBodega");
+  if(sel){ sel.dataset.cliente = ""; } // fuerza recarga
+  $("ivBodegaFilter").value = "";
+  updateInvPrinterTable();
+});
+$("ivBodega")?.addEventListener("change",()=>updateInvPrinterTable());
+$("ivBodegaFilter")?.addEventListener("input",()=>{
+  // borra el cache para que vuelva a filtrar
+  $("ivBodega").dataset.cliente = "";
+  updateInvPrinterTable();
+});
+$("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
   
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
-  $("ivPrinterFilter")?.addEventListener("input",updateInvPrinterTable);
+
 
   
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
