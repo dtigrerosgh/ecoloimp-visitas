@@ -1000,8 +1000,12 @@ function cerrarSesion(){
 function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
   $("ctClienteFilter")?.addEventListener("input",filterClientes);
+  $("inClienteFilter")?.addEventListener("input",filterClientes);
+  
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
+  $("inCliente")?.addEventListener("change",()=>{DB.inventarioPrinter=null;updateInvPrinterTable();});
+  
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
