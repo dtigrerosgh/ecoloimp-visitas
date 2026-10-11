@@ -184,58 +184,86 @@ function updateInvPrinterTable(){
   const bodegaSel = (selBodega?.value || "").trim();
   const qProd = norm($("ivProductoFilter")?.value||"");
 
-  // 1. CLIENTE -> BODEGAS (SOLO de bodegas.txt)
-  if(selBodega && selBodega.dataset.cliente !== client){
-    // Busca en bodegas.txt las que contienen el codigo de cliente en el nombre
-    // Ej: bodegas.txt = 073;T187 - SEMVRA - MATRIZ
-    const bodegasDelCliente = DB.bodegas.filter(b=>{
+  // 1. CLIENTE -> BODEGAS (solo bodegas.txt)
+  if(selBodega && selBodega.dataset.cliente!== client){
+    let bodegasDelCliente = DB.bodegas.filter(b=>{
       const codigo = (b.codigo||"").trim();
-      const nombre = (b.nombre||"").toString();
 
-      // Filtra por codigo de cliente dentro del nombre de la bodega
-      // Solo busca el codigo exacto T187, V213, etc.
-      return norm(nombre).includes(norm(client));
+      if(codigo === "999") return false; // no duplicar
+      return norm(b.nombre).includes(norm(client));
     }).sort((a,b)=>a.codigo.localeCompare(b.codigo,'es'));
 
-    console.log(`[INV] Cliente [${client}] -> Bodegas desde bodegas.txt:`, bodegasDelCliente.map(b=>b.codigo));
+    let html = `<option value="">-- Seleccione bodega (${bodegasDelCliente.length}) --</option>`;
 
-    selBodega.innerHTML = `<option value="">-- Seleccione bodega (${bodegasDelCliente.length}) --</option>` +
-      bodegasDelCliente.map(b=>`<option value="${esc(b.codigo)}">${esc(b.codigo)} · ${esc(b.nombre)}</option>`).join("");
+    // Si hay mas de 1 bodega, agregar 999
+    if(bodegasDelCliente.length > 1){
+      html += `<option value="999">999 · Todas las bodegas (${bodegasDelCliente.length})</option>`;
+    }
 
+    html += bodegasDelCliente.map(b=>`<option value="${esc(b.codigo)}">${esc(b.codigo)} · ${esc(b.nombre)}</option>`).join("");
+
+    selBodega.innerHTML = html;
     selBodega.dataset.cliente = client;
+    // guardamos lista de bodegas del cliente para usarla con 999
+    selBodega.dataset.bodegas = JSON.stringify(bodegasDelCliente.map(b=>b.codigo));
 
     if($("inventarioBody")){
-      $("inventarioBody").innerHTML = client 
-        ? `<tr><td colspan="5">Cliente ${esc(client)} tiene ${bodegasDelCliente.length} bodegas en bodegas.txt. Seleccione una.</td></tr>`
-        : `<tr><td colspan="5">Seleccione cliente</td></tr>`;
+      $("inventarioBody").innerHTML = `<tr><td colspan="7">Cliente ${esc(client)} tiene ${bodegasDelCliente.length} bodegas. Seleccione una.</td></tr>`;
     }
-    if(!bodegaSel) return;
+    return;
   }
 
   if(!bodegaSel) return;
 
-  // 2. BODEGA -> SALDOS (SOLO de inventarios.txt)
-  let invRows = DB.inventarios.filter(i=> (i.bodega||"").trim() === bodegaSel);
-  
-  if(qProd){
-    invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProd));
+  // 2. BODEGA -> SALDOS (solo inventarios.txt)
+  let listaBodegas = [];
+  try{ listaBodegas = JSON.parse(selBodega.dataset.bodegas || "[]"); }catch(e){ listaBodegas = []; }
+
+  let invRows = [];
+  if(bodegaSel === "999"){
+    // Todas las bodegas del cliente
+    invRows = DB.inventarios.filter(i=> listaBodegas.includes((i.bodega||"").trim()));
+  }else{
+    invRows = DB.inventarios.filter(i=> (i.bodega||"").trim() === bodegaSel);
   }
-  
+
+  if(qProd){
+    invRows = invRows.filter(i=>norm(i.codigo+" "+(i.alterno||"")+" "+(i.nombre||"")).includes(qProd));
+  }
+
+  // Si es 999, agrupar por producto sumando cantidades
+  if(bodegaSel === "999"){
+    const map = {};
+    invRows.forEach(i=>{
+      const cod = (i.codigo||"").trim();
+      if(!map[cod]){
+        map[cod] = {...i, cantidad: 0, bodega: "999" };
+      }
+      map[cod].cantidad += Number(i.cantidad||0);
+    });
+    invRows = Object.values(map);
+  }
+
   if($("inventarioBody")){
-    $("inventarioBody").innerHTML = invRows.length ? invRows.map(i=>`
+    $("inventarioBody").innerHTML = invRows.length? invRows.map(i=>{
+      const codigo = (i.codigo||"").trim();
+      const prod = DB.productos.find(p=> (p.codigo||"").trim() === codigo);
+      const alterno = esc(prod?.alterno || i.alterno || i.nombre || "");
+      const nombreReal = esc(prod?.nombre || i.nombre || "");
+
+      return `
       <tr>
         <td>${esc(i.bodega)}</td>
-        <td><b>${esc(i.codigo)}</b></td>
-        <td>${esc(i.alterno)}</td>
-        <td>${esc(i.nombre)}</td>
-        <td style="text-align:center;background:#f1f5f9"><b>${i.cantidad}</b></td>
-        <td><input type="number" min="0" value="${i.cantidad}" data-inv-codigo="${esc(i.codigo)}" data-inv-bodega="${esc(i.bodega)}" style="width:80px"></td>
+        <td><b>${esc(codigo)}</b></td>
+        <td>${alterno}</td>
+        <td>${nombreReal}</td>
+        <td style="text-align:center;background:#f1f5f9"><b>${i.cantidad??0}</b></td>
+        <td><input type="number" min="0" value="${i.cantidad??0}" data-inv-codigo="${esc(codigo)}" data-inv-bodega="${esc(i.bodega)}" style="width:80px"></td>
         <td><button class="btn ghost" onclick="this.closest('tr').remove()">X</button></td>
-      </tr>
-    `).join("") : `<tr><td colspan="7">Bodega ${esc(bodegaSel)} sin saldos en inventarios.txt</td></tr>`;
+      </tr>`;
+    }).join("") : `<tr><td colspan="7">Bodega ${esc(bodegaSel)} sin saldos en inventarios.txt</td></tr>`;
   }
 }
-
 function selectVisitaPrinter(serie){
   const p = DB.impresoras.find(x=>x.serie===serie);
   if(!p) return;
