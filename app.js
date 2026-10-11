@@ -20,7 +20,7 @@ const parseTecnicos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nomb
 const parseTrabajos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
 const parseBodegas=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
 const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
-const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],nombre:r[2]||"",cantidad:Number((r[3]||"0").replace(",","."))||0}));
+const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],alterno:r[2],nombre:r[3]||"",cantidad:Number((r[4]||"0").replace(",","."))||0}));
 
 async function loadFile(type,file,parser){
   const url = "data/"+file+"?v="+Date.now();
