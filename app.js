@@ -198,7 +198,7 @@ function updateInvPrinterTable(){
       const nomCli = cliObj? norm(cliObj.nombre).split(" ")[0] : "";
       bodegasPorTxt = DB.bodegas.filter(b=>{
         const txt = norm(b.codigo+" "+b.nombre);
-        return txt.includes(norm(client)) || (nomCli && txt.includes(nomCli));
+        return txt.includes(norm(client)) || (nomCli && txt.includes(cliObj));
       }).map(b=>b.codigo);
     }
 
@@ -264,6 +264,7 @@ function updateInvPrinterTable(){
     options($("ivProducto"), rowsProd.map(p=>({value:p.codigo, label:`${p.codigo} · ${p.nombre}`})), "Buscar y agregar producto...");
   }
 }
+
 function selectVisitaPrinter(serie){
   const p = DB.impresoras.find(x=>x.serie===serie);
   if(!p) return;
