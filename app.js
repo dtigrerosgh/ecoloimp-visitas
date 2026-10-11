@@ -224,7 +224,9 @@ function updateInvPrinterTable(){
   if($("inventarioBody")){
     $("inventarioBody").innerHTML = invRows.length ? invRows.map(i=>`
       <tr>
+        <td>${esc(i.bodega)}</td>
         <td><b>${esc(i.codigo)}</b></td>
+        <td>${esc(i.alterno)}</td>
         <td>${esc(i.nombre)}</td>
         <td style="text-align:center;background:#f1f5f9"><b>${i.cantidad}</b></td>
         <td><input type="number" min="0" value="${i.cantidad}" data-inv-codigo="${esc(i.codigo)}" data-inv-bodega="${esc(i.bodega)}" style="width:80px"></td>
