@@ -179,56 +179,58 @@ function updateConteoPrinterTable(){
 }
 
 function updateInvPrinterTable(){
-  const client = $("ivCliente")?.value || "";
+  const client = ($("ivCliente")?.value || "").trim();
   const selBodega = $("ivBodega");
-  const bodegaSel = selBodega?.value || "";
-  const qBodega = norm($("ivBodegaFilter")?.value||"");
+  const bodegaSel = (selBodega?.value || "").trim();
   const qProd = norm($("ivProductoFilter")?.value||"");
 
-  // 1. CLIENTE -> LLENA BODEGAS DE ESE CLIENTE
-  if(selBodega && selBodega.dataset.cliente!== client){
-    // Bodegas sacadas de impresoras.txt (es lo más fiable: cliente + bodega)
-    const impresorasCliente = DB.impresoras.filter(p=>p.cliente===client);
-    const bodegasPorImpresoras = [...new Set(impresorasCliente.map(p=>p.bodega).filter(Boolean))].sort();
+  // 1. CLIENTE -> BODEGAS SOLO POR CODIGO
+  if(selBodega && selBodega.dataset.cliente !== client){
+    // SOLO impresoras donde cliente == codigo exacto
+    const bodegasDelCliente = [...new Set(
+      DB.impresoras
+        .filter(p => (p.cliente||"").trim() === client)
+        .map(p => (p.bodega||"").trim())
+        .filter(Boolean)
+    )].sort((a,b)=>a.localeCompare(b,'es'));
 
-    // Si tu bodegas.txt tiene el cliente en el nombre, también las agrega
-    let bodegasPorTxt = [];
-    if(client){
-      const cliObj = DB.clientes.find(c=>c.codigo===client);
-      const nomCli = cliObj? norm(cliObj.nombre).split(" ")[0] : "";
-      bodegasPorTxt = DB.bodegas.filter(b=>{
-        const txt = norm(b.codigo+" "+b.nombre);
-        return txt.includes(norm(client)) || (nomCli && txt.includes(cliObj));
-      }).map(b=>b.codigo);
-    }
+    console.log(`[INV] Cliente [${client}] -> ${bodegasDelCliente.length} bodegas:`, bodegasDelCliente);
 
-    const todasBodegasCliente = [...new Set([...bodegasPorImpresoras,...bodegasPorTxt])].sort();
-
-    // Aplica filtro de texto de bodega
-    let listaFinal = todasBodegasCliente;
-    if(qBodega){
-      listaFinal = listaFinal.filter(cod=>{
-        const b = DB.bodegas.find(x=>x.codigo===cod);
-        return norm(cod+" "+(b?.nombre||"")).includes(qBodega);
-      });
-    }
-
-    selBodega.innerHTML = `<option value="">-- Seleccione bodega (${listaFinal.length}) --</option>` +
-      listaFinal.map(cod=>{
-        const b = DB.bodegas.find(x=>x.codigo===cod);
-        const nombre = b? b.nombre : cod;
+    selBodega.innerHTML = `<option value="">-- Seleccione bodega (${bodegasDelCliente.length}) --</option>` +
+      bodegasDelCliente.map(cod=>{
+        const b = DB.bodegas.find(x=> (x.codigo||"").trim() === cod);
+        const nombre = b ? b.nombre : cod;
         return `<option value="${esc(cod)}">${esc(cod)} · ${esc(nombre)}</option>`;
       }).join("");
 
     selBodega.dataset.cliente = client;
-    console.log(`CLIENTE ${client} -> BODEGAS:`, listaFinal);
 
-    // Limpia tabla hasta que elija bodega
-    if(!bodegaSel && $("inventarioBody")){
-      $("inventarioBody").innerHTML = `<tr><td colspan="5">Cliente tiene ${listaFinal.length} bodegas. Seleccione una.</td></tr>`;
-      return;
+    if($("inventarioBody")){
+      $("inventarioBody").innerHTML = client 
+        ? `<tr><td colspan="5">Cliente ${esc(client)} tiene ${bodegasDelCliente.length} bodegas. Seleccione una.</td></tr>`
+        : `<tr><td colspan="5">Seleccione cliente</td></tr>`;
     }
+    if(bodegasDelCliente.length === 0) return;
   }
+
+  if(!bodegaSel) return;
+
+  // 2. BODEGA -> SALDOS
+  let invRows = DB.inventarios.filter(i=> (i.bodega||"").trim() === bodegaSel);
+  if(qProd) invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProd));
+
+  if($("inventarioBody")){
+    $("inventarioBody").innerHTML = invRows.length ? invRows.map(i=>`
+      <tr>
+        <td><b>${esc(i.codigo)}</b></td>
+        <td>${esc(i.nombre)}</td>
+        <td style="text-align:center;background:#f1f5f9"><b>${i.cantidad}</b></td>
+        <td><input type="number" min="0" value="${i.cantidad}" data-inv-codigo="${esc(i.codigo)}" data-inv-bodega="${esc(i.bodega)}" style="width:80px"></td>
+        <td><button class="btn ghost" onclick="this.closest('tr').remove()">X</button></td>
+      </tr>
+    `).join("") : `<tr><td colspan="5">Bodega ${esc(bodegaSel)} sin saldos en inventarios.txt</td></tr>`;
+  }
+}
 
   // 2. BODEGA -> MUESTRA SALDOS DE INVENTARIO DE ESA BODEGA
   if(!bodegaSel){
