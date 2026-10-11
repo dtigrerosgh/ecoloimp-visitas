@@ -179,9 +179,59 @@ function updateConteoPrinterTable(){
 }
 
 function updateInvPrinterTable(){
-  const client=$("ivCliente")?.value;
-  const q=norm($("ivPrinterFilter")?.value||"");
- // const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q)); //
+  const client = $("ivCliente")?.value;
+  const qCliente = norm($("ivClienteFilter")?.value||"");
+  const qBodega = norm($("ivBodegaFilter")?.value||"");
+  const qProducto = norm($("ivProductoFilter")?.value||"");
+
+  // 1. Filtra bodegas de ese cliente
+  const bodegasCliente = DB.bodegas.filter(b => {
+    if(!client) return true;
+    // tu bodega viene como "bodega;cliente - nombre"
+    return norm(b.codigo+" "+b.nombre).includes(norm(client)) || 
+           norm(b.nombre).includes(qCliente) === false && b.codigo.includes(client) || 
+           b.nombre.toLowerCase().includes(client.toLowerCase()) ||
+           true; // si tu txt de bodegas no trae codigo cliente, muestra todas y filtramos por texto
+  });
+
+  // Llena select bodega
+  if($("ivBodega")){
+    const rowsBod = bodegasCliente.filter(b=>norm(b.codigo+" "+b.nombre).includes(qBodega));
+    options($("ivBodega"), rowsBod.map(b=>({value:b.codigo, label:`${b.codigo} · ${b.nombre}`})), "Seleccione bodega...");
+  }
+
+  // 2. Filtra inventario real de esa bodega
+  const bodegaSel = $("ivBodega")?.value;
+  let invRows = DB.inventarios;
+  if(bodegaSel) invRows = invRows.filter(i=>i.bodega===bodegaSel);
+  if(client && bodegaSel === "") {
+     // si aún no eligió bodega pero sí cliente, muestra todas las bodegas de ese cliente
+     const codigosBodegasCliente = DB.bodegas.filter(b=>norm(b.nombre).includes(norm(client)) || b.codigo.startsWith(client)).map(b=>b.codigo);
+     // si tu relación cliente-bodega no es por código, muestra todo el inventario
+  }
+  
+  if(qProducto){
+    invRows = invRows.filter(i=>norm(i.codigo+" "+i.nombre).includes(qProducto));
+  }
+
+  // 3. Pinta tabla inventarioBody
+  if($("inventarioBody")){
+    $("inventarioBody").innerHTML = invRows.length ? invRows.map(i=>`
+      <tr>
+        <td>${esc(i.codigo)}</td>
+        <td>${esc(i.nombre)}</td>
+        <td style="text-align:center">${i.cantidad}</td>
+        <td><input type="number" min="0" value="${i.cantidad}" data-inv="${esc(i.codigo)}" style="width:70px"></td>
+        <td><button class="btn ghost" data-del-inv="${esc(i.codigo)}">X</button></td>
+      </tr>
+    `).join("") : `<tr><td colspan="5">${client?"Seleccione bodega o no hay stock para esa bodega":"Seleccione cliente primero"}</td></tr>`;
+  }
+
+  // 4. Llena select productos para agregar
+  if($("ivProducto")){
+    const rowsProd = DB.productos.filter(p=>norm(p.codigo+" "+p.nombre).includes(qProducto)).slice(0,100);
+    options($("ivProducto"), rowsProd.map(p=>({value:p.codigo, label:`${p.codigo} · ${p.nombre}`})), "Seleccione producto...");
+  }
 }
 
 
@@ -1017,11 +1067,23 @@ function setupEvents(){
   
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
-  $("ivCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateInvPrinterTable();});
+  //$("ivCliente")?.addEventListener("change",()=>{DB.invPrinter=null;updateInvPrinterTable();});//
+    $("ivCliente")?.addEventListener("change",()=>{
+    $("ivBodega").selectedIndex = 0;
+    updateInvPrinterTable();
+  });
+  $("ivBodega")?.addEventListener("change",()=>updateInvPrinterTable());
+  $("ivBodegaFilter")?.addEventListener("input",()=>updateInvPrinterTable());
+  $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
+  $("ivProducto")?.addEventListener("change",()=>{
+    if($("ivCodigoNuevo")) $("ivCodigoNuevo").value = $("ivProducto").value;
+  });
   
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
   $("ivPrinterFilter")?.addEventListener("input",updateInvPrinterTable);
+
+  
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
 
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{
