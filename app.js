@@ -177,6 +177,12 @@ function updateConteoPrinterTable(){
   </tr>`).join(""):`<tr><td colspan="8">${client?"Cliente sin impresoras - revisa impresoras.txt":"Seleccione cliente en Conteo"}</td></tr>`;
 }
 
+function updateInvPrinterTable(){
+  const client=$("ivCliente")?.value;
+  const q=norm($("ivPrinterFilter")?.value||"");
+ // const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q)); //
+}
+
 
 function selectVisitaPrinter(serie){
   const p = DB.impresoras.find(x=>x.serie===serie);
@@ -1009,11 +1015,13 @@ function setupEvents(){
   
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
+  $("ivCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateInvPrinterTable();});
   
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
+  $("ivPrinterFilter")?.addEventListener("input",updateInvPrinterTable);
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
-  
+  updateConteoPrinterTable
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{
     try{
       const email=$("vtEmail")?.value.trim();
@@ -1099,6 +1107,7 @@ async function init(){
   fillTrabajos();
   updateVisitaPrinterTable();
   updateConteoPrinterTable();
+  updateInvPrinterTable();
   activateSection((location.hash||"#bienvenido").slice(1));
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
 }
