@@ -1288,13 +1288,11 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
     }
   });
 
-    $("btnConteoLimpiar")?.addEventListener("click",async()=>{
+    $("btnPDFInventario")?.addEventListener("click",async()=>{
     try{
-      limpiarConteo();
-      updateConteoPrinterTable();
-      if($("ctFecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);      
+        generarConteoPDF();
     }catch(err){
-      showMessage("ctMessage",err.message,true);
+      showMessage("ivMessage",err.message,true);
     }
   });
 
