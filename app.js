@@ -941,7 +941,7 @@ async function generarConteoPDF(){
 }
 
 // GRABA INVENTARIOS
-async function generarConteoPDF(){
+async function generarInvPDF(){
 const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
 
@@ -1288,9 +1288,9 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
     }
   });
 
-    $("btnPDFInventario")?.addEventListener("click",async()=>{
+  $("btnPDFInventario")?.addEventListener("click",async()=>{
     try{
-        generarConteoPDF();
+        generarInvPDF();
     }catch(err){
       showMessage("ivMessage",err.message,true);
     }
