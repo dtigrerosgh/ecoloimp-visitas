@@ -940,6 +940,128 @@ async function generarConteoPDF(){
   return doc;
 }
 
+// GRABA INVENTARIOS
+async function generarConteoPDF(){
+const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a4');
+
+  // Toma del detalle si ya agregaste, si no, toma del inventario con conteo > 0
+  let filas = [];
+  const detalleRows = document.querySelectorAll("#detalleInventarioBody tr[data-codigo]");
+
+  if (detalleRows.length > 0) {
+    detalleRows.forEach(tr => {
+      const bodega = tr.dataset.bodega;
+      const codigo = tr.dataset.codigo;
+      // Busca datos originales
+      const orig = DB.inventarios.find(i => i.bodega === bodega && i.codigo === codigo);
+      const prod = DB.productos.find(p => p.codigo === codigo);
+      const conteo = Number(tr.querySelector("input.det-cant")?.value || 0);
+
+      filas.push({
+        bodega,
+        codigo,
+        alterno: prod?.alterno || orig?.alterno || "",
+        nombre: prod?.nombre || orig?.nombre || "",
+        saldo: Number(orig?.cantidad || 0),
+        conteo
+      });
+    });
+  } else {
+    // Si no uso el detalle, toma directo del inventario
+    document.querySelectorAll("#inventarioBody tr").forEach(tr => {
+      const inp = tr.querySelector("input[data-inv-codigo]");
+      if (!inp) return;
+      const conteo = Number(inp.value || 0);
+      if (conteo <= 0) return;
+      filas.push({
+        bodega: inp.dataset.invBodega,
+        codigo: inp.dataset.invCodigo,
+        alterno: inp.dataset.invAlterno,
+        nombre: inp.dataset.invNombre,
+        saldo: Number(tr.children[4]?.innerText || 0),
+        conteo
+      });
+    });
+  }
+
+  if (filas.length === 0) {
+    alert("No hay conteo para generar PDF");
+    return;
+  }
+
+  // Agrupar por bodega
+  const grupos = {};
+  filas.forEach(f => {
+    if (!grupos[f.bodega]) grupos[f.bodega] = [];
+    grupos[f.bodega].push(f);
+  });
+
+  // Header
+  doc.setFontSize(14);
+  doc.text("Toma de Inventario - Diferencias", 14, 15);
+  doc.setFontSize(9);
+  doc.text(`Cliente: ${$("ivCliente")?.value || ""} Fecha: ${new Date().toLocaleString()}`, 14, 21);
+
+  let y = 28;
+
+  Object.keys(grupos).sort().forEach(codBodega => {
+    const bodegaInfo = DB.bodegas.find(b => b.codigo === codBodega);
+    const nombreBodega = bodegaInfo? `${bodegaInfo.codigo} - ${bodegaInfo.nombre}` : codBodega;
+
+    if (y > 260) { doc.addPage(); y = 15; }
+
+    doc.setFontSize(11);
+    doc.setFillColor(241,245,249);
+    doc.rect(14, y, 182, 8, 'F');
+    doc.text(`Bodega: ${nombreBodega}`, 16, y + 5.5);
+    y += 12;
+
+    const body = grupos[codBodega].map(f => {
+      const dif = f.conteo - f.saldo;
+      return [
+        f.codigo,
+        f.alterno,
+        f.nombre.substring(0, 35),
+        f.saldo.toString(),
+        f.conteo.toString(),
+        dif.toString()
+      ];
+    });
+
+    doc.autoTable({
+      startY: y,
+      head: [["Codigo", "Alterno", "Nombre Producto", "Saldo", "Conteo", "Diferencia"]],
+      body: body,
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [15,23,42] },
+      columnStyles: {
+        3: { halign: 'center' },
+        4: { halign: 'center', fillColor: [255,255,200] },
+        5: { halign: 'center' }
+      },
+      didParseCell: function(data){
+        if(data.column.index === 5){
+          const val = Number(data.cell.raw);
+          if(val < 0) data.cell.styles.textColor = [220,38];
+          if(val > 0) data.cell.styles.textColor = [22,163,74];
+          if(val < 0) data.cell.styles.fillColor = [254,226,226];
+          if(val > 0) data.cell.styles.fillColor = [220,252,231];
+        }
+      }
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+  });
+
+  // Imprimir
+  doc.autoPrint();
+  window.open(doc.output('bloburl'), '_blank');
+  // Si quieres descargar directo usa: doc.save(`Inventario_${$("ivCliente")?.value}.pdf`);
+});
+
+
 function limpiarVisitaTecnica(){
   if(!confirm("¿Seguro que quieres limpiar toda la Visita Técnica?\nSe borrarán fotos y firma.")) return;
 
@@ -1157,6 +1279,16 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
   });
 
   $("btnConteoLimpiar")?.addEventListener("click",async()=>{
+    try{
+      limpiarConteo();
+      updateConteoPrinterTable();
+      if($("ctFecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);      
+    }catch(err){
+      showMessage("ctMessage",err.message,true);
+    }
+  });
+
+    $("btnConteoLimpiar")?.addEventListener("click",async()=>{
     try{
       limpiarConteo();
       updateConteoPrinterTable();
