@@ -20,6 +20,12 @@ const parseTecnicos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nomb
 const parseTrabajos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
 const parseBodegas=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
 const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
+//const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],alterno:r[2],nombre:r[3]||"",cantidad:Number((r[4]||"0").replace(",","."))||0}));
+//const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>{
+  // productos.txt es: CODIGO;ALTERNO;NOMBRE o CODIGO;NOMBRE
+  if(r.length>=3) return {codigo:r[0], alterno:r[1], nombre:r.slice(2).join(";")};
+  return {codigo:r[0], alterno:"", nombre:r[1]};
+});
 const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],alterno:r[2],nombre:r[3]||"",cantidad:Number((r[4]||"0").replace(",","."))||0}));
 
 async function loadFile(type,file,parser){
@@ -942,125 +948,133 @@ async function generarConteoPDF(){
 
 // GRABA INVENTARIOS
 async function generarInvPDF(){
-const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'mm', 'a4');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p','mm','a4');
+  const logoBase64 = await getLogoBase64().catch(()=>null);
+  const usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
+  const clienteCode = $("ivCliente")?.value || "";
+  const clienteObj = DB.clientes.find(x=>x.codigo===clienteCode);
 
-  // Toma del detalle si ya agregaste, si no, toma del inventario con conteo > 0
   let filas = [];
   const detalleRows = document.querySelectorAll("#detalleInventarioBody tr[data-codigo]");
-
-  if (detalleRows.length > 0) {
-    detalleRows.forEach(tr => {
+  if(detalleRows.length>0){
+    detalleRows.forEach(tr=>{
       const bodega = tr.dataset.bodega;
       const codigo = tr.dataset.codigo;
-      // Busca datos originales
-      const orig = DB.inventarios.find(i => i.bodega === bodega && i.codigo === codigo);
-      const prod = DB.productos.find(p => p.codigo === codigo);
-      const conteo = Number(tr.querySelector("input.det-cant")?.value || 0);
-
-      filas.push({
-        bodega,
-        codigo,
-        alterno: prod?.alterno || orig?.alterno || "",
-        nombre: prod?.nombre || orig?.nombre || "",
-        saldo: Number(orig?.cantidad || 0),
-        conteo
-      });
+      const orig = DB.inventarios.find(i=> i.bodega===bodega && i.codigo===codigo);
+      const prod = DB.productos.find(p=> p.codigo===codigo);
+      const conteo = Number(tr.querySelector("input.det-cant")?.value||0);
+      filas.push({ bodega, codigo, alterno: prod?.alterno||orig?.alterno||"", nombre: prod?.nombre||orig?.nombre||"", saldo: Number(orig?.cantidad||0), conteo });
     });
-  } else {
-    // Si no uso el detalle, toma directo del inventario
-    document.querySelectorAll("#inventarioBody tr").forEach(tr => {
+  }else{
+    document.querySelectorAll("#inventarioBody tr").forEach(tr=>{
       const inp = tr.querySelector("input[data-inv-codigo]");
-      if (!inp) return;
-      const conteo = Number(inp.value || 0);
-      if (conteo <= 0) return;
-      filas.push({
-        bodega: inp.dataset.invBodega,
-        codigo: inp.dataset.invCodigo,
-        alterno: inp.dataset.invAlterno,
-        nombre: inp.dataset.invNombre,
-        saldo: Number(tr.children[4]?.innerText || 0),
-        conteo
-      });
+      if(!inp) return;
+      const conteo = Number(inp.value||0);
+      if(conteo<=0) return;
+      filas.push({ bodega: inp.dataset.invBodega, codigo: inp.dataset.invCodigo, alterno: inp.dataset.invAlterno, nombre: inp.dataset.invNombre, saldo: Number(inp.dataset.invSaldo||0), conteo });
     });
   }
+  if(filas.length===0){ alert("No hay conteo"); return; }
 
-  if (filas.length === 0) {
-    alert("No hay conteo para generar PDF");
-    return;
+  const grupos = {};
+  filas.forEach(f=>{ if(!grupos[f.bodega]) grupos[f.bodega]=[]; grupos[f.bodega].push(f); });
+
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  function drawHeader(){
+    doc.setFillColor(255,255,255); doc.rect(0,0,pageW,30,"F");
+    if(logoBase64){
+      try{
+        let props = doc.getImageProperties(logoBase64);
+        let w=45; let h=(props.height*w)/props.width; if(h>18){h=18; w=(props.width*h)/props.height;}
+        doc.addImage(logoBase64,"JPEG",10,4,w,h);
+      }catch(e){ try{doc.addImage(logoBase64,"JPEG",10,4,45,15);}catch{} }
+    }
+    doc.setTextColor(0); doc.setFontSize(14); doc.setFont(undefined,'bold');
+    doc.text("TOMA DE INVENTARIO", pageW/2, 12, {align:"center"});
+    doc.setFontSize(8); doc.setTextColor(30,64,175);
+    doc.text(`Usuario: ${usuarioActual}`, pageW-10, 10, {align:"right"});
+    doc.setFont(undefined,'normal'); doc.setTextColor(100); doc.setFontSize(7);
+    doc.text(new Date().toLocaleString('es-EC'), pageW-10, 14, {align:"right"});
+    let yInfo=22; doc.setTextColor(0); doc.setFontSize(9);
+    doc.setFont(undefined,'bold'); doc.text("Cliente:",10,yInfo);
+    doc.setFont(undefined,'normal'); doc.text(`${clienteCode} - ${(clienteObj?.nombre||"").substring(0,60)}`,26,yInfo);
+    yInfo+=5;
+    doc.setFont(undefined,'bold'); doc.text("Bodegas:",10,yInfo);
+    doc.setFont(undefined,'normal'); doc.text(`${Object.keys(grupos).join(", ")}`,26,yInfo);
   }
 
-  // Agrupar por bodega
-  const grupos = {};
-  filas.forEach(f => {
-    if (!grupos[f.bodega]) grupos[f.bodega] = [];
-    grupos[f.bodega].push(f);
-  });
+  drawHeader();
+  let y=36;
+  const colW=[18,22,58,15,15,15]; // COD, ALT, NOMBRE, SALDO, CONTEO, DIF
+  const headers=["CODIGO","ALTERNO","NOMBRE PRODUCTO","SALDO","CONTEO","DIF."];
+  const tableW=colW.reduce((a,b)=>a+b,0);
 
-  // Header
-  doc.setFontSize(14);
-  doc.text("Toma de Inventario - Diferencias", 14, 15);
-  doc.setFontSize(9);
-  doc.text(`Cliente: ${$("ivCliente")?.value || ""} Fecha: ${new Date().toLocaleString()}`, 14, 21);
+  function drawTableHeader(yy){
+    let x=10; doc.setFont(undefined,'bold'); doc.setFontSize(7.5); doc.setDrawColor(0);
+    headers.forEach((h,i)=>{
+      doc.setFillColor(15,23,42); doc.setTextColor(255);
+      doc.rect(x,yy,colW[i],7,"F"); doc.rect(x,yy,colW[i],7,"D");
+      doc.text(h, x+colW[i]/2, yy+4.5, {align:"center"}); x+=colW[i];
+    });
+    doc.setTextColor(0); doc.setFont(undefined,'normal'); return yy+7;
+  }
 
-  let y = 28;
+  y=drawTableHeader(y);
 
-  Object.keys(grupos).sort().forEach(codBodega => {
-    const bodegaInfo = DB.bodegas.find(b => b.codigo === codBodega);
+  Object.keys(grupos).sort().forEach(codBodega=>{
+    const bodegaInfo = DB.bodegas.find(b=> b.codigo===codBodega);
     const nombreBodega = bodegaInfo? `${bodegaInfo.codigo} - ${bodegaInfo.nombre}` : codBodega;
 
-    if (y > 260) { doc.addPage(); y = 15; }
+    if(y > pageH-35){ doc.addPage(); drawHeader(); y=36; y=drawTableHeader(y); }
 
-    doc.setFontSize(11);
-    doc.setFillColor(241,245,249);
-    doc.rect(14, y, 182, 8, 'F');
-    doc.text(`Bodega: ${nombreBodega}`, 16, y + 5.5);
-    y += 12;
+    doc.setFillColor(241,245,249); doc.setDrawColor(0); doc.setFont(undefined,'bold'); doc.setFontSize(8);
+    doc.rect(10,y,tableW,7,"FD");
+    doc.text(`Bodega: ${nombreBodega}`,12,y+5);
+    y+=7; y=drawTableHeader(y);
 
-    const body = grupos[codBodega].map(f => {
+    grupos[codBodega].forEach(f=>{
       const dif = f.conteo - f.saldo;
-      return [
-        f.codigo,
-        f.alterno,
-        f.nombre.substring(0, 35),
-        f.saldo.toString(),
-        f.conteo.toString(),
-        dif.toString()
-      ];
-    });
-
-    doc.autoTable({
-      startY: y,
-      head: [["Codigo", "Alterno", "Nombre Producto", "Saldo", "Conteo", "Diferencia"]],
-      body: body,
-      theme: 'grid',
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [15,23,42] },
-      columnStyles: {
-        3: { halign: 'center' },
-        4: { halign: 'center', fillColor: [255,255,200] },
-        5: { halign: 'center' }
-      },
-      didParseCell: function(data){
-        if(data.column.index === 5){
-          const val = Number(data.cell.raw);
-          if(val < 0) data.cell.styles.textColor = [220,38];
-          if(val > 0) data.cell.styles.textColor = [22,163,74];
-          if(val < 0) data.cell.styles.fillColor = [254,226,226];
-          if(val > 0) data.cell.styles.fillColor = [220,252,231];
-        }
+      const rowH=7;
+      if(y+rowH > pageH-20){ doc.addPage(); drawHeader(); y=36; y=drawTableHeader(y);
+        doc.setFillColor(241,245,249); doc.rect(10,y,tableW,7,"FD"); doc.setFont(undefined,'bold'); doc.text(`Bodega: ${nombreBodega} (cont.)`,12,y+5); y+=7; y=drawTableHeader(y);
       }
+      const vals=[f.codigo, f.alterno, f.nombre.substring(0,42), String(f.saldo), String(f.conteo), dif>0?`+${dif}`:`${dif}`];
+      let x=10; doc.setFont(undefined,'normal'); doc.setFontSize(7); doc.setTextColor(0);
+      vals.forEach((val,i)=>{
+        let fill=[255,255,255];
+        if(i===4) fill=[255,255,200];
+        if(i===5){
+          const v=Number(String(val).replace("+",""));
+          if(v<0) fill=[254,226,226];
+          if(v>0) fill=[220,252,231];
+        }
+        doc.setFillColor(...fill); doc.rect(x,y,colW[i],rowH,"FD");
+        let align = i>=3?"center":"left";
+        if(i===2) doc.text(String(val),x+1,y+4,{align:"left"});
+        else doc.text(String(val),x+colW[i]/2,y+4,{align:"center"});
+        x+=colW[i];
+      });
+      y+=rowH;
     });
-
-    y = doc.lastAutoTable.finalY + 10;
+    y+=3;
   });
 
-  // Imprimir
+  // Pie
+  const totalPages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=totalPages;i++){
+    doc.setPage(i);
+    doc.setFontSize(6); doc.setTextColor(100); doc.setDrawColor(180);
+    doc.line(10,pageH-10,pageW-10,pageH-10);
+    doc.text(`© 2026 DT Soluciones Informaticas - Generado por ${usuarioActual} - ${new Date().toLocaleString('es-EC')}`,10,pageH-5);
+    doc.text(`Pag ${i}/${totalPages}`,pageW-10,pageH-5,{align:"right"});
+  }
+
   doc.autoPrint();
   window.open(doc.output('bloburl'), '_blank');
-  // Si quieres descargar directo usa: doc.save(`Inventario_${$("ivCliente")?.value}.pdf`);
-});
-
+  return doc;
+}
 
 function limpiarVisitaTecnica(){
   if(!confirm("¿Seguro que quieres limpiar toda la Visita Técnica?\nSe borrarán fotos y firma.")) return;
