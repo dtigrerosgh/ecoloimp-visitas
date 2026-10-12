@@ -1071,8 +1071,8 @@ async function generarInvPDF(){
     doc.text(`Pag ${i}/${totalPages}`,pageW-10,pageH-5,{align:"right"});
   }
 
-  doc.autoPrint();
-  window.open(doc.output('bloburl'), '_blank');
+  //doc.autoPrint();
+  //window.open(doc.output('bloburl'), '_blank');
   return doc;
 }
 
@@ -1304,7 +1304,7 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
 
   $("btnPDFInventario")?.addEventListener("click",async()=>{
     try{
-        generarInvPDF();
+      const docpdf = await generarInvPDF();
     }catch(err){
       showMessage("ivMessage",err.message,true);
     }
