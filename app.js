@@ -109,7 +109,12 @@ function filterClientes(){
   options($("ivCliente"),rowsIv.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})),"Seleccione cliente...");
 }
 
-function fillTecnicos(){const rows=DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label));options($("vtTecnico"),rows,"Seleccione técnico...");options($("ctTecnico"),rows,"Seleccione técnico...");}
+function fillTecnicos(){
+  const rows=DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label));
+  options($("vtTecnico"),rows,"Seleccione técnico...");
+  options($("ctTecnico"),rows,"Seleccione técnico...");
+  options($("ivTecnico"),rows,"Seleccione técnico...");
+}
 function fillTrabajos(){options($("vtTrabajo"),DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)),"Seleccione trabajo...");}
 function fillProductos(){options($("ivProducto"),DB.productos.map(p=>({value:p.codigo,label:`${p.codigo} · ${p.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)),"Seleccione producto...");}
 
@@ -1234,6 +1239,7 @@ async function init(){
   if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
   if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
   if($("ctFecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);
+  if($("ivFecha"))$("ivFecha").value=ahora.toISOString().slice(0,10);
   await cargarUsuarios();
   await loadFile("clientes","clientes.txt",parseClientes);
   await loadFile("impresoras","impresoras.txt",parseImpresoras);
