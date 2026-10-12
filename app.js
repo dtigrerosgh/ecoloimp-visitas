@@ -116,7 +116,11 @@ function fillTecnicos(){
   options($("ivTecnico"),rows,"Seleccione técnico...");
 }
 function fillTrabajos(){options($("vtTrabajo"),DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)),"Seleccione trabajo...");}
-function fillProductos(){options($("ivProducto"),DB.productos.map(p=>({value:p.codigo,label:`${p.codigo} · ${p.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)),"Seleccione producto...");}
+
+function fillProductos(){
+  const rowsp=DB.productos.map(p=>({value:p.codigo,label:`${p.codigo} · ${p.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label))
+  options($("ivProducto"),rowsp,"Seleccione producto...");
+}
 
 function updateVisitaPrinterTable(){
   const client = $("vtCliente")?.value;
