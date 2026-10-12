@@ -19,9 +19,9 @@ const parseImpresoras=t=>parse(t).filter(r=>r.length>=2).map(r=>({cliente:r[0],c
 const parseTecnicos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
 const parseTrabajos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
 const parseBodegas=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
-const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
+//const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>({codigo:r[0],nombre:r.slice(1).join(";")}));
 //const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],alterno:r[2],nombre:r[3]||"",cantidad:Number((r[4]||"0").replace(",","."))||0}));
-//const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>{
+const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>{
   // productos.txt es: CODIGO;ALTERNO;NOMBRE o CODIGO;NOMBRE
   if(r.length>=3) return {codigo:r[0], alterno:r[1], nombre:r.slice(2).join(";")};
   return {codigo:r[0], alterno:"", nombre:r[1]};
