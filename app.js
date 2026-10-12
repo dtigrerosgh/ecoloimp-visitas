@@ -1157,6 +1157,57 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
     }
   });
 
+  // BOTON AGREGAR - Pasa del inventario al detalle
+document.getElementById("btnAgregarProducto")?.addEventListener("click", () => {
+  const detalleBody = document.getElementById("detalleInventarioBody");
+  const filasInventario = document.querySelectorAll("#inventarioBody tr");
+
+  let agregados = 0;
+
+  filasInventario.forEach(tr => {
+    const inp = tr.querySelector("input[data-inv-codigo]");
+    if (!inp) return;
+    
+    const cant = Number(inp.value || 0);
+    if (cant <= 0) return;
+
+    const bodega = inp.dataset.invBodega;
+    const codigo = inp.dataset.invCodigo;
+    const nombre = inp.dataset.invNombre;
+    const alterno = inp.dataset.invAlterno;
+
+    // Producto mostrar = codigo + alterno + nombre
+    const productoTxt = `${codigo} ${alterno} - ${nombre}`;
+
+    // Evita duplicado: si ya existe misma bodega + codigo, suma cantidad
+    const existente = detalleBody.querySelector(`tr[data-codigo="${codigo}"][data-bodega="${bodega}"]`);
+    if (existente) {
+      const inpExist = existente.querySelector("input.det-cant");
+      inpExist.value = Number(inpExist.value || 0) + cant;
+    } else {
+      // Si es la primera vez, borra el mensaje "Sin productos"
+      if (agregados === 0 && detalleBody.innerHTML.includes("Sin productos")) {
+        detalleBody.innerHTML = "";
+      }
+
+      detalleBody.insertAdjacentHTML("beforeend", `
+        <tr data-codigo="${esc(codigo)}" data-bodega="${esc(bodega)}">
+          <td>${esc(bodega)}</td>
+          <td><b>${esc(codigo)}</b><br><small>${esc(alterno)}<br>${esc(nombre)}</small></td>
+          <td><input type="number" class="det-cant" value="${cant}" min="1" style="width:80px" 
+                 data-bodega="${esc(bodega)}" data-codigo="${esc(codigo)}"></td>
+          <td><button class="btn ghost" onclick="this.closest('tr').remove()">X</button></td>
+        </tr>
+      `);
+    }
+    agregados++;
+    inp.value = 0; // resetea el conteo del inventario
+  });
+
+  if (agregados === 0) {
+    alert("Ingresa cantidad > 0 en la columna conteo");
+  }
+});
   
 const conteoBody = $("conteoBody");
 if(conteoBody){
