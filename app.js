@@ -698,6 +698,8 @@ const coordenadaY = altoPagina - margenInferior;
  
 // 5. Escribir el texto (centrado horizontalmente a 105mm)
   doc.text(texto, 105, coordenadaY, { align: "center" });
+  doc.autoPrint();
+  window.open(doc.output('bloburl'), '_blank');
   return doc;
 //  doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`.replaceAll("/","-"));
 // FIN
