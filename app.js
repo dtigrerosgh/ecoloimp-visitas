@@ -975,13 +975,14 @@ async function generarInvPDF(){
       filas.push({ bodega: inp.dataset.invBodega, codigo: inp.dataset.invCodigo, alterno: inp.dataset.invAlterno, nombre: inp.dataset.invNombre, saldo: Number(inp.dataset.invSaldo||0), conteo });
     });
   }
-  if(filas.length===0){ alert("No hay conteo"); return; }
+  if(filas.length===0){ alert("No hay conteo para PDF - agregue productos primero"); return; }
 
   const grupos = {};
   filas.forEach(f=>{ if(!grupos[f.bodega]) grupos[f.bodega]=[]; grupos[f.bodega].push(f); });
 
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
+
   function drawHeader(){
     doc.setFillColor(255,255,255); doc.rect(0,0,pageW,30,"F");
     if(logoBase64){
@@ -1007,7 +1008,7 @@ async function generarInvPDF(){
 
   drawHeader();
   let y=36;
-  const colW=[18,22,58,15,15,15]; // COD, ALT, NOMBRE, SALDO, CONTEO, DIF
+  const colW=[18,22,58,15,15,15];
   const headers=["CODIGO","ALTERNO","NOMBRE PRODUCTO","SALDO","CONTEO","DIF."];
   const tableW=colW.reduce((a,b)=>a+b,0);
 
@@ -1020,24 +1021,20 @@ async function generarInvPDF(){
     });
     doc.setTextColor(0); doc.setFont(undefined,'normal'); return yy+7;
   }
-
   y=drawTableHeader(y);
 
   Object.keys(grupos).sort().forEach(codBodega=>{
     const bodegaInfo = DB.bodegas.find(b=> b.codigo===codBodega);
     const nombreBodega = bodegaInfo? `${bodegaInfo.codigo} - ${bodegaInfo.nombre}` : codBodega;
-
     if(y > pageH-35){ doc.addPage(); drawHeader(); y=36; y=drawTableHeader(y); }
-
     doc.setFillColor(241,245,249); doc.setDrawColor(0); doc.setFont(undefined,'bold'); doc.setFontSize(8);
     doc.rect(10,y,tableW,7,"FD");
     doc.text(`Bodega: ${nombreBodega}`,12,y+5);
     y+=7; y=drawTableHeader(y);
-
     grupos[codBodega].forEach(f=>{
       const dif = f.conteo - f.saldo;
       const rowH=7;
-      if(y+rowH > pageH-20){ doc.addPage(); drawHeader(); y=36; y=drawTableHeader(y);
+      if(y+rowH > pageH-25){ doc.addPage(); drawHeader(); y=36; y=drawTableHeader(y);
         doc.setFillColor(241,245,249); doc.rect(10,y,tableW,7,"FD"); doc.setFont(undefined,'bold'); doc.text(`Bodega: ${nombreBodega} (cont.)`,12,y+5); y+=7; y=drawTableHeader(y);
       }
       const vals=[f.codigo, f.alterno, f.nombre.substring(0,42), String(f.saldo), String(f.conteo), dif>0?`+${dif}`:`${dif}`];
@@ -1051,8 +1048,7 @@ async function generarInvPDF(){
           if(v>0) fill=[220,252,231];
         }
         doc.setFillColor(...fill); doc.rect(x,y,colW[i],rowH,"FD");
-        let align = i>=3?"center":"left";
-        if(i===2) doc.text(String(val),x+1,y+4,{align:"left"});
+        if(i===2) doc.text(String(val),x+1,y+4);
         else doc.text(String(val),x+colW[i]/2,y+4,{align:"center"});
         x+=colW[i];
       });
@@ -1061,17 +1057,33 @@ async function generarInvPDF(){
     y+=3;
   });
 
-  // Pie
+  // Totales
+  if(y > pageH-35){ doc.addPage(); drawHeader(); y=38; }
+  const tot = filas.reduce((a,f)=>({s:a.s+f.saldo, c:a.c+f.conteo, d:a.d+(f.conteo-f.saldo)}),{s:0,c:0,d:0});
+  doc.setFillColor(240,240,240); doc.setDrawColor(0); doc.setFont(undefined,'bold'); doc.setFontSize(8);
+  doc.rect(10,y,tableW,7,"FD");
+  doc.text(`TOTAL: Saldo:${tot.s} | Conteo:${tot.c} | Dif:${tot.d>0?`+${tot.d}`:tot.d} | Items:${filas.length}`,12,y+4.5);
+  y+=12;
+
+  // Firma como en conteos
+  doc.setFont(undefined,'bold'); doc.setFontSize(9);
+  doc.text("FIRMA DE CONFORMIDAD", 10, y); y+=2;
+  const firmaData = (()=>{ try{ return $("ivFirmaCanvas")?.toDataURL("image/png"); }catch{return null;} })();
+  if(firmaData && firmaData.length>100) try{ doc.addImage(firmaData,"PNG",10,y,50,14); }catch{}
+  y+=14; doc.setDrawColor(0); doc.line(10,y,65,y); y+=4;
+  doc.setFontSize(8); doc.setFont(undefined,'normal');
+  doc.text($("ivNombreFirma")?.value||"Firma Cliente",12,y);
+
   const totalPages=doc.internal.getNumberOfPages();
   for(let i=1;i<=totalPages;i++){
     doc.setPage(i);
     doc.setFontSize(6); doc.setTextColor(100); doc.setDrawColor(180);
     doc.line(10,pageH-10,pageW-10,pageH-10);
-    doc.text(`© 2026 DT Soluciones Informaticas - Generado por ${usuarioActual} - ${new Date().toLocaleString('es-EC')}`,10,pageH-5);
+    doc.text(`© 2026 DT Soluciones - Generado por ${usuarioActual} - ${new Date().toLocaleString('es-EC')}`,10,pageH-5);
     doc.text(`Pag ${i}/${totalPages}`,pageW-10,pageH-5,{align:"right"});
   }
 
-  //doc.autoPrint();
+  doc.autoPrint();
   window.open(doc.output('bloburl'), '_blank');
   return doc;
 }
