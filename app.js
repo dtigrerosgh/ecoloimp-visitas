@@ -524,6 +524,7 @@ async function generarVisitaPDF(){
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
+  const ahora = new Date().toLocaleString('es-EC'); 
   //const textoPlano = buildVisitaText(); 
   //const textoSis = buildVisitaSis();
   const firmaData = $("vtFirmaCanvas")?.toDataURL ? (()=>{ try{ return firmaDibujada ? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })() : null;
