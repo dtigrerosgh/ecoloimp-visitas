@@ -1358,7 +1358,7 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
       if(!tecnico) throw new Error("Ingrese Tecnico");
       if(!trabajo) throw new Error("Ingrese Trabajo");
       
-      const ahora = new Date().toLocaleString('es-EC'); 
+      const ahora=new Date();
       if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
       if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
       await enviarCorreoVisita();
@@ -1371,6 +1371,7 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
     try{
       limpiarVisitaTecnica();
       updateVisitaPrinterTable();
+      const ahora=new Date();
       if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
       if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
       $("vtPrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
@@ -1393,6 +1394,7 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
     try{
       limpiarConteo();
       updateConteoPrinterTable();
+      const ahora=new Date();
       if($("ctFecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);      
     }catch(err){
       showMessage("ctMessage",err.message,true);
