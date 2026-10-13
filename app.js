@@ -273,6 +273,7 @@ function updateInvPrinterTable(){
     }).join("") : `<tr><td colspan="7">Bodega ${esc(bodegaSel)} sin saldos en inventarios.txt</td></tr>`;
   }
 }
+
 function selectVisitaPrinter(serie){
   const p = DB.impresoras.find(x=>x.serie===serie);
   if(!p) return;
@@ -957,9 +958,18 @@ async function generarInvPDF(){
 
 let filas = [];
   // 1. PRIMERO intenta leer del DETALLE (lo que agregaste con btnAgregarProducto)
-  const detalleRows = document.querySelectorAll("#detalleInventarioBody tr[data-codigo]");
-  alert(detalleRows.length);
+  const detalleRows = document.querySelectorAll("#inventarioBody tr[data-codigo]");
+
+  //$("inventarioBody").innerHTML = invRows.length? invRows.map(i=>{
+  //    const codigo = (i.codigo||"").trim();
+  //    const prod = DB.productos.find(p=> (p.codigo||"").trim() === codigo);
+  //    const alterno = esc(prod?.alterno || i.alterno || i.nombre || "");
+  //    const nombreReal = esc(prod?.nombre || i.nombre || "");
+
+  //    return `
+  
   if(detalleRows.length>0){
+          alert("det");
     detalleRows.forEach(tr=>{
       filas.push({
         bodega: tr.dataset.bodega || "",
@@ -971,6 +981,7 @@ let filas = [];
       });
     });
   }else{
+      alert("inv");
     // 2. Si no hay detalle, lee directo del inventario
     document.querySelectorAll("#inventarioBody tr").forEach(tr=>{
       const inp = tr.querySelector("input[data-inv-codigo]");
