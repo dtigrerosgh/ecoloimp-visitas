@@ -955,37 +955,30 @@ async function generarInvPDF(){
   const clienteCode = $("ivCliente")?.value || "";
   const clienteObj = DB.clientes.find(x=>x.codigo===clienteCode);
 
-  let filas = [];
+let filas = [];
   const detalleRows = document.querySelectorAll("#detalleInventarioBody tr[data-codigo]");
   if(detalleRows.length>0){
     detalleRows.forEach(tr=>{
-      const bodega = tr.dataset.bodega || "";
-      const codigo = tr.dataset.codigo || "";
-      const orig = DB.inventarios.find(i=> i.bodega===bodega && i.codigo===codigo);
-      const prod = DB.productos.find(p=> p.codigo===codigo);
-      const conteo = Number(tr.querySelector("input.det-cant")?.value||0);
-      filas.push({ 
-        bodega, 
-        codigo, 
-        alterno: (prod?.alterno||orig?.alterno||codigo||""), 
-        nombre: (prod?.nombre||orig?.nombre||prod?.alterno||orig?.alterno||codigo||""), 
-        saldo: Number(orig?.cantidad||0), 
-        conteo 
+      filas.push({
+        bodega: tr.dataset.bodega || "",
+        codigo: tr.dataset.codigo || "",
+        alterno: tr.dataset.alterno || tr.dataset.codigo || "",
+        nombre: tr.dataset.nombre || tr.dataset.alterno || tr.dataset.codigo || "",
+        saldo: Number(tr.dataset.saldo||0),
+        conteo: Number(tr.querySelector("input.det-cant")?.value||0)
       });
     });
   }else{
     document.querySelectorAll("#inventarioBody tr").forEach(tr=>{
       const inp = tr.querySelector("input[data-inv-codigo]");
-      if(!inp) return;
-      const conteo = Number(inp.value||0);
-      if(conteo<=0) return;
-      filas.push({ 
-        bodega: inp.dataset.invBodega||"", 
-        codigo: inp.dataset.invCodigo||"", 
-        alterno: inp.dataset.invAlterno||"", 
-        nombre: inp.dataset.invNombre||inp.dataset.invAlterno||inp.dataset.invCodigo||"", 
-        saldo: Number(inp.dataset.invSaldo||0), 
-        conteo 
+      if(!inp || Number(inp.value||0)<=0) return;
+      filas.push({
+        bodega: inp.dataset.invBodega,
+        codigo: inp.dataset.invCodigo,
+        alterno: inp.dataset.invAlterno,
+        nombre: inp.dataset.invNombre,
+        saldo: Number(inp.dataset.invSaldo||0),
+        conteo: Number(inp.value||0)
       });
     });
   }
