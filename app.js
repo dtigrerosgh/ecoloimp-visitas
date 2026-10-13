@@ -962,11 +962,11 @@ let filas = [];
   if(detalleRows.length>0){
     detalleRows.forEach(tr=>{
       filas.push({
-        bodega: tr.dataset.bodega || "",
-        codigo: tr.dataset.codigo || "",
-        alterno: tr.dataset.alterno || "",
-        nombre: tr.dataset.nombre || "",
-        saldo: Number(tr.dataset.saldo||0),
+        bodega: tr.dataset.bodega,
+        codigo: tr.dataset.codigo,
+        alterno: tr.dataset.alterno,
+        nombre: tr.dataset.nombre,
+        saldo: Number(tr.dataset.saldo),
         conteo: Number(tr.querySelector("input.det-cant")?.value||0)
       });
     });
