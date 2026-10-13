@@ -1030,7 +1030,7 @@ let filas = [];
     });
     doc.setTextColor(0); doc.setFont(undefined,'normal'); return yy+7;
   }
-  y=drawTableHeader(y);
+  //y=drawTableHeader(y);
 
   Object.keys(grupos).sort().forEach(codBodega=>{
     const bodegaInfo = DB.bodegas.find(b=> b.codigo===codBodega);
