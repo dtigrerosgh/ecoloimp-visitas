@@ -965,7 +965,7 @@ let filas = [];
         bodega: tr.dataset.bodega || "",
         codigo: tr.dataset.codigo || "",
         alterno: tr.dataset.alterno || "",
-        nombre: tr.dataset.nombre || tr.dataset.alterno || tr.dataset.codigo || "",
+        nombre: tr.dataset.nombre || "",
         saldo: Number(tr.dataset.saldo||0),
         conteo: Number(tr.querySelector("input.det-cant")?.value||0)
       });
