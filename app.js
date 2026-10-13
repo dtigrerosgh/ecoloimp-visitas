@@ -1072,7 +1072,7 @@ async function generarInvPDF(){
   }
 
   //doc.autoPrint();
-  //window.open(doc.output('bloburl'), '_blank');
+  window.open(doc.output('bloburl'), '_blank');
   return doc;
 }
 
