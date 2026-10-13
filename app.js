@@ -524,7 +524,6 @@ async function generarVisitaPDF(){
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
-  const ahora = new Date().toLocaleString('es-EC'); 
   //const textoPlano = buildVisitaText(); 
   //const textoSis = buildVisitaSis();
   const firmaData = $("vtFirmaCanvas")?.toDataURL ? (()=>{ try{ return firmaDibujada ? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })() : null;
@@ -1352,8 +1351,14 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
 
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{
     try{
-      const email=$("vtEmail")?.value.trim();
+      const email=$("vtEmail")?.value.trim();      
+      const tecnico=$("vtTecnico")?.value.trim();      
+      const trabajo=$("vtTrabajo")?.value.trim();      
       if(!email) throw new Error("Ingrese email cliente");
+      if(!tecnico) throw new Error("Ingrese Tecnico");
+      if(!trabajo) throw new Error("Ingrese Trabajo");
+      
+      const ahora = new Date().toLocaleString('es-EC'); 
       if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
       if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
       await enviarCorreoVisita();
