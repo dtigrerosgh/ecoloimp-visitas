@@ -1017,7 +1017,7 @@ let filas = [];
 
   drawHeader();
   let y=36;
-  const colW=[18,22,58,15,15,15];
+  const colW=[18,22,58,20,20,20];
   const headers=["CODIGO","ALTERNO","NOMBRE PRODUCTO","SALDO","CONTEO","DIF."];
   const tableW=colW.reduce((a,b)=>a+b,0);
 
@@ -1039,7 +1039,8 @@ let filas = [];
     doc.setFillColor(241,245,249); doc.setDrawColor(0); doc.setFont(undefined,'bold'); doc.setFontSize(8);
     doc.rect(10,y,tableW,7,"FD");
     doc.text(`Bodega: ${nombreBodega}`,12,y+5);
-    y+=7; y=drawTableHeader(y);
+    y+=7; 
+    y=drawTableHeader(y);
     grupos[codBodega].forEach(f=>{
       const dif = f.conteo - f.saldo;
       const rowH=7;
