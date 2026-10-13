@@ -956,7 +956,7 @@ async function generarInvPDF(){
   const clienteObj = DB.clientes.find(x=>x.codigo===clienteCode);
 
 let filas = [];
-  const detalleRows = document.querySelectorAll("#nventarioBody tr");
+  const detalleRows = document.querySelectorAll("#inventarioBody tr");
   
   alert(detalleRows.length);
   if(detalleRows.length>0){
