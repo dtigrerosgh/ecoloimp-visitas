@@ -1214,6 +1214,33 @@ function limpiarConteo(){
   console.log("✅ Conteo limpio");
 }
 
+function initFotosVisita(){
+  const input = $("vtFotos");
+  const preview = $("vtFotosPreview");
+  if(!input) return;
+  input.addEventListener("change", async (e)=>{
+    const files = Array.from(e.target.files).slice(0,4);
+    fotosVisita = [];
+    preview.innerHTML = "";
+    for(let file of files){
+      const b64 = await new Promise(res=>{
+        const fr = new FileReader();
+        fr.onload = ()=>res(fr.result);
+        fr.readAsDataURL(file);
+      });
+      fotosVisita.push(b64);
+      const div = document.createElement("div");
+      div.style.cssText="position:relative;width:90px;height:90px;border:1px solid #ccc;border-radius:8px;overflow:hidden";
+      div.innerHTML = `<img src="${b64}" style="width:100%;height:100%;object-fit:cover"><button type="button" style="position:absolute;top:2px;right:2px;background:red;color:white;border:0;border-radius:50%;width:20px;height:20px">X</button>`;
+      div.querySelector("button").onclick = ()=>{
+        fotosVisita = fotosVisita.filter((_,i)=>i!==fotosVisita.indexOf(b64));
+        div.remove();
+      };
+      preview.appendChild(div);
+    }
+  });
+}
+
 function initFirma(){
   function activar(cid,bid,setter){
     const canvas=$(cid);if(!canvas)return;
@@ -1421,6 +1448,7 @@ async function init(){
   setupNavigation();
   setupEvents();
   initFirma();
+  initFotosVisita();
   const ahora=new Date();
   if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
   if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
