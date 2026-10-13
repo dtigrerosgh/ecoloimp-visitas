@@ -959,12 +959,19 @@ async function generarInvPDF(){
   const detalleRows = document.querySelectorAll("#detalleInventarioBody tr[data-codigo]");
   if(detalleRows.length>0){
     detalleRows.forEach(tr=>{
-      const bodega = tr.dataset.bodega;
-      const codigo = tr.dataset.codigo;
+      const bodega = tr.dataset.bodega || "";
+      const codigo = tr.dataset.codigo || "";
       const orig = DB.inventarios.find(i=> i.bodega===bodega && i.codigo===codigo);
       const prod = DB.productos.find(p=> p.codigo===codigo);
       const conteo = Number(tr.querySelector("input.det-cant")?.value||0);
-      filas.push({ bodega, codigo, alterno: prod?.alterno||orig?.alterno||"", nombre: prod?.nombre||orig?.nombre||"", saldo: Number(orig?.cantidad||0), conteo });
+      filas.push({ 
+        bodega, 
+        codigo, 
+        alterno: (prod?.alterno||orig?.alterno||codigo||""), 
+        nombre: (prod?.nombre||orig?.nombre||prod?.alterno||orig?.alterno||codigo||""), 
+        saldo: Number(orig?.cantidad||0), 
+        conteo 
+      });
     });
   }else{
     document.querySelectorAll("#inventarioBody tr").forEach(tr=>{
@@ -972,7 +979,14 @@ async function generarInvPDF(){
       if(!inp) return;
       const conteo = Number(inp.value||0);
       if(conteo<=0) return;
-      filas.push({ bodega: inp.dataset.invBodega, codigo: inp.dataset.invCodigo, alterno: inp.dataset.invAlterno, nombre: inp.dataset.invNombre, saldo: Number(inp.dataset.invSaldo||0), conteo });
+      filas.push({ 
+        bodega: inp.dataset.invBodega||"", 
+        codigo: inp.dataset.invCodigo||"", 
+        alterno: inp.dataset.invAlterno||"", 
+        nombre: inp.dataset.invNombre||inp.dataset.invAlterno||inp.dataset.invCodigo||"", 
+        saldo: Number(inp.dataset.invSaldo||0), 
+        conteo 
+      });
     });
   }
   if(filas.length===0){ alert("No hay conteo para PDF - agregue productos primero"); return; }
@@ -1037,7 +1051,11 @@ async function generarInvPDF(){
       if(y+rowH > pageH-25){ doc.addPage(); drawHeader(); y=36; y=drawTableHeader(y);
         doc.setFillColor(241,245,249); doc.rect(10,y,tableW,7,"FD"); doc.setFont(undefined,'bold'); doc.text(`Bodega: ${nombreBodega} (cont.)`,12,y+5); y+=7; y=drawTableHeader(y);
       }
-      const vals=[f.codigo, f.alterno, f.nombre.substring(0,42), String(f.saldo), String(f.conteo), dif>0?`+${dif}`:`${dif}`];
+      
+      const codigo = (f.codigo || "").toString();
+      const alterno = (f.alterno || "").toString();
+      const nombre = (f.nombre || f.alterno || codigo || "").toString().substring(0,42);
+      const vals=[codigo, alterno, nombre, String(f.saldo), String(f.conteo), dif>0?`+${dif}`:`${dif}`];
       let x=10; doc.setFont(undefined,'normal'); doc.setFontSize(7); doc.setTextColor(0);
       vals.forEach((val,i)=>{
         let fill=[255,255,255];
