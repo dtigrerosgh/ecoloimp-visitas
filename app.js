@@ -962,7 +962,7 @@ let filas = [];
       filas.push({
         bodega: tr.dataset.bodega || "",
         codigo: tr.dataset.codigo || "",
-        alterno: tr.dataset.alterno || tr.dataset.codigo || "",
+        alterno: tr.dataset.alterno || "",
         nombre: tr.dataset.nombre || tr.dataset.alterno || tr.dataset.codigo || "",
         saldo: Number(tr.dataset.saldo||0),
         conteo: Number(tr.querySelector("input.det-cant")?.value||0)
@@ -1000,7 +1000,7 @@ let filas = [];
       }catch(e){ try{doc.addImage(logoBase64,"JPEG",10,4,45,15);}catch{} }
     }
     doc.setTextColor(0); doc.setFontSize(14); doc.setFont(undefined,'bold');
-    doc.text("TOMA DE INVENTARIO", pageW/2, 12, {align:"center"});
+    doc.text("TOMA DE INVENTARIO DENNIS", pageW/2, 12, {align:"center"});
     doc.setFontSize(8); doc.setTextColor(30,64,175);
     doc.text(`Usuario: ${usuarioActual}`, pageW-10, 10, {align:"right"});
     doc.setFont(undefined,'normal'); doc.setTextColor(100); doc.setFontSize(7);
