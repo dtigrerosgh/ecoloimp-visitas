@@ -956,21 +956,22 @@ async function generarInvPDF(){
   const clienteObj = DB.clientes.find(x=>x.codigo===clienteCode);
 
 let filas = [];
-  const detalleRows = document.querySelectorAll("#inventarioBody tr");
+  // 1. PRIMERO intenta leer del DETALLE (lo que agregaste con btnAgregarProducto)
+  const detalleRows = document.querySelectorAll("#detalleInventarioBody tr[data-codigo]");
   
-  alert(detalleRows.length);
   if(detalleRows.length>0){
     detalleRows.forEach(tr=>{
       filas.push({
-        bodega: tr.dataset.bodega,
-        codigo: tr.dataset.codigo,
-        alterno: tr.dataset.alterno,
-        nombre: tr.dataset.nombre,
-        saldo: Number(tr.dataset.saldo),
+        bodega: tr.dataset.bodega || "",
+        codigo: tr.dataset.codigo || "",
+        alterno: tr.dataset.alterno || tr.dataset.codigo || "",
+        nombre: tr.dataset.nombre || tr.dataset.alterno || tr.dataset.codigo || "",
+        saldo: Number(tr.dataset.saldo||0),
         conteo: Number(tr.querySelector("input.det-cant")?.value||0)
       });
     });
   }else{
+    // 2. Si no hay detalle, lee directo del inventario
     document.querySelectorAll("#inventarioBody tr").forEach(tr=>{
       const inp = tr.querySelector("input[data-inv-codigo]");
       if(!inp || Number(inp.value||0)<=0) return;
