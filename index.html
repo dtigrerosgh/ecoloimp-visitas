@@ -241,7 +241,11 @@
           <input id="vtNombreFirma" type="text" placeholder="Ej. Dennis Tigreros - Jefe Sistemas">
         </div>        
       </div>
-
+      <div class="card">
+          <label>Fotos de la visita (máx 4)</label>
+          <input type="file" id="vtFotos" accept="image/*" multiple capture="environment">
+          <div id="vtFotosPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+      </div>
       <div class="actions">
         <button class="btn primary" id="btnVisitaGuardar">Guardar TXT y enviar por Gmail</button>
         <!-- <button class="btn secondary" id="btnVisitaGmail">Abrir Gmail</button> -->
