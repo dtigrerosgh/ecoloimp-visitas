@@ -5,6 +5,7 @@ const ARIAL_BASE64 = "AAEAAAAZAQAABACQRFNJR6jSM0wADRO0AAAdtEdERUYHHgrHAA0xaAAAA1
 
 // app.js FINAL - MENU + TXT + VISITA + CONTEO SEPARADOS
 const DB = { clientes:[], impresoras:[], tecnicos:[], bodegas:[], productos:[], inventarios:[], trabajos:[], visitaPrinter:null };
+let fotosVisita = []; // base64
 const gcorreo = "administracion@ecoloimp.com, servicio@ecoloimp.com";
 let usuariosTXT=[], firmaDibujada=false, firmaDibujadaCt=false;
 const $=id=>document.getElementById(id);
@@ -1171,6 +1172,12 @@ function limpiarVisitaTecnica(){
   if(window.signaturePad) window.signaturePad.clear();
   if(window.pad) window.pad.clear();
 
+  fotosVisita = [];
+  const p = document.getElementById("vtFotosPreview");
+  if(p) p.innerHTML = "";
+  const fi = document.getElementById("vtFotos");
+  if(fi) fi.value = "";
+  
   // 5. Borra borradores de visita del storage
   localStorage.removeItem("visita_borrador");
   localStorage.removeItem("ecoloimp_visita");
