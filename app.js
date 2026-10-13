@@ -566,7 +566,8 @@ async function generarVisitaPDF(){
     return cy;
   }
 
-   let y = 10;
+  function drawHeader(){
+  let y = 10;
   // Logo
   if(logoBase64){
     try{
@@ -598,6 +599,8 @@ async function generarVisitaPDF(){
   doc.line(10, 24, 200, 24); // linea separacion principal con canvas
 
   y = 30;
+  }
+  drawHeader();
   // Tabla 1
   let rows1 = [
     ["FECHA", $("vtFecha").value + "  " + $("vtHora").value],
@@ -637,14 +640,7 @@ async function generarVisitaPDF(){
   // si no entra, nueva página
   if(y + alturaCuadro > 275){
     doc.addPage();
-    if(logoBase64){
-      try{
-        let props = doc.getImageProperties(logoBase64);
-        let w = 45; let h = (props.height * w) / props.width;
-        if(h > 14) { h = 14; w = (props.width * h) / props.height; }
-        doc.addImage(logoBase64,"JPEG",10,8, w, h);
-      }catch{}
-    }    
+    drawHeader();  
     y = 30;
   }
 
