@@ -672,7 +672,7 @@ async function generarVisitaPDF(){
   y+=5;
   doc.text(firmaNombre || "Firma cliente", 10, y);
 
-  // PARA NCLUR LAS FOTOS
+  // PARA INCLIUR LAS FOTOS
   y+=10;
   if(fotosVisita.length>0){
     if(y > 220){ doc.addPage(); drawHeader?.(); y=30; } // si no entra
