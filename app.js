@@ -600,6 +600,7 @@ async function generarVisitaPDF(){
 
   y = 30;
   }
+  
   drawHeader();
   // Tabla 1
   let rows1 = [
@@ -670,21 +671,25 @@ async function generarVisitaPDF(){
 
   // PARA INCLIUR LAS FOTOS
   y+=10;
-  if(fotosVisita.length>0){
-    if(y > 220){ doc.addPage(); drawHeader?.(); y=30; } // si no entra
+  const listaFotos = (typeof fotosVisita!== "undefined"? fotosVisita : []);
+ if(listaFotos.length>0){
+    const pageW = doc.internal.pageSize.getWidth();
+    if(y > 210){ doc.addPage(); drawHeader(); y=30; }
     doc.setFont(undefined,'bold'); doc.setFontSize(10);
-    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=5;
+    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=6;
     let x=10;
-    for(let i=0;i<fotosVisita.length;i++){
+    for(let i=0;i<listaFotos.length;i++){
       try{
-        if(x+55 > pageW-10){ x=10; y+=42; if(y>250){ doc.addPage(); y=20; x=10; } }
-        doc.addImage(fotosVisita[i],"JPEG", x, y, 50, 38);
+        if(x+55 > pageW-10){
+          x=10; y+=42;
+          if(y>250){ doc.addPage(); drawHeader(); y=30; x=10; }
+        }
+        doc.addImage(listaFotos[i],"JPEG", x, y, 50, 38);
         x+=55;
       }catch(e){ console.log("foto error",e); }
     }
     y+=45;
-  }
-  
+  }  
   const texto = `© 2026 DT Soluciones Informaticas                    Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
   doc.setFontSize(8);
 
