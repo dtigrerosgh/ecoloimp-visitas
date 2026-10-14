@@ -1230,6 +1230,51 @@ function initFotosVisita(){
   });
 }
 
+function initFotosConteo(){
+  const input = document.getElementById("ctFotos");
+  const preview = document.getElementById("ctFotosPreview");
+  if(!input) return;
+
+  input.addEventListener("change", async (e)=>{
+    const files = Array.from(e.target.files);
+    if((fotosConteo.length + files.length) > 15){
+      alert("Máximo 15 fotos por conteo");
+      return;
+    }
+
+    for(let file of files){
+      const b64 = await new Promise(res=>{
+        const fr = new FileReader();
+        fr.onload = ()=>res(fr.result);
+        fr.readAsDataURL(file);
+      });
+      fotosConteo.push(b64);
+
+      const idx = fotosConteo.length - 1;
+      const div = document.createElement("div");
+      div.style.cssText="position:relative;width:90px;height:90px;border:1px solid #ddd;border-radius:8px;overflow:hidden";
+      div.innerHTML = `
+        <img src="${b64}" style="width:100%;height:100%;object-fit:cover">
+        <button type="button" data-idx="${idx}" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);color:white;border:0;border-radius:50%;width:22px;height:22px;font-size:12px">X</button>
+        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:9px;text-align:center">Foto ${fotosConteo.length}</span>
+      `;
+      div.querySelector("button").onclick = ()=>{
+        // elimina de array y del DOM
+        const pos = fotosConteo.indexOf(b64);
+        if(pos>-1) fotosConteo.splice(pos,1);
+        div.remove();
+        // renumera
+        const count = document.getElementById("ctFotosCount");
+        //if(count) count.textContent = `${fotosConteo.length} / 15`;
+        document.querySelectorAll("#ctFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
+      };
+      preview.appendChild(div);
+    }
+    // limpia input para poder volver a elegir las mismas fotos
+    input.value = "";
+  });
+}
+
 function initFirma(){
   function activar(cid,bid,setter){
     const canvas=$(cid);if(!canvas)return;
@@ -1446,6 +1491,7 @@ async function init(){
   setupEvents();
   initFirma();
   initFotosVisita();
+  initFotosConteo();
   const ahora=new Date();
   if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
   if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
