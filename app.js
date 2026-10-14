@@ -517,45 +517,32 @@ function justificar(texto, ancho=110){
   if(linea) lineas.push(linea);
   return lineas.join("\n");
 }
-
+//-----------------------------------------
 async function generarVisitaPDF(){
-  const c=selectedClientVisita(); 
+  const c=selectedClientVisita();
   const p=DB.visitaPrinter;
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
-  //const textoPlano = buildVisitaText(); 
-  //const textoSis = buildVisitaSis();
-  let fotosVisita = []; // base64
-  const firmaData = $("vtFirmaCanvas")?.toDataURL ? (()=>{ try{ return firmaDibujada ? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })() : null;
+  const firmaData = $("vtFirmaCanvas")?.toDataURL? (()=>{ try{ return firmaDibujada? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })() : null;
   const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64().catch(()=>null);
-  
   let usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
-
-// 1. GUARDA TXT PRIMERO, FUERA DEL TRY DEL PDF - ASÍ SIEMPRE GUARDA
-  //try{ saveText(buildVisitaText(), `VISITA ${c.codigo} ${p.serie} ${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT1",e); }
-  //try{ saveText(buildVisitaSis(), `VT_${c.codigo}_${p.serie}_${$("vtFecha")?.value||""}.txt`); }catch(e){ console.log("TXT2",e); }
+  let y = 30; // <--- ESTE ES EL QUE TE FALTABA, DEFINIDO FUERA
 
   if(!window.jspdf) return;
-  const { jsPDF } = window.jspdf; 
-  const doc = new jsPDF({
-  orientation: "portrait",
-  unit: "mm",
-  format: "a4"
-  });
-  const altoPagina = 297; 
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const altoPagina = 297;
   const margenInferior = 10;
-  
-  // --- CANVAS = DIBUJO DE LINEAS ---
-  function drawTable(x,y,w1,w2,h, rows){
+
+  function drawTable(x,yy,w1,w2,h, rows){
     doc.setDrawColor(180); doc.setLineWidth(0.3);
-    // bordes externos con canvas
-    doc.rect(x, y, w1+w2, h*rows.length);
-    let cy = y;
+    doc.rect(x, yy, w1+w2, h*rows.length);
+    let cy = yy;
     rows.forEach((r,i)=>{
-      if(i>0){ doc.line(x, cy, x+w1+w2, cy); } // linea separacion
-      doc.line(x+w1, cy, x+w1, cy+h); // linea vertical medio
+      if(i>0){ doc.line(x, cy, x+w1+w2, cy); }
+      doc.line(x+w1, cy, x+w1, cy+h);
       doc.setFontSize(9); doc.setFont(undefined,'bold');
       doc.text(r[0], x+2, cy+5);
       doc.setFont(undefined,'normal');
@@ -568,44 +555,30 @@ async function generarVisitaPDF(){
   }
 
   function drawHeader(){
-  let y = 10;
-  // Logo
-  if(logoBase64){
-    try{
-      let props = doc.getImageProperties(logoBase64);
-      let w = 45; // ancho fijo
-      let h = (props.height * w) / props.width; // alto proporcional
-      if(h > 14) { h = 14; w = (props.width * h) / props.height; } // limite alto
-      doc.addImage(logoBase64,"JPEG",10,y, w, h);
-    }catch(e){ 
-      try{ doc.addImage(logoBase64,"JPEG",10,y,45,14); }catch{} // fallback
+    let yh = 10;
+    if(logoBase64){
+      try{
+        let props = doc.getImageProperties(logoBase64);
+        let w = 45; let h = (props.height * w) / props.width;
+        if(h > 14) { h = 14; w = (props.width * h) / props.height; }
+        doc.addImage(logoBase64,"JPEG",10,yh, w, h);
+      }catch(e){ try{ doc.addImage(logoBase64,"JPEG",10,yh,45,14); }catch{} }
     }
+    doc.setFontSize(14); doc.setFont(undefined,'bold');
+    doc.text("REPORTE DE VISITA TECNICA", 70, yh+5);
+    doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(30,64,175);
+    doc.text(`Usuario: ${usuarioActual}`, 195, yh+5, {align:"right"});
+    doc.setFont(undefined,'normal'); doc.setFontSize(7); doc.setTextColor(100);
+    doc.text(new Date().toLocaleString('es-EC'), 195, yh+9, {align:"right"});
+    doc.setTextColor(0); doc.setLineWidth(0.6); doc.setDrawColor(15,23,42);
+    doc.line(10, 24, 200, 24);
+    y = 30; // resetea y afuera
   }
-  doc.setFontSize(14); doc.setFont(undefined,'bold');
-  doc.text("REPORTE DE VISITA TECNICA", 70, y+5);
 
-// USUARIO EN CABECERA - MISMA ALTURA DEL LOGO
-  doc.setFont(undefined,'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(30,64,175); // azul
-  doc.text(`Usuario: ${usuarioActual}`, 195, y+5, {align:"right"});
- 
-  doc.setFont(undefined,'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(100);
-  doc.text(new Date().toLocaleString('es-EC'), 195, y+9, {align:"right"});
-
-  doc.setTextColor(0);  
-  doc.setLineWidth(0.6); doc.setDrawColor(15,23,42);
-  doc.line(10, 24, 200, 24); // linea separacion principal con canvas
-
-  y = 30;
-  }
-  
   drawHeader();
-  // Tabla 1
+
   let rows1 = [
-    ["FECHA", $("vtFecha").value + "  " + $("vtHora").value],
+    ["FECHA", $("vtFecha").value + " " + $("vtHora").value],
     ["CLIENTE", `${c.codigo} - ${c.nombre}`],
     ["EQUIPO", `${p.codigo} - ${p.modelo}`],
     ["SERIE", `${p.serie}`],
@@ -615,95 +588,63 @@ async function generarVisitaPDF(){
   ];
   y = drawTable(10, y, 35, 145, 8, rows1) + 7;
 
-  // Tabla 2
   let rows2 = [
     ["TECNICO", `${t.codigo} - ${t.nombre}`],
     ["TIPO VISITA", $("vtTipo").value],
     ["TRABAJO", `${tr.codigo} - ${tr.nombre}`],
     ["ESTADO", $("vtEstado").value],
     ["EMAIL CLIENTE", $("vtEmail")?.value || "-"],
-    ["FIRMA DIGITAL", firmaDibujada ? "SI" : "NO"],    
+    ["FIRMA DIGITAL", firmaDibujada? "SI" : "NO"],
   ];
   y = drawTable(10, y, 35, 145, 8, rows2) + 6;
 
-  // --- DETALLE DINAMICO Y JUSTIFICADO ---
   y+=6;
-  doc.setFont(undefined,'bold'); 
-  doc.setFontSize(10);
-  doc.text("DETALLE / TRABAJO REALIZADO:", 10, y);
-  y+=4;
-
-  doc.setFont(undefined,'normal'); 
-  doc.setFontSize(9);
+  doc.setFont(undefined,'bold'); doc.setFontSize(10);
+  doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=4;
+  doc.setFont(undefined,'normal'); doc.setFontSize(9);
   let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 165);
   let alturaTexto = detLines.length * 4.2 + 10;
-  let alturaCuadro = Math.max(25, alturaTexto); // mínimo 25mm
-
-  // si no entra, nueva página
-  if(y + alturaCuadro > 275){
-    doc.addPage();
-    drawHeader();  
-    y = 30;
-  }
-
-  // dibuja cuadro dinámico
-  doc.setDrawColor(180); 
-  doc.setLineWidth(0.3);
+  let alturaCuadro = Math.max(25, alturaTexto);
+  if(y + alturaCuadro > 275){ doc.addPage(); drawHeader(); }
+  doc.setDrawColor(180); doc.setLineWidth(0.3);
   doc.rect(10, y, 180, alturaCuadro);
-
-  // texto justificado dentro
   doc.text(detLines, 15, y+6, {align:"left", maxWidth:165});
+  y += alturaCuadro + 10;
 
-  y += alturaCuadro + 10; // deja espacio para firma
-
-  // Firma con linea canvas
-  doc.setFont(undefined,'bold'); 
-  doc.text("FIRMA DE CONFORMIDAD", 10, y); 
-  doc.setDrawColor(15,23,42); 
-  doc.setLineWidth(0.4);
-
+  doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD", 10, y);
+  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4);
   y+=2;
   if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
-  
   y+=21;
-  doc.line(10, y, 80, y); // linea para firma
-  y+=5;
+  doc.line(10, y, 80, y); y+=5;
   doc.text(firmaNombre || "Firma cliente", 10, y);
 
-  // PARA INCLIUR LAS FOTOS
+  // FOTOS - CORREGIDO
   y+=10;
   const listaFotos = (typeof fotosVisita!== "undefined"? fotosVisita : []);
- if(listaFotos.length>0){
-    //const pageW = doc.internal.pageSize.getWidth();
-    if(y > 210){ doc.addPage(); drawHeader(); y=30; }
+  if(listaFotos.length>0){
+    const pageW = doc.internal.pageSize.getWidth();
+    if(y > 210){ doc.addPage(); drawHeader(); }
     doc.setFont(undefined,'bold'); doc.setFontSize(10);
     doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=6;
     let x=10;
     for(let i=0;i<listaFotos.length;i++){
       try{
-        if(x+55 > pageW-10){
-          x=10; y+=42;
-          if(y>250){ doc.addPage(); drawHeader(); y=30; x=10; }
-        }
+        if(x+55 > pageW-10){ x=10; y+=42; if(y>250){ doc.addPage(); drawHeader(); x=10; } }
         doc.addImage(listaFotos[i],"JPEG", x, y, 50, 38);
         x+=55;
-      }catch(e){ console.log("foto error",e); }
+      }catch(e){}
     }
     y+=45;
-  }  
-  const texto = `© 2026 DT Soluciones Informaticas                    Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
-  doc.setFontSize(8);
+  }
 
-// 4. Calcular la posición 'Y' dinámica para el final de la página
-const coordenadaY = altoPagina - margenInferior;
- 
-// 5. Escribir el texto (centrado horizontalmente a 105mm)
+  const texto = `© 2026 DT Soluciones Informaticas Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
+  doc.setFontSize(8);
+  const coordenadaY = altoPagina - margenInferior;
   doc.text(texto, 105, coordenadaY, { align: "center" });
   doc.autoPrint();
   window.open(doc.output('bloburl'), '_blank');
   return doc;
-//  doc.save(`VISITA TECNICA ${c.codigo} ${p.serie} ${fechaFile}.pdf`.replaceAll("/","-"));
-// FIN
 }
 
 //-----------------------------------------
