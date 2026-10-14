@@ -1183,14 +1183,20 @@ function limpiarConteo(){
   console.log("✅ Conteo limpio");
 }
 
+let fotosVisita = []; // ponlo arriba con tus variables globales
+
 function initFotosVisita(){
-  const input = $("vtFotos");
-  const preview = $("vtFotosPreview");
+  const input = document.getElementById("vtFotos");
+  const preview = document.getElementById("vtFotosPreview");
   if(!input) return;
+
   input.addEventListener("change", async (e)=>{
-    const files = Array.from(e.target.files).slice(0,4);
-    fotosVisita = [];
-    preview.innerHTML = "";
+    const files = Array.from(e.target.files);
+    if((fotosVisita.length + files.length) > 8){
+      alert("Máximo 8 fotos por visita");
+      return;
+    }
+
     for(let file of files){
       const b64 = await new Promise(res=>{
         const fr = new FileReader();
@@ -1198,15 +1204,29 @@ function initFotosVisita(){
         fr.readAsDataURL(file);
       });
       fotosVisita.push(b64);
+
+      const idx = fotosVisita.length - 1;
       const div = document.createElement("div");
-      div.style.cssText="position:relative;width:90px;height:90px;border:1px solid #ccc;border-radius:8px;overflow:hidden";
-      div.innerHTML = `<img src="${b64}" style="width:100%;height:100%;object-fit:cover"><button type="button" style="position:absolute;top:2px;right:2px;background:red;color:white;border:0;border-radius:50%;width:20px;height:20px">X</button>`;
+      div.style.cssText="position:relative;width:90px;height:90px;border:1px solid #ddd;border-radius:8px;overflow:hidden";
+      div.innerHTML = `
+        <img src="${b64}" style="width:100%;height:100%;object-fit:cover">
+        <button type="button" data-idx="${idx}" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);color:white;border:0;border-radius:50%;width:22px;height:22px;font-size:12px">X</button>
+        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:9px;text-align:center">Foto ${fotosVisita.length}</span>
+      `;
       div.querySelector("button").onclick = ()=>{
-        fotosVisita = fotosVisita.filter((_,i)=>i!==fotosVisita.indexOf(b64));
+        // elimina de array y del DOM
+        const pos = fotosVisita.indexOf(b64);
+        if(pos>-1) fotosVisita.splice(pos,1);
         div.remove();
+        // renumera
+        const count = document.getElementById("vtFotosCount");
+        if(count) count.textContent = `${fotosVisita.length} / 8`;
+        document.querySelectorAll("#vtFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
       };
       preview.appendChild(div);
     }
+    // limpia input para poder volver a elegir las mismas fotos
+    input.value = "";
   });
 }
 
