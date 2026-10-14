@@ -5,7 +5,8 @@ const ARIAL_BASE64 = "AAEAAAAZAQAABACQRFNJR6jSM0wADRO0AAAdtEdERUYHHgrHAA0xaAAAA1
 
 // app.js FINAL - MENU + TXT + VISITA + CONTEO SEPARADOS
 const DB = { clientes:[], impresoras:[], tecnicos:[], bodegas:[], productos:[], inventarios:[], trabajos:[], visitaPrinter:null };
-
+let fotosVisita = []; // ponlo arriba con tus variables globales
+let fotosConteo = []; // ponlo arriba con tus variables globales
 const gcorreo = "administracion@ecoloimp.com, servicio@ecoloimp.com";
 let usuariosTXT=[], firmaDibujada=false, firmaDibujadaCt=false;
 const $=id=>document.getElementById(id);
@@ -997,7 +998,7 @@ let filas = [];
       }catch(e){ try{doc.addImage(logoBase64,"JPEG",10,4,45,15);}catch{} }
     }
     doc.setTextColor(0); doc.setFontSize(14); doc.setFont(undefined,'bold');
-    doc.text("TOMA DE INVENTARIO DENNIS", pageW/2, 12, {align:"center"});
+    doc.text("TOMA DE INVENTARIO", pageW/2, 12, {align:"center"});
     doc.setFontSize(8); doc.setTextColor(30,64,175);
     doc.text(`Usuario: ${usuarioActual}`, pageW-10, 10, {align:"right"});
     doc.setFont(undefined,'normal'); doc.setTextColor(100); doc.setFontSize(7);
@@ -1142,6 +1143,7 @@ function limpiarVisitaTecnica(){
   if(p) p.innerHTML = "";
   const fi = document.getElementById("vtFotos");
   if(fi) fi.value = "";
+
   
   // 5. Borra borradores de visita del storage
   localStorage.removeItem("visita_borrador");
@@ -1203,7 +1205,7 @@ function limpiarConteo(){
   console.log("✅ Conteo limpio");
 }
 
-let fotosVisita = []; // ponlo arriba con tus variables globales
+
 
 function initFotosVisita(){
   const input = document.getElementById("vtFotos");
@@ -1285,8 +1287,8 @@ function initFotosConteo(){
         div.remove();
         // renumera
         const count = document.getElementById("ctFotosCount");
-        //if(count) count.textContent = `${fotosConteo.length} / 15`;
-        document.querySelectorAll("#ctFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
+        if(count) count.textContent = `${fotosConteo.length} / 15`;
+        //document.querySelectorAll("#ctFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
       };
       preview.appendChild(div);
     }
