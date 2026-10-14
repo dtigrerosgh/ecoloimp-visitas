@@ -1192,8 +1192,8 @@ function initFotosVisita(){
 
   input.addEventListener("change", async (e)=>{
     const files = Array.from(e.target.files);
-    if((fotosVisita.length + files.length) > 8){
-      alert("Máximo 8 fotos por visita");
+    if((fotosVisita.length + files.length) > 15){
+      alert("Máximo 15 fotos por visita");
       return;
     }
 
@@ -1220,7 +1220,7 @@ function initFotosVisita(){
         div.remove();
         // renumera
         const count = document.getElementById("vtFotosCount");
-        if(count) count.textContent = `${fotosVisita.length} / 8`;
+        //if(count) count.textContent = `${fotosVisita.length} / 15`;
         document.querySelectorAll("#vtFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
       };
       preview.appendChild(div);
