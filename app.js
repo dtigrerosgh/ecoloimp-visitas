@@ -1242,8 +1242,8 @@ function initFotosVisita(){
         div.remove();
         // renumera
         const count = document.getElementById("vtFotosCount");
-        //if(count) count.textContent = `${fotosVisita.length} / 15`;
-        document.querySelectorAll("#vtFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
+        if(count) count.textContent = `${fotosVisita.length} / 15`;
+        //document.querySelectorAll("#vtFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
       };
       preview.appendChild(div);
     }
