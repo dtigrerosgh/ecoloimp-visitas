@@ -5,7 +5,7 @@ const ARIAL_BASE64 = "AAEAAAAZAQAABACQRFNJR6jSM0wADRO0AAAdtEdERUYHHgrHAA0xaAAAA1
 
 // app.js FINAL - MENU + TXT + VISITA + CONTEO SEPARADOS
 const DB = { clientes:[], impresoras:[], tecnicos:[], bodegas:[], productos:[], inventarios:[], trabajos:[], visitaPrinter:null };
-let fotosVisita = []; // base64
+
 const gcorreo = "administracion@ecoloimp.com, servicio@ecoloimp.com";
 let usuariosTXT=[], firmaDibujada=false, firmaDibujadaCt=false;
 const $=id=>document.getElementById(id);
@@ -526,6 +526,7 @@ async function generarVisitaPDF(){
   const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
   //const textoPlano = buildVisitaText(); 
   //const textoSis = buildVisitaSis();
+  let fotosVisita = []; // base64
   const firmaData = $("vtFirmaCanvas")?.toDataURL ? (()=>{ try{ return firmaDibujada ? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })() : null;
   const firmaNombre = $("vtNombreFirma")?.value || "";
   const logoBase64 = await getLogoBase64().catch(()=>null);
@@ -673,7 +674,7 @@ async function generarVisitaPDF(){
   y+=10;
   const listaFotos = (typeof fotosVisita!== "undefined"? fotosVisita : []);
  if(listaFotos.length>0){
-    const pageW = doc.internal.pageSize.getWidth();
+    //const pageW = doc.internal.pageSize.getWidth();
     if(y > 210){ doc.addPage(); drawHeader(); y=30; }
     doc.setFont(undefined,'bold'); doc.setFontSize(10);
     doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=6;
