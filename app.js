@@ -941,7 +941,7 @@ const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo : []);
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
 
-    if(y > 150){ doc.addPage(); drawHeader(); y=30; }
+    if(y > 150){ doc.addPage(); drawHeader(); y=36; }
 
     doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
     doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=8;
@@ -963,10 +963,11 @@ const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo : []);
         x=10;
         y+= fotoH + gapY;
         countFila=0;
+         if(y > 150){ doc.addPage(); drawHeader(); y=36; }           
       }
       // nueva pagina (8 fotos)
       if(countPagina >= fotosPorPagina){
-        doc.addPage(); drawHeader(); y=30;
+        if(y > 150){ doc.addPage(); drawHeader(); y=36; }
         doc.setFont(undefined,'bold'); doc.setFontSize(10);
         doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=8;
         x=10;
