@@ -919,7 +919,7 @@ async function generarConteoPDF(){
     y+=45;
   }
 
-  
+
   const totalPages = doc.internal.getNumberOfPages();
   for(let i=1; i<=totalPages; i++){
     doc.setPage(i);
