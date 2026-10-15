@@ -627,7 +627,7 @@ const listaFotos = (typeof fotosVisita!=="undefined"? fotosVisita : []);
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
 
-    if(y > 150){ doc.addPage(); drawHeader(); y=30; }
+    if(y > 150){ doc.addPage(); drawHeader(); y=36; }
 
     doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
     doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=8;
@@ -649,15 +649,14 @@ const listaFotos = (typeof fotosVisita!=="undefined"? fotosVisita : []);
         x=10;
         y+= fotoH + gapY;
         countFila=0;
+         if(y > 150){ doc.addPage(); drawHeader(); y=36; countPagina=0;}
       }
       // nueva pagina (8 fotos)
       if(countPagina >= fotosPorPagina){
-        doc.addPage(); drawHeader(); y=30;
+        if(y > 150){ doc.addPage(); drawHeader(); y=36; countFila=0; countPagina=0;}
         doc.setFont(undefined,'bold'); doc.setFontSize(10);
         doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=8;
         x=10;
-        countFila=0;
-        countPagina=0;
       }
 
       try{
@@ -963,16 +962,14 @@ const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo : []);
         x=10;
         y+= fotoH + gapY;
         countFila=0;
-         if(y > 150){ doc.addPage(); drawHeader(); y=36; }           
+         if(y > 150){ doc.addPage(); drawHeader(); y=36; countPagina=0;}           
       }
       // nueva pagina (8 fotos)
       if(countPagina >= fotosPorPagina){
-        if(y > 150){ doc.addPage(); drawHeader(); y=36; }
+        if(y > 150){ doc.addPage(); drawHeader(); y=36; countFila=0; countPagina=0;}     
         doc.setFont(undefined,'bold'); doc.setFontSize(10);
         doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=8;
         x=10;
-        countFila=0;
-        countPagina=0;
       }
 
       try{
