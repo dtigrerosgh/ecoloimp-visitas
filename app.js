@@ -628,7 +628,7 @@ async function generarVisitaPDF(){
     const pageH = doc.internal.pageSize.getHeight();
 
     // si no entra ni el titulo, nueva pagina
-    if(y > 220){ doc.addPage(); drawHeader(); y=40; y=drawTable(y); }
+    if(y > 220){ doc.addPage(); drawHeader(); y=40; }
 
     doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
     y+=2
@@ -644,7 +644,7 @@ async function generarVisitaPDF(){
       }
       // salto de pagina
       if(y + fotoH > pageH-20){
-        doc.addPage(); drawHeader(); y=40; y=drawTable(y);
+        doc.addPage(); drawHeader(); y=40;
         doc.setFont(undefined,'bold'); doc.setFontSize(10);
         doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=7;
         x=10;
