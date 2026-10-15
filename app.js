@@ -620,25 +620,45 @@ async function generarVisitaPDF(){
   doc.line(10, y, 80, y); y+=5;
   doc.text(firmaNombre || "Firma cliente", 10, y);
 
-  // FOTOS - CORREGIDO
+   // FOTOS VISITA - GRID 3x3 CORRECTO
   y+=10;
-  const listaFotos = (typeof fotosVisita!== "undefined"? fotosVisita : []);
+  const listaFotos = (typeof fotosVisita!=="undefined"? fotosVisita : []);
   if(listaFotos.length>0){
     const pageW = doc.internal.pageSize.getWidth();
-    if(y > 210){ doc.addPage(); drawHeader(); }
-    doc.setFont(undefined,'bold'); doc.setFontSize(10);
-    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=6;
-    let x=10;
-    for(let i=0;i<listaFotos.length;i++){
-      try{
-        if(x+55 > pageW-10){ x=10; y+=42; if(y>250){ doc.addPage(); drawHeader(); x=10; } }
-        doc.addImage(listaFotos[i],"JPEG", x, y, 50, 38);
-        x+=55;
-      }catch(e){}
-    }
-    y+=45;
-  }
+    const pageH = doc.internal.pageSize.getHeight();
 
+    // si no entra ni el titulo, nueva pagina
+    if(y > 220){ doc.addPage(); drawHeader(); y=40; y=drawTable(y); }
+
+    doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
+    y+=2
+    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=7;
+
+    let x=10;
+    const fotoW=55, fotoH=38, gapX=5, gapY=6;
+
+    for(let i=0;i<listaFotos.length;i++){
+      // salto de linea
+      if(x + fotoW > pageW-10){
+        x=10; y+= fotoH + gapY;
+      }
+      // salto de pagina
+      if(y + fotoH > pageH-20){
+        doc.addPage(); drawHeader(); y=40; y=drawTable(y);
+        doc.setFont(undefined,'bold'); doc.setFontSize(10);
+        doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=7;
+        x=10;
+      }
+      try{
+        doc.addImage(listaFotos[i],"JPEG", x, y, fotoW, fotoH);
+        // borde fino
+        doc.setDrawColor(200); doc.setLineWidth(0.2); doc.rect(x,y,fotoW,fotoH);
+      }catch(e){}
+      x+= fotoW + gapX;
+    }
+    y+= fotoH + 10;
+  }
+  
   const texto = `© 2026 DT Soluciones Informaticas Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
   doc.setFontSize(8);
   const coordenadaY = altoPagina - margenInferior;
@@ -911,6 +931,7 @@ async function generarConteoPDF(){
     if(y > 220){ doc.addPage(); drawHeader(); y=40; y=drawTableHeader(y); }
 
     doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
+    y+=2
     doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=7;
 
     let x=10;
