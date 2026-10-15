@@ -935,44 +935,57 @@ async function generarConteoPDF(){
   doc.text($("ctNombreFirma")?.value||"Firma Cliente", 12, y);
 
    // FOTOS CONTEO - GRID 3x3 CORRECTO
-  y+=8;
-  const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo : []);
+   y+=8;
+const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo : []);
   if(listaFotos.length>0){
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
 
-    // si no entra ni el titulo, nueva pagina
-    if(y > 220){ doc.addPage(); drawHeader(); y=40; y=drawTableHeader(y); }
+    if(y > 150){ doc.addPage(); drawHeader(); y=30; }
 
     doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
-    y+=2
-    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=7;
+    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=8;
+
+    const fotosPorFila = 2;
+    const fotosPorPagina = 8; // 2x4
+    const fotoW = 86;
+    const fotoH = 48;
+    const gapX = 8;
+    const gapY = 7;
 
     let x=10;
-    const fotoW=55, fotoH=38, gapX=5, gapY=6;
+    let countFila=0;
+    let countPagina=0;
 
     for(let i=0;i<listaFotos.length;i++){
-      // salto de linea
-      if(x + fotoW > pageW-10){
-        x=10; y+= fotoH + gapY;
-      }
-      // salto de pagina
-      if(y + fotoH > pageH-20){
-        doc.addPage(); drawHeader(); y=40; y=drawTableHeader(y);
-        doc.setFont(undefined,'bold'); doc.setFontSize(10);
-        doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=7;
+      // nueva fila (2 fotos)
+      if(countFila >= fotosPorFila){
         x=10;
+        y+= fotoH + gapY;
+        countFila=0;
       }
+      // nueva pagina (8 fotos)
+      if(countPagina >= fotosPorPagina){
+        doc.addPage(); drawHeader(); y=30;
+        doc.setFont(undefined,'bold'); doc.setFontSize(10);
+        doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=8;
+        x=10;
+        countFila=0;
+        countPagina=0;
+      }
+
       try{
         doc.addImage(listaFotos[i],"JPEG", x, y, fotoW, fotoH);
-        // borde fino
-        doc.setDrawColor(200); doc.setLineWidth(0.2); doc.rect(x,y,fotoW,fotoH);
+        doc.setDrawColor(180); doc.setLineWidth(0.2); doc.rect(x,y,fotoW,fotoH);
+        doc.setFontSize(7); doc.text(`Foto ${i+1}`, x+2, y+fotoH-2);
       }catch(e){}
-      x+= fotoW + gapX;
-    }
-    y+= fotoH + 10;
-  }
 
+      x+= fotoW + gapX;
+      countFila++;
+      countPagina++;
+    }
+    y+= fotoH + 12;
+  }
   const totalPages = doc.internal.getNumberOfPages();
   for(let i=1; i<=totalPages; i++){
     doc.setPage(i);
