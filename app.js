@@ -663,8 +663,8 @@ async function generarVisitaPDF(){
   doc.setFontSize(8);
   const coordenadaY = altoPagina - margenInferior;
   doc.text(texto, 105, coordenadaY, { align: "center" });
-  doc.autoPrint();
-  window.open(doc.output('bloburl'), '_blank');
+  //doc.autoPrint();
+  //window.open(doc.output('bloburl'), '_blank');
   return doc;
 }
 
