@@ -1280,6 +1280,9 @@ function initFotosConteo(){
         <button type="button" data-idx="${idx}" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);color:white;border:0;border-radius:50%;width:22px;height:22px;font-size:12px">X</button>
         <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:9px;text-align:center">Foto ${fotosConteo.length}</span>
       `;
+              // renumera
+        const count = document.getElementById("ctFotosCount");
+        if(count) count.textContent = `${fotosConteo.length} / 15`;
       div.querySelector("button").onclick = ()=>{
         // elimina de array y del DOM
         const pos = fotosConteo.indexOf(b64);
@@ -1290,9 +1293,7 @@ function initFotosConteo(){
         if(count) count.textContent = `${fotosConteo.length} / 15`;
         //document.querySelectorAll("#ctFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
       };
-      preview.appendChild(div);
-        const count = document.getElementById("ctFotosCount");
-        if(count) count.textContent = `${fotosConteo.length} / 15`;      
+      preview.appendChild(div);   
     }
     // limpia input para poder volver a elegir las mismas fotos
     input.value = "";
