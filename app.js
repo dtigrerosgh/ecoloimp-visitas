@@ -1291,6 +1291,8 @@ function initFotosConteo(){
         //document.querySelectorAll("#ctFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
       };
       preview.appendChild(div);
+        const count = document.getElementById("ctFotosCount");
+        if(count) count.textContent = `${fotosConteo.length} / 15`;      
     }
     // limpia input para poder volver a elegir las mismas fotos
     input.value = "";
