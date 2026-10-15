@@ -900,25 +900,43 @@ async function generarConteoPDF(){
   doc.setFontSize(8); doc.setFont(undefined,'normal');
   doc.text($("ctNombreFirma")?.value||"Firma Cliente", 12, y);
 
-  // FOTOS - CORREGIDO
-  y+=10;
-  const listaFotos = (typeof fotosConteo!== "undefined"? fotosConteo : []);
+   // FOTOS CONTEO - GRID 3x3 CORRECTO
+  y+=8;
+  const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo : []);
   if(listaFotos.length>0){
     const pageW = doc.internal.pageSize.getWidth();
-    if(y > 210){ doc.addPage(); drawHeader(); }
-    doc.setFont(undefined,'bold'); doc.setFontSize(10);
-    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=6;
-    let x=10;
-    for(let i=0;i<listaFotos.length;i++){
-      try{
-        if(x+55 > pageW-10){ x=10; y+=42; if(y>250){ doc.addPage(); drawHeader(); x=10; } }
-        doc.addImage(listaFotos[i],"JPEG", x, y, 50, 38);
-        x+=55;
-      }catch(e){}
-    }
-    y+=45;
-  }
+    const pageH = doc.internal.pageSize.getHeight();
 
+    // si no entra ni el titulo, nueva pagina
+    if(y > 220){ doc.addPage(); drawHeader(); y=40; y=drawTableHeader(y); }
+
+    doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
+    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=7;
+
+    let x=10;
+    const fotoW=55, fotoH=38, gapX=5, gapY=6;
+
+    for(let i=0;i<listaFotos.length;i++){
+      // salto de linea
+      if(x + fotoW > pageW-10){
+        x=10; y+= fotoH + gapY;
+      }
+      // salto de pagina
+      if(y + fotoH > pageH-20){
+        doc.addPage(); drawHeader(); y=40; y=drawTableHeader(y);
+        doc.setFont(undefined,'bold'); doc.setFontSize(10);
+        doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=7;
+        x=10;
+      }
+      try{
+        doc.addImage(listaFotos[i],"JPEG", x, y, fotoW, fotoH);
+        // borde fino
+        doc.setDrawColor(200); doc.setLineWidth(0.2); doc.rect(x,y,fotoW,fotoH);
+      }catch(e){}
+      x+= fotoW + gapX;
+    }
+    y+= fotoH + 10;
+  }
 
   const totalPages = doc.internal.getNumberOfPages();
   for(let i=1; i<=totalPages; i++){
