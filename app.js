@@ -1006,7 +1006,7 @@ async function generarInvPDF(){
 
 let filas = [];
   // 1. PRIMERO intenta leer del DETALLE (lo que agregaste con btnAgregarProducto)
-  const detalleRows = document.querySelectorAll("#inventarioBody tr[data-codigo]");
+  const detalleRows = document.querySelectorAll("#inventarioBody tr[data-inv-codigo]");
 
   //$("inventarioBody").innerHTML = invRows.length? invRows.map(i=>{
   //    const codigo = (i.codigo||"").trim();
