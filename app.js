@@ -1020,8 +1020,8 @@ let filas = [];
           alert("det");
     detalleRows.forEach(tr=>{
       filas.push({
-        bodega: tr.dataset.bodega || "",
-        codigo: tr.dataset.codigo || "",
+        bodega: tr.bodega || "",
+        codigo: tr.codigo || "",
         alterno: tr.dataset.alterno || "",
         nombre: tr.dataset.nombre || "",
         saldo: Number(tr.dataset.saldo||0),
