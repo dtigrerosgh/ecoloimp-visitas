@@ -1021,9 +1021,9 @@ const filaEncabezado = document.querySelector('#inventarioHead tr');
   //    return `
   
   if(detalleRows.length>0){
-          alert("det");
+
     detalleRows.forEach(tr=>{
-      filas.push({
+      detalleRows.push({
         bodega: tr.bodega || "",
         codigo: tr.codigo || "",
         alterno: tr.dataset.alterno || "",
