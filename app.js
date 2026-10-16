@@ -1022,8 +1022,8 @@ let filas = [];
       filas.push({
         bodega: tr.dataset.bodega || "",
         codigo: tr.dataset.codigo || "",
-        alterno: tr.dataset.alterno || tr.dataset.codigo || "",
-        nombre: tr.dataset.nombre || tr.dataset.alterno || tr.dataset.codigo || "",
+        alterno: tr.dataset.alterno || "",
+        nombre: tr.dataset.nombre || "",
         saldo: Number(tr.dataset.saldo||0),
         conteo: Number(tr.querySelector("input.det-cant")?.value||0)
       });
@@ -1110,7 +1110,7 @@ let filas = [];
       
       const codigo = (f.codigo || "").toString();
       const alterno = (f.alterno || "").toString();
-      const nombre = (f.nombre || f.alterno || codigo || "").toString().substring(0,42);
+      const nombre = (f.nombre || "").toString().substring(0,42);
       const vals=[codigo, alterno, nombre, String(f.saldo), String(f.conteo), dif>0?`+${dif}`:`${dif}`];
       let x=10; doc.setFont(undefined,'normal'); doc.setFontSize(7); doc.setTextColor(0);
       vals.forEach((val,i)=>{
