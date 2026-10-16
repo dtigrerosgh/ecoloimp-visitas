@@ -1006,6 +1006,10 @@ async function generarInvPDF(){
 
 let filas = [];
   // 1. PRIMERO intenta leer del DETALLE (lo que agregaste con btnAgregarProducto)
+const filaEncabezado = document.querySelector('#inventarioHead tr');
+  Array.from(filaEncabezado.cells).forEach((columna, index) => {
+    console.log(`Nombre de la columna ${index + 1}:`, columna.textContent.trim());
+});
   const detalleRows = document.querySelectorAll("#inventarioBody tr");
 
   //$("inventarioBody").innerHTML = invRows.length? invRows.map(i=>{
