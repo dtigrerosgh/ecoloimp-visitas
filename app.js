@@ -1614,6 +1614,7 @@ async function init(){
   if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
   if($("ctFecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);
   if($("ivFecha"))$("ivFecha").value=ahora.toISOString().slice(0,10);
+  if($("ct2Fecha"))$("ctFecha").value=ahora.toISOString().slice(0,10);
   await cargarUsuarios();
   await loadFile("clientes","clientes.txt",parseClientes);
   await loadFile("impresoras","impresoras.txt",parseImpresoras);
@@ -1630,7 +1631,7 @@ async function init(){
   fillProductos();
   updateVisitaPrinterTable();
   updateConteoPrinterTable();
-  update2ConteoPrinterTable();
+  updateConteo2PrinterTable();
   updateInvPrinterTable();
   activateSection((location.hash||"#bienvenido").slice(1));
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
