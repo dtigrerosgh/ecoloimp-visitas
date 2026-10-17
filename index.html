@@ -343,7 +343,7 @@
       <div id="ctMessage" class="message" hidden></div>
     </section>
 
-    <!-- CONTEOS LARGOS -->
+    <!-- CONTEOS2 LARGOS -->
     <section id="conteo2" class="page-section">
       <div class="section-heading">
         <div>
@@ -355,32 +355,47 @@
       
       <div class="form-grid compact">
         <div class="field">
-          <label for="ctFecha">Fecha</label>
-          <input id="ctFecha" type="date">
+          <label for="ct2Fecha">Fecha</label>
+          <input id="ct2Fecha" type="date">
         </div>
         <div class="field">
-          <label for="ctTecnico">Técnico</label>
-          <select id="ctTecnico"></select>
+          <label for="ct2Tecnico">Técnico</label>
+          <select id="ct2Tecnico"></select>
         </div>
         <div class="field span">
-          <label for="ctClienteFilter">Filtrar cliente</label>
-          <input id="ctClienteFilter" type="search" placeholder="Código o nombre">
+          <label for="ct2ClienteFilter">Filtrar cliente</label>
+          <input id="ct2ClienteFilter" type="search" placeholder="Código o nombre">
         </div>
         <div class="field span">
-          <label for="ctCliente">Cliente</label>
-          <select id="ctCliente"></select>
+          <label for="ct2Cliente">Cliente</label>
+          <select id="ct2Cliente"></select>
         </div>
         <div class="field span-2">
-          <label for="ctEmail">Email para envío</label>
-          <input id="ctEmail" type="email" placeholder="correo@cliente.com">
+          <label for="ct2Email">Email para envío</label>
+          <input id="ct2Email" type="email" placeholder="correo@cliente.com">
         </div>
-
-
         <div class="field span-2">
           <label for="ctPrinterFilter">Filtrar impresoras</label>
           <input id="ctPrinterFilter" type="search" placeholder="Modelo, serie, sucursal, area">
         </div>
-      </div>      
+      </div> 
+
+      <div class="table-wrap printer-selection-wrap">
+        <table id="ct2PrinterTable" class="data-table">
+          <thead id="conteo2Head">
+            <tr>
+              <th>Seleccionar</th>
+              <th>Bodega</th>
+              <th>Impresora</th>
+              <th>Serie</th>
+              <th>Sucursal</th>
+              <th>Area</th>
+            </tr>
+          </thead>
+          <tbody id="conteo2Body"></tbody>
+        </table>
+      </div>
+      
       <div class="actions">
         <button class="btn primary" id="btnConteo2Guardar">Guardar TXT y enviar por Gmail</button>
         <button class="btn secondary" id="btnConteo2Limpiar">Limiar Conteo</button>
