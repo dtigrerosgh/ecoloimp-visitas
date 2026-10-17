@@ -202,7 +202,7 @@ function updateConteo2PrinterTable(){
  // const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q)); //
   const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.bodega,p.modelo,p.serie,p.sede,p.ubicacion,p.ip].join(" ")).includes(q));   
   const total=DB.impresoras.filter(p=>p.cliente===client).length;
-  console.log("CONTEO cliente:",client,"total:",total,"mostrando:",rows.length);
+  console.log("CONTEO 2 cliente:",client,"total:",total,"mostrando:",rows.length);
   if($("conteo2Body"))$("conteoBody").innerHTML=rows.length?rows.map(p=>`<tr data-serie="${esc(p.serie)}" data-codigo="${esc(p.codigo)}">
   <td>${esc(p.bodega)}</td>
   <td>${esc(p.modelo)}</td>
