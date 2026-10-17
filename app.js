@@ -112,6 +112,10 @@ function filterClientes(){
   const rowsCt=DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(qCt)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   options($("ctCliente"),rowsCt.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})),"Seleccione cliente...");
 
+  const qCt2=norm($("ct2ClienteFilter")?.value||"");
+  const rowsCt2=DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(qCt2)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  options($("ct2Cliente"),rowsCt2.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})),"Seleccione cliente...");
+
   const qIv=norm($("ivClienteFilter")?.value||"");
   const rowsIv=DB.clientes.filter(c=>norm(c.codigo+" "+c.nombre).includes(qIv)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   options($("ivCliente"),rowsIv.map(c=>({value:c.codigo,label:`${c.codigo} · ${c.nombre} (${conteo[c.codigo]||0} imp.)`})),"Seleccione cliente...");
@@ -121,6 +125,7 @@ function fillTecnicos(){
   const rows=DB.tecnicos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label));
   options($("vtTecnico"),rows,"Seleccione técnico...");
   options($("ctTecnico"),rows,"Seleccione técnico...");
+  options($("ct2Tecnico"),rows,"Seleccione técnico...");
   options($("ivTecnico"),rows,"Seleccione técnico...");
 }
 function fillTrabajos(){options($("vtTrabajo"),DB.trabajos.map(t=>({value:t.codigo,label:`${t.codigo} · ${t.nombre}`})).sort((a,b)=>a.label.localeCompare(b.label)),"Seleccione trabajo...");}
