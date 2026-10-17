@@ -196,6 +196,22 @@ function updateConteoPrinterTable(){
   </tr>`).join(""):`<tr><td colspan="8">${client?"Cliente sin impresoras - revisa impresoras.txt":"Seleccione cliente en Conteo"}</td></tr>`;
 }
 
+function updateConteo2PrinterTable(){
+  const client=$("ct2Cliente")?.value;
+  const q=norm($("ct2PrinterFilter")?.value||"");
+ // const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q)); //
+  const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.bodega,p.modelo,p.serie,p.sede,p.ubicacion,p.ip].join(" ")).includes(q));   
+  const total=DB.impresoras.filter(p=>p.cliente===client).length;
+  console.log("CONTEO cliente:",client,"total:",total,"mostrando:",rows.length);
+  if($("conteo2Body"))$("conteoBody").innerHTML=rows.length?rows.map(p=>`<tr data-serie="${esc(p.serie)}" data-codigo="${esc(p.codigo)}">
+  <td>${esc(p.bodega)}</td>
+  <td>${esc(p.modelo)}</td>
+  <td>${esc(p.serie)}</td>
+  <td>${esc(p.sede)}</td>
+  <td>${esc(p.ubicacion)}</td>
+  </tr>`).join(""):`<tr><td colspan="8">${client?"Cliente sin impresoras - revisa impresoras.txt":"Seleccione cliente en Conteo"}</td></tr>`;
+}
+
 function updateInvPrinterTable(){
   const client = ($("ivCliente")?.value || "").trim();
   const selBodega = $("ivBodega");
@@ -1427,10 +1443,12 @@ function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
   $("ctClienteFilter")?.addEventListener("input",filterClientes);
   $("ivClienteFilter")?.addEventListener("input",filterClientes);
+  
   $("ct2ClienteFilter")?.addEventListener("input",filterClientes);
   
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
+  
   $("ct2Cliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteo2PrinterTable();});
   //$("ivCliente")?.addEventListener("change",()=>{DB.invPrinter=null;updateInvPrinterTable();});//
 // INVENTARIO: Cliente -> Bodegas -> Saldos
@@ -1449,6 +1467,7 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
   
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
+  
   $("ct2PrinterFilter")?.addEventListener("input",updateConteo2PrinterTable);
 
 
@@ -1611,6 +1630,7 @@ async function init(){
   fillProductos();
   updateVisitaPrinterTable();
   updateConteoPrinterTable();
+  update2ConteoPrinterTable();
   updateInvPrinterTable();
   activateSection((location.hash||"#bienvenido").slice(1));
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
