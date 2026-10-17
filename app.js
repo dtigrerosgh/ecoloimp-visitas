@@ -1427,9 +1427,11 @@ function setupEvents(){
   $("vtClienteFilter")?.addEventListener("input",filterClientes);
   $("ctClienteFilter")?.addEventListener("input",filterClientes);
   $("ivClienteFilter")?.addEventListener("input",filterClientes);
+  $("ct2ClienteFilter")?.addEventListener("input",filterClientes);
   
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
+  $("ct2Cliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteo2PrinterTable();});
   //$("ivCliente")?.addEventListener("change",()=>{DB.invPrinter=null;updateInvPrinterTable();});//
 // INVENTARIO: Cliente -> Bodegas -> Saldos
 $("ivCliente")?.addEventListener("change",()=>{
@@ -1447,6 +1449,7 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
   
   $("vtPrinterFilter")?.addEventListener("input",updateVisitaPrinterTable);
   $("ctPrinterFilter")?.addEventListener("input",updateConteoPrinterTable);
+  $("ct2PrinterFilter")?.addEventListener("input",updateConteo2PrinterTable);
 
 
   
