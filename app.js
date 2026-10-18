@@ -225,6 +225,28 @@ function updateConteo2PrinterTable(){
       </tr>`;
     }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
   }
+
+  const p = DB.conteo2Printer;
+  const c = DB.clientes.find(x=>x.codigo===client);
+  if($("ct2PrinterDetails")){
+    if(p){
+      $("ct2PrinterDetails").innerHTML = `
+        <div><small>Código</small><strong>${esc(p.codigo)}</strong></div>
+        <div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div>
+        <div><small>Serie</small><strong>${esc(p.serie)}</strong></div>
+        <div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div>
+        <div><small>Área</small><strong>${esc(p.ubicacion)}</strong></div>
+        <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
+        <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
+        <div><small>Cliente</small><strong>${c ? esc(c.codigo+" · "+c.nombre) : "-"} (${total} imp.)</strong></div>`;
+    } else if(c){
+      $("ct2PrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - Tiene ${total} impresora(s)</strong></div>`;
+    } else {
+      $("ct2PrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
+    }
+  }
+
+  
 }
 
 function updateInvPrinterTable(){
