@@ -246,7 +246,6 @@ function updateConteo2PrinterTable(){
     }
   }
 
-  
 }
 
 function updateInvPrinterTable(){
