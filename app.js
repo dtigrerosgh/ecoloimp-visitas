@@ -356,6 +356,7 @@ function setupNavigation(){
 
 function selectedClientVisita(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
 function selectedClientConteo(){ return DB.clientes.find(c=>c.codigo===$("ctCliente")?.value); }
+function selectedClientConteo2(){ return DB.clientes.find(c=>c.codigo===$("ct2Cliente")?.value); }
 function selectedClientInv(){ return DB.clientes.find(c=>c.codigo===$("ivCliente")?.value); }
 function selectedProductoInv(){ return DB.productos.find(c=>c.codigo===$("ivProducto")?.value); }
 
@@ -1464,7 +1465,7 @@ function setupEvents(){
   $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
   
-  $("ct2Cliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteo2PrinterTable();});
+  $("ct2Cliente")?.addEventListener("change",()=>{DB.conteo2Printer=null;updateConteo2PrinterTable();});
   //$("ivCliente")?.addEventListener("change",()=>{DB.invPrinter=null;updateInvPrinterTable();});//
 // INVENTARIO: Cliente -> Bodegas -> Saldos
 $("ivCliente")?.addEventListener("change",()=>{
@@ -1487,7 +1488,8 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
 
 
   
-  document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
+  document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");
+                                        if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
 
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{
     try{
