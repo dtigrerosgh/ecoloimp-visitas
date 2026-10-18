@@ -339,6 +339,16 @@ function selectVisitaPrinter(serie){
   if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
 }
 
+function selectConteo2Printer(serie){
+  const p = DB.impresoras.find(x=>x.serie===serie);
+  if(!p) return;
+  DB.conteo2Printer = p;
+  updateconteo2PrinterTable();
+  // scroll para que vea que quedó seleccionado
+  const row = document.querySelector(`#ct2PrinterBody tr.selected`);
+  if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
+
 function activateSection(id){
   document.querySelectorAll(".page-section").forEach(s=>{
     const on=s.id===id;
@@ -1513,7 +1523,7 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");
                                         if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
 
-    document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");
+  document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");
                                         if(b)selectConteo2Printer(b.dataset.selectPrinter);});
   
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{
