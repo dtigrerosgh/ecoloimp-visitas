@@ -228,6 +228,8 @@ function updateConteo2PrinterTable(){
 
   const p = DB.conteo2Printer;
   const c = DB.clientes.find(x=>x.codigo===client);
+  alert(p);
+  alert(c);
   if($("ct2PrinterDetails")){
     if(p){
       $("ct2PrinterDetails").innerHTML = `
