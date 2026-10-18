@@ -208,7 +208,7 @@ function updateConteo2PrinterTable(){
   const total = DB.impresoras.filter(p=>p.cliente===client).length;
   const selectedSerie = DB.conteo2Printer?.serie || "";
 
-  //if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length} ${selectedSerie?`- Seleccionada: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
+  if($("ct2SelectedPrinterStatus")) $("ct2SelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length} ${selectedSerie?`- Seleccionada: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
   
   if($("conteo2Body")){
     $("conteo2Body").innerHTML = rows.length ? rows.map(p=>{
@@ -1513,6 +1513,9 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
   document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");
                                         if(b)selectVisitaPrinter(b.dataset.selectPrinter);});
 
+    document.addEventListener("click",e=>{const b=e.target.closest("[data-select-printer]");
+                                        if(b)selectConteo2Printer(b.dataset.selectPrinter);});
+  
   $("btnVisitaGuardar")?.addEventListener("click",async()=>{
     try{
       const email=$("vtEmail")?.value.trim();      
