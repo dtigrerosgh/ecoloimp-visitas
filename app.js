@@ -207,11 +207,10 @@ function updateConteo2PrinterTable(){
   const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
   const total = DB.impresoras.filter(p=>p.cliente===client).length;
   const selectedSerie = DB.conteo2Printer?.serie || "";
-alert("1");
+
   //if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length} ${selectedSerie?`- Seleccionada: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
   
   if($("conteo2Body")){
-alert("2");
     $("conteo2Body").innerHTML = rows.length ? rows.map(p=>{
       const isSel = p.serie === selectedSerie;
       return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
