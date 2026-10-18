@@ -226,10 +226,7 @@ function updateConteo2PrinterTable(){
     }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
   }
 
-  const p = DB.conteo2Printer;
-  const c = DB.clientes.find(x=>x.codigo===client);
-  alert(p);
-  alert(c);
+
   if($("ct2PrinterDetails")){
     if(p){
       $("ct2PrinterDetails").innerHTML = `
