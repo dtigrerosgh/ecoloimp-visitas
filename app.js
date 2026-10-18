@@ -202,7 +202,7 @@ function updateConteoPrinterTable(){
 }
 
 function updateConteo2PrinterTable(){
-  const client = $("ctC2liente")?.value;
+  const client = $("ct2Cliente")?.value;
   const q = norm($("ct2PrinterFilter")?.value||"");
   const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
   const total = DB.impresoras.filter(p=>p.cliente===client).length;
