@@ -202,19 +202,29 @@ function updateConteoPrinterTable(){
 }
 
 function updateConteo2PrinterTable(){
-  const client=$("ct2Cliente")?.value;
-  const q=norm($("ct2PrinterFilter")?.value||"");
- // const rows=DB.impresoras.filter(p=>p.cliente===client&&norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion].join(" ")).includes(q)); //
-  const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.bodega,p.modelo,p.serie,p.sede,p.ubicacion,p.ip].join(" ")).includes(q));   
-  const total=DB.impresoras.filter(p=>p.cliente===client).length;
-  console.log("CONTEO 2 cliente:",client,"total:",total,"mostrando:",rows.length);
-  if($("conteo2Body"))$("conteo2Body").innerHTML=rows.length?rows.map(p=>`<tr data-serie="${esc(p.serie)}" data-codigo="${esc(p.codigo)}">
-  <td>${esc(p.bodega)}</td>
-  <td>${esc(p.modelo)}</td>
-  <td>${esc(p.serie)}</td>
-  <td>${esc(p.sede)}</td>
-  <td>${esc(p.ubicacion)}</td>
-  </tr>`).join(""):`<tr><td colspan="8">${client?"Cliente sin impresoras - revisa impresoras.txt":"Seleccione cliente en Conteo"}</td></tr>`;
+  const client = $("ctC2liente")?.value;
+  const q = norm($("ct2PrinterFilter")?.value||"");
+  const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
+  const total = DB.impresoras.filter(p=>p.cliente===client).length;
+  const selectedSerie = DB.conteo2Printer?.serie || "";
+
+  //if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length} ${selectedSerie?`- Seleccionada: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
+  
+  if($("ct2PrinterBody")){
+    $("ct2PrinterBody").innerHTML = rows.length ? rows.map(p=>{
+      const isSel = p.serie === selectedSerie;
+      return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
+        <td><button class="btn primary" data-select-printer="${esc(p.serie)}">${isSel?'✓ Seleccionada':'Seleccionar'}</button></td>
+        <td data-label="Bodega">${p.bodega||''}</td>
+        <td data-label="Código">${p.codigo||''}</td>
+        <td data-label="Modelo">${p.modelo||''}</td>
+        <td data-label="Serie">${p.serie}</td>
+        <td data-label="Sucursal">${p.sede||''}</td>
+        <td data-label="Area"><span>${p.ubicacion||''}</span></td>
+        <td data-label="Ubic">${p.ip||''}</td>
+      </tr>`;
+    }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
+  }
 }
 
 function updateInvPrinterTable(){
