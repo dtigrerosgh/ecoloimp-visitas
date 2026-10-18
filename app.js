@@ -210,9 +210,9 @@ function updateConteo2PrinterTable(){
 alert("1");
   //if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length} ${selectedSerie?`- Seleccionada: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
   
-  if($("ct2PrinterBody")){
+  if($("ct2PrinterTable")){
 alert("2");
-    $("ct2PrinterBody").innerHTML = rows.length ? rows.map(p=>{
+    $("ct2PrinterTable").innerHTML = rows.length ? rows.map(p=>{
       const isSel = p.serie === selectedSerie;
       return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
         <td><button class="btn primary" data-select-printer="${esc(p.serie)}">${isSel?'✓ Seleccionada':'Seleccionar'}</button></td>
