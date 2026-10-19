@@ -1477,7 +1477,7 @@ function cerrarSesion(){
   // Truco para que deje cerrar aunque no se abrió por script
   window.open('', '_self').close();
   window.close();
-
+ 
   // 4. Si el navegador bloquea el cierre (Chrome lo bloquea), redirige a página en blanco
   setTimeout(() => {
     document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;font-family:sans-serif'>Sesión cerrada correctamente<br><small>Puede cerrar esta pestaña</small></h1>";
