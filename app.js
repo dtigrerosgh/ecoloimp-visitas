@@ -429,7 +429,7 @@ function generarVisitaTXT(){
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:""};
   
   if(!c||!p||!t||!tr)throw new Error("Falta cliente/impresora/tecnico/trabajo");
-  return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
+  return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};$("vtContador").value};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
 }
 
 function generarVisitaCON(){
@@ -459,13 +459,14 @@ Se ha realizado la visita técnica con el siguiente detalle:
 • ${c.codigo} - ${c.nombre}
 
 🖨️ EQUIPO ATENDIDO
-• Código: ${p.codigo}
-• Modelo: ${p.modelo}
-• Serie: ${p.serie}
-• Sucursal: ${p.sede}
-• Área: ${p.ubicacion}
+• Código   : ${p.codigo}
+• Modelo   : ${p.modelo}
+• Serie    : ${p.serie}
+• Sucursal : ${p.sede}
+• Área     : ${p.ubicacion}
 • Ubicación: ${p.ip}
-• Bodega: ${p.bodega}
+• Bodega   : ${p.bodega}
+• Contador : ${$("vtContador").value}
 
 👨‍🔧 SERVICIO
 • Técnico: ${t.nombre} (${t.codigo})
@@ -648,8 +649,9 @@ async function generarVisitaPDF(){
     ["SUCURSAL", `${p.sede}`],
     ["AREA", `${p.ubicacion}`],
     ["UBICACION", `${p.ip}`],
+    ["CONTADOR", $("vtContador").value],
   ];
-  y = drawTable(10, y, 35, 145, 8, rows1) + 7;
+  y = drawTable(10, y, 35, 145, 8, rows1) + 8;
 
   let rows2 = [
     ["TECNICO", `${t.codigo} - ${t.nombre}`],
