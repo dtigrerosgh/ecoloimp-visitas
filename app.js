@@ -232,7 +232,7 @@ function updateConteo2PrinterTable(){
           <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
           <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
           <div><small>Cliente</small><strong>${c ? esc(c.codigo) : "-"}</strong></div>
-        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
           <label><small>Negro</small><input type="number" id="ct2Negro" data-campo-c2="negro" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
           <label><small>Color</small><input type="number" id="ct2Color" data-campo-c2="color" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
           <label><small>Scanner</small><input type="number" id="ct2Scan" data-campo-c2="scan" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
