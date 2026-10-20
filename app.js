@@ -1172,7 +1172,7 @@ async function generarConteo2PDF(){
       const vals = [
         f.bodega||"", (f.modelo||"").substring(0,16), f.serie,
         (f.sucursal||"").substring(0,18), (f.area||"").substring(0,18),
-        String(f.negro), String(f.color), String(f.scan), String(f.a3)
+        fmtMiles(f.negro), fmtMiles(f.color), fmtMiles(f.scan), fmtMiles(f.a3)
       ];
       doc.setFontSize(7); doc.setDrawColor(180);
       vals.forEach((val,i)=>{
