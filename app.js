@@ -323,17 +323,6 @@ function selectVisitaPrinter(serie){
   if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
 }
   
-function selectConteo2Printer(serie){
-  const p = DB.impresoras.find(x=>x.serie===serie);
-  if(!p) return;
-  DB.conteo2Printer = p;
-  updateconteo2PrinterTable();
-  alert(p);
-  // scroll para que vea que quedó seleccionado
-  const row = document.querySelector(`#ct2PrinterBody tr.selected`);
-  if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
-}
-
 function activateSection(id){
   document.querySelectorAll(".page-section").forEach(s=>{
     const on=s.id===id;
@@ -414,9 +403,9 @@ function generarVisitaTXT(){
   const p=DB.visitaPrinter;
   const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:""};
   const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:""};
-  
+  const contador = $("vtContador")?.value || "0";
   if(!c||!p||!t||!tr)throw new Error("Falta cliente/impresora/tecnico/trabajo");
-  return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};$("vtContador").value};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
+  return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${contador};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
 }
 
 function generarVisitaCON(){
