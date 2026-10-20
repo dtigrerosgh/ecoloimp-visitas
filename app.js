@@ -1652,6 +1652,111 @@ if(conteoBody){
   }
 }
 
+
+// ===== FIX DEFINITIVO CONTEO 2 - SELECCION =====
+(function(){
+  const selCliente = document.getElementById("ct2Cliente");
+  const tbody = document.getElementById("conteo2Body");
+  const details = document.getElementById("ct2PrinterDetails");
+  const status = document.getElementById("ct2SelectedPrinterStatus");
+  const filterImp = document.getElementById("ct2PrinterFilter");
+  if(!selCliente || !tbody) return;
+
+  let listaActual = [];
+  let seleccionada = null;
+
+  function pintar(lista){
+    tbody.innerHTML = "";
+    lista.forEach((imp, idx) => {
+      const codigo = imp.codigo || imp[1] || '';
+      const modelo = imp.modelo || imp[2] || '';
+      const serie = imp.serie || imp[3] || '';
+      const sucursal = imp.sede || imp.sucursal || imp[4] || '';
+      const area = imp.area || imp[5] || '';
+      const ubicacion = imp.ubicacion || imp[6] || imp[5] || '';
+      const bodega = imp.bodega || imp[7] || '';
+
+      const tr = document.createElement("tr");
+      tr.dataset.idx = idx;
+      tr.innerHTML = `
+        <td><input type="radio" name="c2_sel" id="c2_${idx}"></td>
+        <td>${bodega}</td>
+        <td>${codigo}</td>
+        <td>${modelo}</td>
+        <td>${serie}</td>
+        <td>${sucursal}</td>
+        <td>${area}</td>
+        <td>${ubicacion}</td>
+      `;
+      // si es la seleccionada, marca
+      if(seleccionada && seleccionada.serie === serie){
+        tr.style.background = "#dbeafe";
+        tr.querySelector("input").checked = true;
+      }
+      tbody.appendChild(tr);
+    });
+  }
+
+  function seleccionar(idx){
+    const imp = listaActual[idx];
+    if(!imp) return;
+    seleccionada = imp;
+    window.ct2ImpresoraSeleccionada = imp;
+    
+    // pinta detalle
+    if(status) status.textContent = `Seleccionada: ${imp.serie || imp[3] || ''}`;
+    status.style.color = "#16a34a";
+    status.style.fontWeight = "bold";
+    if(details) details.innerHTML = `
+      <div><small>Codigo</small><strong>${imp.codigo||imp[1]||'-'}</strong></div>
+      <div><small>Modelo</small><strong>${imp.modelo||imp[2]||'-'}</strong></div>
+      <div><small>Serie</small><strong>${imp.serie||imp[3]||'-'}</strong></div>
+      <div><small>Sucursal</small><strong>${imp.sede||imp[4]||'-'}</strong></div>
+      <div><small>Area</small><strong>${imp.area||imp[5]||'-'}</strong></div>
+      <div><small>Ubicación</small><strong>${imp.ubicacion||imp[5]||'-'}</strong></div>
+      <div><small>Bodega</small><strong>${imp.bodega||imp[7]||'-'}</strong></div>
+      <div><small>Cliente</small><strong>${imp.cliente||imp[0]||selCliente.value}</strong></div>
+    `;
+    // repinta para marcar
+    pintar(listaActual);
+  }
+
+  // CLICK DELEGADO - ESTE ES EL QUE FUNCIONA
+  tbody.addEventListener("click", (e)=>{
+    const tr = e.target.closest("tr");
+    if(!tr) return;
+    const idx = parseInt(tr.dataset.idx);
+    seleccionar(idx);
+  });
+
+  selCliente.addEventListener("change", ()=>{
+    const cod = selCliente.value.trim().toLowerCase();
+    if(!cod) return;
+    let todas = window.impresoras || window.listaImpresoras || window.dataImpresoras || window.impresorasData || [];
+    if(todas.length && Array.isArray(todas[0])){
+      todas = todas.map(r=>({cliente:r[0], codigo:r[1], modelo:r[2], serie:r[3], sede:r[4], area:r[5], ubicacion:r[5], bodega:r[7]}));
+    }
+    listaActual = todas.filter(i=>{
+      const c = (i.cliente||"").toString().trim().toLowerCase();
+      return c === cod;
+    });
+    console.log("Conteo2 - impresoras de", cod, listaActual.length);
+    seleccionada = null;
+    if(status){ status.textContent = `${listaActual.length} impresora(s) - clic para seleccionar`; status.style.color="#64748b"; }
+    pintar(listaActual);
+  });
+
+  if(filterImp){
+    filterImp.addEventListener("input", ()=>{
+      const q = filterImp.value.toLowerCase();
+      if(!q){ pintar(listaActual); return; }
+      const f = listaActual.filter(i=> JSON.stringify(i).toLowerCase().includes(q));
+      pintar(f);
+    });
+  }
+
+  console.log("Fix Conteo2 selección instalado");
+})();
 async function init(){
   if($("pgCorreo"))$("pgCorreo").value=gcorreo;
   if($("year"))$("year").textContent=new Date().getFullYear();
