@@ -232,12 +232,12 @@ function updateConteo2PrinterTable(){
           <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
           <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
           <div><small>Cliente</small><strong>${c ? esc(c.codigo) : "-"}</strong></div>
-
-          <label><small>Negro</small><input type="number" id="ct2Negro" data-campo-c2="negro" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
-          <label><small>Color</small><input type="number" id="ct2Color" data-campo-c2="color" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
-          <label><small>Scanner</small><input type="number" id="ct2Scan" data-campo-c2="scan" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
-          <label><small>A3</small><input type="number" id="ct2A3" data-campo-c2="a3" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
-
+          <div>
+            <label><small>Negro</small><input type="number" id="ct2Negro" data-campo-c2="negro" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
+            <label><small>Color</small><input type="number" id="ct2Color" data-campo-c2="color" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
+            <label><small>Scanner</small><input type="number" id="ct2Scan" data-campo-c2="scan" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
+            <label><small>A3</small><input type="number" id="ct2A3" data-campo-c2="a3" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
+          </div>
         <div style="margin-top:8px"><button class="btn primary" onclick="guardarConteo2()">💾 Guardar Conteo ${esc(p.serie)}</button></div>
       `;
     } else if(c){
@@ -1651,6 +1651,46 @@ if(conteoBody){
   }
 }
 
+function guardarConteo2(){
+  const p = DB.conteo2Printer;
+  if(!p) return alert("Seleccione impresora primero");
+  const c = DB.clientes.find(x=>x.codigo===$("ct2Cliente")?.value);
+  if(!c) return alert("Seleccione cliente");
+
+  const negro = $("ct2Negro")?.value || "0";
+  const color = $("ct2Color")?.value || "0";
+  const scan = $("ct2Scan")?.value || "0";
+  const a3 = $("ct2A3")?.value || "0";
+  const fecha = $("ct2Fecha")?.value || new Date().toISOString().slice(0,10);
+  const tecnico = DB.tecnicos.find(x=>x.codigo===$("ct2Tecnico")?.value) || {codigo:""};
+
+  // TXT igual que conteo1
+  const linea = `${c.codigo};${fecha};${tecnico.codigo};${p.codigo};${p.serie};${negro};${color};${scan};${a3}`;
+  
+  // Guarda en localStorage para que no se pierda
+  let historial = JSON.parse(localStorage.getItem("ecoloimp_conteo2")||"[]");
+  historial.push({fecha, cliente:c.codigo, serie:p.serie, codigo:p.codigo, negro, color, scan, a3});
+  localStorage.setItem("ecoloimp_conteo2", JSON.stringify(historial));
+
+  console.log("Conteo2 guardado:", linea);
+  alert(`✅ Conteo guardado:\n${p.serie} - N:${negro} C:${color} S:${scan} A3:${a3}`);
+  
+  // Limpia inputs para la siguiente
+  $("ct2Negro").value = 0; $("ct2Color").value = 0; $("ct2Scan").value = 0; $("ct2A3").value = 0;
+}
+
+function generarConteo2TXT(){
+  const c = DB.clientes.find(x=>x.codigo===$("ct2Cliente")?.value);
+  const p = DB.conteo2Printer;
+  const t = DB.tecnicos.find(x=>x.codigo===$("ct2Tecnico")?.value) || {codigo:""};
+  if(!c || !p) throw new Error("Seleccione cliente e impresora en Conteo2");
+  const fecha = $("ct2Fecha")?.value || new Date().toISOString().slice(0,10);
+  const n = $("ct2Negro")?.value || "0";
+  const co = $("ct2Color")?.value || "0";
+  const sc = $("ct2Scan")?.value || "0";
+  const a3 = $("ct2A3")?.value || "0";
+  return `${c.codigo};${fecha};${t.codigo};${p.codigo};${p.serie};${n};${co};${sc};${a3}`;
+}
 
 async function init(){
   if($("pgCorreo"))$("pgCorreo").value=gcorreo;
