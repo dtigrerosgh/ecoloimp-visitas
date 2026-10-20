@@ -1784,7 +1784,7 @@ document.addEventListener("click",e=>{
     }
   });
 
-  
+   
   $("btnPDFInventario")?.addEventListener("click",async()=>{
     try{
       const docpdf = await generarInvPDF();
