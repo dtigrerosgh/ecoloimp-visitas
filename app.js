@@ -1778,7 +1778,7 @@ document.addEventListener("click",e=>{
 
   $("btnConteo2PDF")?.addEventListener("click",async()=>{
     try{
-      const docpdf = await generarCon2PDF();
+      const docpdf = await generarConteo2PDF();
     }catch(err){
       showMessage("ct2Message",err.message,true);
     }
