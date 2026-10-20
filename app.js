@@ -219,11 +219,33 @@ function updateConteo2PrinterTable(){
       </tr>`;
     }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
   }
+
   if($("ct2PrinterDetails")){
     if(p){
-      $("ct2PrinterDetails").innerHTML = `<div><small>Código</small><strong>${esc(p.codigo)}</strong></div><div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div><div><small>Serie</small><strong>${esc(p.serie)}</strong></div><div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div><div><small>Área</small><strong>${esc(p.ubicacion)}</strong></div><div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div><div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div><div><small>Cliente</small><strong>${c ? esc(c.codigo+" · "+c.nombre) : "-"}</strong></div>`;
+      // AQUI ESTA EL FIX: muestra datos + inputs de conteo
+      $("ct2PrinterDetails").innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0">
+          <div><small>Código</small><strong>${esc(p.codigo)}</strong></div>
+          <div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div>
+          <div><small>Serie</small><strong>${esc(p.serie)}</strong></div>
+          <div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div>
+          <div><small>Área</small><strong>${esc(p.ubicacion)}</strong></div>
+          <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
+          <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
+          <div><small>Cliente</small><strong>${c ? esc(c.codigo) : "-"}</strong></div>
+        </div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <label><small>Negro</small><input type="number" id="ct2Negro" data-campo-c2="negro" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
+          <label><small>Color</small><input type="number" id="ct2Color" data-campo-c2="color" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
+          <label><small>Scanner</small><input type="number" id="ct2Scan" data-campo-c2="scan" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
+          <label><small>A3</small><input type="number" id="ct2A3" data-campo-c2="a3" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
+        </div>
+        <div style="margin-top:8px"><button class="btn primary" onclick="guardarConteo2()">💾 Guardar Conteo ${esc(p.serie)}</button></div>
+      `;
     } else if(c){
-      $("ct2PrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - ${total} imp.</strong></div>`;
+      $("ct2PrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - ${total} imp. - Seleccione una arriba</strong></div>`;
+    } else {
+      $("ct2PrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
     }
   }
 }
