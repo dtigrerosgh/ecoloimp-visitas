@@ -99,8 +99,6 @@ function refreshStats(){
   if($("statTrabajos")) $("statTrabajos").textContent = DB.trabajos.length;
 }
 
-
-
 function options(sel,rows,ph){if(!sel)return;sel.innerHTML=`<option value="">${ph}</option>`+rows.map(r=>`<option value="${esc(r.value)}">${esc(r.label)}</option>`).join("");}
 
 function filterClientes(){
@@ -342,6 +340,7 @@ function selectConteo2Printer(serie){
   if(!p) return;
   DB.conteo2Printer = p;
   updateconteo2PrinterTable();
+  alert(p);
   // scroll para que vea que quedó seleccionado
   const row = document.querySelector(`#ct2PrinterBody tr.selected`);
   if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
