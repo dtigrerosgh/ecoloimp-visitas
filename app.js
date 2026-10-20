@@ -1097,7 +1097,8 @@ async function generarConteo2PDF(){
   // Agrupar por sucursal y area
   const grupos = {};
   filas.forEach(f=>{
-    const key = `${f.sucursal}||${f.area}`;
+    //const key = `${f.sucursal}||${f.area}`;
+    const key = `${f.sucursal}`;
     if(!grupos[key]) grupos[key]=[];
     grupos[key].push(f);
   });
