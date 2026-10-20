@@ -1055,6 +1055,206 @@ const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo : []);
   return doc;
 }
 
+function generarConteo2TXT(){
+  const historial = JSON.parse(localStorage.getItem("ecoloimp_conteo2")||"[]");
+  if(historial.length===0) throw new Error("No hay conteos en Conteo2 - guarde al menos uno");
+  // cliente;fecha;tecnico;codImp;serie;negro;color;scan;a3
+  const tecnico = $("ct2Tecnico")?.value || "";
+  return historial.map(h=>`${h.cliente};${h.fecha};${tecnico};${h.codigo};${h.serie};${h.negro};${h.color};${h.scan};${h.a3}`).join("\n");
+}
+
+async function generarConteo2PDF(){
+  const historial = JSON.parse(localStorage.getItem("ecoloimp_conteo2")||"[]");
+  if(historial.length===0){ alert("No hay conteos guardados en Conteo2"); return; }
+
+  const clientCode = $("ct2Cliente")?.value || historial[0].cliente;
+  const c = DB.clientes.find(x=>x.codigo===clientCode) || {codigo:clientCode, nombre:clientCode};
+  const usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
+  const logoBase64 = await getLogoBase64().catch(()=>null);
+  
+  // Enriquecer historial con datos de impresora
+  let filas = historial.map(h=>{
+    const p = DB.impresoras.find(x=>x.serie===h.serie) || {};
+    return {
+      ...h,
+      modelo: p.modelo||"",
+      sucursal: p.sede||"SIN SUCURSAL",
+      area: p.ubicacion||"SIN AREA",
+      bodega: p.bodega||"",
+      ip: p.ip||""
+    };
+  });
+
+  // Ordenar por sucursal -> area -> serie
+  filas.sort((a,b)=>{
+    const s = a.sucursal.localeCompare(b.sucursal,'es');
+    if(s!==0) return s;
+    const ar = a.area.localeCompare(b.area,'es');
+    if(ar!==0) return ar;
+    return a.serie.localeCompare(b.serie);
+  });
+
+  // Agrupar por sucursal y area
+  const grupos = {};
+  filas.forEach(f=>{
+    const key = `${f.sucursal}||${f.area}`;
+    if(!grupos[key]) grupos[key]=[];
+    grupos[key].push(f);
+  });
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:"portrait", unit:"mm", format:"a4"});
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  let y = 30;
+
+  function drawHeader(){
+    let yh = 10;
+    if(logoBase64){
+      try{
+        let props = doc.getImageProperties(logoBase64);
+        let w = 45; let h = (props.height * w) / props.width;
+        if(h > 14) { h = 14; w = (props.width * h) / props.height; }
+        doc.addImage(logoBase64,"JPEG",10,yh, w, h);
+      }catch(e){ try{ doc.addImage(logoBase64,"JPEG",10,yh,45,14); }catch{} }
+    }
+    doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.setTextColor(0);
+    doc.text("CONTEO DE IMPRESIONES - HISTORIAL", 70, yh+5);
+    doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(30,64,175);
+    doc.text(`Usuario: ${usuarioActual}`, 195, yh+5, {align:"right"});
+    doc.setFont(undefined,'normal'); doc.setFontSize(7); doc.setTextColor(100);
+    doc.text(new Date().toLocaleString('es-EC'), 195, yh+9, {align:"right"});
+    doc.setTextColor(0); doc.setLineWidth(0.6); doc.setDrawColor(15,23,42);
+    doc.line(10, 24, 200, 24);
+    y = 30;
+  }
+
+  drawHeader();
+
+  // Info cliente
+  doc.setFontSize(9); doc.setFont(undefined,'bold');
+  doc.text(`Cliente: ${c.codigo} - ${c.nombre.substring(0,60)}`, 10, y);
+  y+=5;
+  doc.setFont(undefined,'normal'); doc.setFontSize(8);
+  doc.text(`Fecha: ${$("ct2Fecha")?.value || new Date().toISOString().slice(0,10)} | Equipos contados: ${filas.length}`, 10, y);
+  y+=8;
+
+  const colW = [12, 28, 26, 30, 30, 16, 16, 16, 16]; // ETQ MODELO SERIE SUCURSAL AREA NEGRO COLOR SCAN A3 = 190
+  const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
+  const tableW = colW.reduce((a,b)=>a+b,0);
+
+  function drawTableHeader(yy){
+    let x=10;
+    doc.setFont(undefined,'bold'); doc.setFontSize(7.5);
+    doc.setDrawColor(0,0,0); doc.setTextColor(0,0,0);
+    headers.forEach((h,i)=>{
+      doc.setFillColor(230,230,230);
+      doc.rect(x,yy,colW[i],7,"FD");
+      doc.text(h, x+colW[i]/2, yy+4.5, {align:"center"});
+      x+=colW[i];
+    });
+    doc.setFont(undefined,'normal');
+    return yy+7;
+  }
+
+  // Dibuja por grupos
+  Object.keys(grupos).sort().forEach(key=>{
+    const [sucursal, area] = key.split("||");
+    const lista = grupos[key];
+
+    // Si no entra el header de grupo, nueva página
+    if(y > pageH-30){ doc.addPage(); drawHeader(); y=36; }
+
+    // Barra de grupo
+    doc.setFillColor(15,23,42); doc.setTextColor(255,255,255);
+    doc.setFont(undefined,'bold'); doc.setFontSize(8);
+    doc.rect(10, y, tableW, 7, "F");
+    doc.text(`Sucursal: ${sucursal} | Area: ${area} (${lista.length} eq.)`, 12, y+4.5);
+    doc.setTextColor(0);
+    y+=7;
+    y = drawTableHeader(y);
+
+    lista.forEach(f=>{
+      const rowH = 7;
+      if(y + rowH > pageH-28){ doc.addPage(); drawHeader(); y=36; 
+        doc.setFillColor(15,23,42); doc.setTextColor(255); doc.rect(10,y,tableW,7,"F");
+        doc.text(`Sucursal: ${sucursal} | Area: ${area} (cont.)`,12,y+4.5); doc.setTextColor(0); y+=7;
+        y=drawTableHeader(y);
+      }
+      let x=10;
+      const vals = [
+        f.bodega||"",
+        (f.modelo||"").substring(0,16),
+        f.serie,
+        (f.sucursal||"").substring(0,18),
+        (f.area||"").substring(0,18),
+        String(f.negro),
+        String(f.color),
+        String(f.scan),
+        String(f.a3)
+      ];
+      doc.setFontSize(7); doc.setDrawColor(180);
+      vals.forEach((val,i)=>{
+        doc.setFillColor(255,255,255);
+        doc.rect(x,y,colW[i],rowH,"FD");
+        if(i>=5) doc.text(val, x+colW[i]-1, y+4, {align:"right"});
+        else doc.text(val, x+1, y+4);
+        x+=colW[i];
+      });
+      y+=rowH;
+    });
+    y+=4;
+  });
+
+  // Totales
+  if(y > pageH-30){ doc.addPage(); drawHeader(); y=36; }
+  const tot = filas.reduce((a,f)=>({n:a.n+Number(f.negro||0), c:a.c+Number(f.color||0), s:a.s+Number(f.scan||0), a3:a.a3+Number(f.a3||0)}),{n:0,c:0,s:0,a3:0});
+  doc.setFillColor(240,240,240); doc.setDrawColor(0); doc.setFont(undefined,'bold'); doc.setFontSize(8);
+  doc.rect(10,y,tableW,7,"FD");
+  doc.text(`TOTAL: N:${tot.n.toLocaleString('es-EC')} | C:${tot.c.toLocaleString('es-EC')} | S:${tot.s.toLocaleString('es-EC')} | A3:${tot.a3.toLocaleString('es-EC')} | EQ:${filas.length}`,12,y+4.5);
+  y+=12;
+
+  // Firma
+  doc.setFont(undefined,'bold'); doc.setFontSize(9);
+  doc.text("FIRMA DE CONFORMIDAD", 10, y); y+=2;
+  const firmaData = (()=>{ try{ return $("ct2FirmaCanvas")?.toDataURL("image/png"); }catch{return null;} })();
+  if(firmaData && firmaData.length>100) try{ doc.addImage(firmaData,"PNG",10,y,50,14); }catch{}
+  y+=14; doc.setDrawColor(0); doc.line(10,y,65,y); y+=4;
+  doc.setFontSize(8); doc.setFont(undefined,'normal');
+  doc.text($("ct2NombreFirma")?.value||"Firma Cliente",12,y);
+
+  // FOTOS si tienes
+  const listaFotos = (typeof fotosConteo2!=="undefined"? fotosConteo2 : (typeof fotosConteo!=="undefined"? fotosConteo : []));
+  if(listaFotos && listaFotos.length>0){
+    y+=8;
+    if(y > 150){ doc.addPage(); drawHeader(); y=36; }
+    doc.setFont(undefined,'bold'); doc.setFontSize(10);
+    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=8;
+    const fotoW=86, fotoH=48, gapX=8, gapY=7;
+    let x=10, countFila=0, countPagina=0;
+    for(let i=0;i<listaFotos.length;i++){
+      if(countFila>=2){ x=10; y+=fotoH+gapY; countFila=0; if(y>150){doc.addPage(); drawHeader(); y=36; countPagina=0;} }
+      if(countPagina>=8){ doc.addPage(); drawHeader(); y=36; countFila=0; countPagina=0; doc.setFont(undefined,'bold'); doc.text("EVIDENCIA (cont.)",10,y); y+=8; x=10; }
+      try{ doc.addImage(listaFotos[i],"JPEG",x,y,fotoW,fotoH); doc.setDrawColor(180); doc.rect(x,y,fotoW,fotoH); doc.setFontSize(7); doc.text(`Foto ${i+1}`,x+2,y+fotoH-2); }catch(e){}
+      x+=fotoW+gapX; countFila++; countPagina++;
+    }
+  }
+
+  // Pie de página en todas las páginas
+  const totalPages = doc.internal.getNumberOfPages();
+  for(let i=1;i<=totalPages;i++){
+    doc.setPage(i);
+    doc.setFontSize(6); doc.setTextColor(100); doc.setDrawColor(180);
+    doc.line(10,pageH-10,pageW-10,pageH-10);
+    doc.text(`© 2026 DT Soluciones - ECOLOIMP Web | Generado por ${usuarioActual} - ${new Date().toLocaleString('es-EC')} | Cliente: ${c.codigo}`,10,pageH-5);
+    doc.text(`Pag ${i}/${totalPages}`,pageW-10,pageH-5,{align:"right"});
+  }
+
+  doc.autoPrint();
+  window.open(doc.output('bloburl'), '_blank');
+  return doc;
+}
+
 // GRABA INVENTARIOS
 async function generarInvPDF(){
   const { jsPDF } = window.jspdf;
@@ -1576,6 +1776,15 @@ document.addEventListener("click",e=>{
     }
   });
 
+  $("btnConteo2PDF")?.addEventListener("click",async()=>{
+    try{
+      const docpdf = await generarCon2PDF();
+    }catch(err){
+      showMessage("ct2Message",err.message,true);
+    }
+  });
+
+  
   $("btnPDFInventario")?.addEventListener("click",async()=>{
     try{
       const docpdf = await generarInvPDF();
