@@ -1012,13 +1012,13 @@ async function generarConteoPDF(){
     s:a.s+datos[s].scan, a3:a.a3+datos[s].a3
   }), {n:0,c:0,s:0,a3:0});
  
-  doc.setFillColor(240,240,240);
-  doc.setDrawColor(0,0,0);
-  doc.setTextColor(0,0,0);
-  doc.setFont(undefined,'bold');
-  doc.setFontSize(8);
-  doc.rect(10,y,tableW,7,"FD");
-  doc.text(`TOT: N:${fmt(totRaw.n)} | C:${fmt(totRaw.c)} | S:${fmt(totRaw.s)} | A3:${fmt(totRaw.a3)} | EQ:${rows.length}`, 12, y+4.5);
+  //doc.setFillColor(240,240,240);
+  //doc.setDrawColor(0,0,0);
+  //doc.setTextColor(0,0,0);
+  //doc.setFont(undefined,'bold');
+  //doc.setFontSize(8);
+  //doc.rect(10,y,tableW,7,"FD");
+  //doc.text(`TOT: N:${fmt(totRaw.n)} | C:${fmt(totRaw.c)} | S:${fmt(totRaw.s)} | A3:${fmt(totRaw.a3)} | EQ:${rows.length}`, 12, y+4.5);
   y+=12;
 
   // Firma
@@ -1209,10 +1209,10 @@ async function generarConteo2PDF(){
   });
 
   if(y > pageH-30){ doc.addPage(); drawHeader(); y=36; }
-  const tot = filas.reduce((a,f)=>({n:a.n+Number(f.negro||0), c:a.c+Number(f.color||0), s:a.s+Number(f.scan||0), a3:a.a3+Number(f.a3||0)}),{n:0,c:0,s:0,a3:0});
-  doc.setFillColor(240,240,240); doc.setDrawColor(0); doc.setFont(undefined,'bold'); doc.setFontSize(8);
-  doc.rect(10,y,tableW,7,"FD");
-  doc.text(`TOTAL PAGINAS: NEGRO:${tot.n.toLocaleString('es-EC')}      |      COLOR:${tot.c.toLocaleString('es-EC')}     |      ESCANEADAS:${tot.s.toLocaleString('es-EC')}      |      A3:${tot.a3.toLocaleString('es-EC')}      |      EQUIPOS:${filas.length}`,12,y+4.5);
+  //const tot = filas.reduce((a,f)=>({n:a.n+Number(f.negro||0), c:a.c+Number(f.color||0), s:a.s+Number(f.scan||0), a3:a.a3+Number(f.a3||0)}),{n:0,c:0,s:0,a3:0});
+  //doc.setFillColor(240,240,240); doc.setDrawColor(0); doc.setFont(undefined,'bold'); doc.setFontSize(8);
+  //doc.rect(10,y,tableW,7,"FD");
+  //doc.text(`TOTAL PAGINAS: NEGRO:${tot.n.toLocaleString('es-EC')}      |      COLOR:${tot.c.toLocaleString('es-EC')}     |      ESCANEADAS:${tot.s.toLocaleString('es-EC')}      |      A3:${tot.a3.toLocaleString('es-EC')}      |      EQUIPOS:${filas.length}`,12,y+4.5);
   y+=12;
 
   doc.setFont(undefined,'bold'); doc.setFontSize(9);
