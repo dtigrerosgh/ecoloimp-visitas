@@ -394,45 +394,32 @@ function activateSection(id){
 }
 
 function setupNavigation(){ 
-  const btn = $("menuToggle");
-  const nav = $("mainNav");
-
-  console.log("Menu btn:", !!btn, "Nav:", !!nav);
-  if(!btn || !nav){
-    console.warn("No existe #menuToggle o #mainNav - revisa tu HTML");
-    return;
-  }
+  const btn = document.getElementById("menuToggle");
+  const nav = document.getElementById("mainNav");
+  if(!btn || !nav) return;
 
   document.querySelectorAll("[data-section]").forEach(el=>{
     el.addEventListener("click", e=>{
       e.preventDefault();
-      activateSection(el.dataset.section);
+      const id = el.dataset.section;
+      document.querySelectorAll(".page-section").forEach(s=>{
+        const on = s.id===id;
+        s.classList.toggle("active",on);
+        s.style.display = on ? "block" : "none";
+      });
+      document.querySelectorAll("[data-section]").forEach(a=>a.classList.toggle("active",a.dataset.section===id));
+      nav.classList.remove("open");
+      btn.textContent="☰";
+      location.hash = "#"+id;
     });
   }); 
 
-  btn.addEventListener("click", (e)=>{
+  btn.onclick = (e)=>{
     e.stopPropagation();
-    const isOpen = nav.classList.toggle("open");
-    btn.textContent = isOpen ? "✕" : "☰";
-  });
-  
-  // Cierra al hacer click fuera
-  document.addEventListener("click", (e)=>{
-    if(!nav.contains(e.target) && !btn.contains(e.target)){
-      nav.classList.remove("open");
-      btn.textContent="☰";
-    }
-  });
-
-  // Cierra con ESC
-  document.addEventListener("keydown", (e)=>{
-    if(e.key==="Escape"){
-      nav.classList.remove("open");
-      btn.textContent="☰";
-    }
-  });
+    nav.classList.toggle("open");
+    btn.textContent = nav.classList.contains("open") ? "✕" : "☰";
+  };
 }
-
 function selectedClientVisita(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
 function selectedClientConteo(){ return DB.clientes.find(c=>c.codigo===$("ctCliente")?.value); }
 function selectedClientConteo2(){ return DB.clientes.find(c=>c.codigo===$("ct2Cliente")?.value); }
