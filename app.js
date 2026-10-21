@@ -1616,6 +1616,54 @@ function initFotosConteo(){
   });
 }
 
+function initFotosConteo2(){
+  const input = document.getElementById("ct2Fotos");
+  const preview = document.getElementById("ct2FotosPreview");
+  if(!input) return;
+
+  input.addEventListener("change", async (e)=>{
+    const files = Array.from(e.target.files);
+    if((fotosConteo.length + files.length) > 15){
+      alert("Máximo 15 fotos por conteo");
+      return;
+    }
+
+    for(let file of files){
+      const b64 = await new Promise(res=>{
+        const fr = new FileReader();
+        fr.onload = ()=>res(fr.result);
+        fr.readAsDataURL(file);
+      });
+      fotosConteo.push(b64);
+
+      const idx = fotosConteo.length - 1;
+      const div = document.createElement("div");
+      div.style.cssText="position:relative;width:90px;height:90px;border:1px solid #ddd;border-radius:8px;overflow:hidden";
+      div.innerHTML = `
+        <img src="${b64}" style="width:100%;height:100%;object-fit:cover">
+        <button type="button" data-idx="${idx}" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);color:white;border:0;border-radius:50%;width:22px;height:22px;font-size:12px">X</button>
+        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:9px;text-align:center">Foto ${fotosConteo.length}</span>
+      `;
+              // renumera
+        const count = document.getElementById("ct2FotosCount");
+        if(count) count.textContent = `${fotosConteo.length} / 15`;
+      div.querySelector("button").onclick = ()=>{
+        // elimina de array y del DOM
+        const pos = fotosConteo.indexOf(b64);
+        if(pos>-1) fotosConteo.splice(pos,1);
+        div.remove();
+        // renumera
+        const count = document.getElementById("ct2FotosCount");
+        if(count) count.textContent = `${fotosConteo.length} / 15`;
+        //document.querySelectorAll("#ctFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
+      };
+      preview.appendChild(div);   
+    }
+    // limpia input para poder volver a elegir las mismas fotos
+    input.value = "";
+  });
+}
+
 function initFirma(){
   function activar(cid,bid,setter){
     const canvas=$(cid);if(!canvas)return;
@@ -1636,7 +1684,9 @@ function initFirma(){
                      last=p;setter(true);e.preventDefault();}
     function end(){dib=false;}canvas.addEventListener("mousedown",start);canvas.addEventListener("mousemove",move);window.addEventListener("mouseup",end);canvas.addEventListener("touchstart",start,{passive:false});canvas.addEventListener("touchmove",move,{passive:false});canvas.addEventListener("touchend",end);$(bid)?.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);setter(false);});}
   activar("vtFirmaCanvas","btnFirmaLimpiar",v=>firmaDibujada=v);
-  activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);}
+  activar("ctFirmaCanvas","btnCtFirmaLimpiar",v=>firmaDibujadaCt=v);
+  activar("ct2FirmaCanvas","btnCt2FirmaLimpiar",v=>firmaDibujadaCt2=v);
+}
 
 function toast(m,t){
   console.log(t+": "+m); 
@@ -1895,6 +1945,7 @@ async function init(){
   initFirma();
   initFotosVisita();
   initFotosConteo();
+  initFotosConteo2();
   const ahora=new Date();
   if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
   if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
