@@ -245,6 +245,40 @@ html, body {
   }
 }
 
+/* FIX MENU MOVIL ECOLOIMP */
+@media (max-width: 900px){
+  .main-nav{
+    display: none !important;
+    position: absolute;
+    top: 65px;
+    left: 0;
+    right: 0;
+    background: white;
+    flex-direction: column;
+    padding: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,.1);
+    z-index: 9999;
+  }
+  .main-nav.open{
+    display: flex !important;
+  }
+  .main-nav a{
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .menu-toggle{
+    display: block !important;
+  }
+}
+@media (min-width: 901px){
+  .menu-toggle{
+    display: none !important;
+  }
+  .main-nav{
+    display: flex !important;
+  }
+}
+
 * RESPONSIVE */
 @media(max-width:1000px){
   .stats-grid{grid-template-columns:repeat(2,1fr)}
