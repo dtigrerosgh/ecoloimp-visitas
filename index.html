@@ -432,9 +432,18 @@
         </div>
       
         <div class="field span-2">
-          <label for="ctNombreFirma">Nombre de quien firma</label>
-          <input id="ctNombreFirma" type="text" placeholder="Ej. Dennis Tigreros - Jefe Sistemas">
+          <label for="ct2NombreFirma">Nombre de quien firma</label>
+          <input id="ct2NombreFirma" type="text" placeholder="Ej. Dennis Tigreros - Jefe Sistemas">
         </div>   
+
+      <div class="card" style="margin-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <label style="font-weight:bold">📷 Fotos de conteo</label>
+          <small id="ct2FotosCount">0 /15</small>
+        </div>
+        <input type="file" id="ct2Fotos" accept="image/*" multiple style="margin-top:6px">
+        <div id="ct2FotosPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+      </div>
       
       <div class="actions">
         <button class="btn primary" id="btnConteo2Guardar">Guardar TXT y enviar por Gmail</button>
