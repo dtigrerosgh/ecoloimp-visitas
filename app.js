@@ -255,7 +255,6 @@ function updateConteo2PrinterTable(){
       const hist = historial.find(h=>h.serie===p.serie && h.cliente===client);
       
       $("ct2PrinterDetails").innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:${yaContada?'#dcfce7':'#f8fafc'};padding:12px;border-radius:8px;border:1px solid ${yaContada?'#16a34a':'#e2e8f0'}">
           <div><small>Código</small><strong>${esc(p.codigo)} ${yaContada?'✓ YA CONTADA':''}</strong></div>
           <div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div>
           <div><small>Serie</small><strong>${esc(p.serie)}</strong></div>
@@ -264,15 +263,12 @@ function updateConteo2PrinterTable(){
           <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
           <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
           <div><small>Cliente</small><strong>${c ? esc(c.codigo) : "-"}</strong></div>
-        </div>
         ${yaContada?`<div style="background:#fef9c3;padding:8px;border-radius:6px;margin-top:8px;font-size:12px">⚠️ Ya contaste esta serie el ${hist.fecha}: N:${hist.negro} C:${hist.color} S:${hist.scan} A3:${hist.a3} - Si guardas se actualizará</div>`:''}
-        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(8,1fr);gap:8px">
           <label><small>Negro</small><input type="number" id="ct2Negro" value="${yaContada?hist.negro:0}" style="width:100%;padding:8px;border:2px solid ${yaContada?'#16a34a':'#2563eb'};border-radius:6px"></label>
           <label><small>Color</small><input type="number" id="ct2Color" value="${yaContada?hist.color:0}" style="width:100%;padding:8px;border:2px solid ${yaContada?'#16a34a':'#2563eb'};border-radius:6px"></label>
           <label><small>Scanner</small><input type="number" id="ct2Scan" value="${yaContada?hist.scan:0}" style="width:100%;padding:8px;border:2px solid ${yaContada?'#16a34a':'#2563eb'};border-radius:6px"></label>
           <label><small>A3</small><input type="number" id="ct2A3" value="${yaContada?hist.a3:0}" style="width:100%;padding:8px;border:2px solid ${yaContada?'#16a34a':'#2563eb'};border-radius:6px"></label>
           <div style="margin-top:8px"><button class="btn primary" onclick="guardarConteo2()" style="background:${yaContada?'#16a34a':'#2563eb'}">${yaContada?'🔄 Actualizar Conteo':'💾 Guardar Conteo'} ${esc(p.serie)}</button></div>
-        </div>
       `;
     } else if(c){
       $("ct2PrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - ${total} imp. | ${contadasCount} contadas - Seleccione una arriba</strong></div>`;
