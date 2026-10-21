@@ -231,7 +231,7 @@ function updateConteo2PrinterTable(){
       
       if(yaContada){
         estilo = "background:#dcfce7 !important; border-left:4px solid #16a34a;";
-        btnTexto = `✓ ${hist?.negro||0}/${hist?.color||0}`;
+        btnTexto = `✓ Ingresada`;   //`✓ ${hist?.negro||0}/${hist?.color||0}`;
         btnClase = "btn ghost";
         if(isSel) estilo = "background:#bbf7d0 !important;outline:2px solid #16a34a;";
       } else if(isSel){
@@ -243,11 +243,12 @@ function updateConteo2PrinterTable(){
         <td><button class="${btnClase}" data-select-printer-c2="${esc(pr.serie)}" style="${yaContada?'color:#16a34a;font-weight:bold':''}">${btnTexto}</button></td>
         <td>${pr.bodega||''} ${yaContada?'<span style="color:#16a34a">✓</span>':''}</td>
         <td>${pr.codigo||''}</td><td>${pr.modelo||''}</td>
-        <td><b>${pr.serie}</b> ${yaContada?`<br><small style="color:#16a34a">N:${hist.negro} C:${hist.color} S:${hist.scan} A3:${hist.a3}</small>`:''}</td>
+        <td><b>${pr.serie}</b></td>
         <td>${pr.sede||''}</td><td>${pr.ubicacion||''}</td><td>${pr.ip||''}</td>
       </tr>`;
     }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
   }
+        /* <td><b>${pr.serie}</b> ${yaContada?`<br><small style="color:#16a34a">N:${hist.negro} C:${hist.color} S:${hist.scan} A3:${hist.a3}</small>`:''}</td> */
 
   if($("ct2PrinterDetails")){
     if(p){
