@@ -1213,8 +1213,8 @@ async function generarConteo2PDF(){
   doc.setFontSize(8); doc.setFont(undefined,'normal');
   doc.text($("ct2NombreFirma")?.value||"Firma Cliente",12,y);
 
-  // --- FOTOS 1 X PAGINA - CORREGIDO ---
-  const listaFotos = (typeof fotosConteo2!=="undefined" ? fotosConteo2 : (typeof fotosConteo2!=="undefined" ? fotosConteo2 : []));
+ // --- FOTOS 1 X PAGINA - CORREGIDO ---
+  const listaFotos = (typeof fotosConteo2!=="undefined" ? fotosConteo2 : (typeof fotosConteo!=="undefined" ? fotosConteo : []));
   if(listaFotos && listaFotos.length>0){
     for(let i=0;i<listaFotos.length;i++){
       doc.addPage();
@@ -1260,7 +1260,6 @@ async function generarConteo2PDF(){
   window.open(doc.output('bloburl'), '_blank');
   return doc;
 }
-
   
   const totalPages = doc.internal.getNumberOfPages();
   for(let i=1;i<=totalPages;i++){
