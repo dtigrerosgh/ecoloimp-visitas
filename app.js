@@ -9,7 +9,8 @@ let fotosVisita = []; // ponlo arriba con tus variables globales
 let fotosConteo = []; // ponlo arriba con tus variables globales
 let fotosConteo2 = []; // ponlo arriba con tus variables globales
 const gcorreo = "administracion@ecoloimp.com, servicio@ecoloimp.com";
-let usuariosTXT=[], firmaDibujada=false, firmaDibujadaCt=false;
+let usuariosTXT=[], firmaDibujada=false, firmaDibujadaCt=false, firmaDibujadaCt2=false;
+
 const $=id=>document.getElementById(id);
 const norm=s=>(s??"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 const esc=s=>(s??"").toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
@@ -1213,40 +1214,30 @@ async function generarConteo2PDF(){
   doc.setFontSize(8); doc.setFont(undefined,'normal');
   doc.text($("ct2NombreFirma")?.value||"Firma Cliente",12,y);
 
- // --- FOTOS 1 X PAGINA - CORREGIDO ---
-  const listaFotos = (typeof fotosConteo2!=="undefined" ? fotosConteo2 : (typeof fotosConteo!=="undefined" ? fotosConteo : []));
+  // FOTOS 1 X PAGINA = 180 x 135 mm
+  const listaFotos = (typeof fotosConteo2!=="undefined" ? fotosConteo2 : []);
   if(listaFotos && listaFotos.length>0){
     for(let i=0;i<listaFotos.length;i++){
       doc.addPage();
       drawHeader();
-      
       let yFoto = 35;
       doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(0);
-      doc.text(`EVIDENCIA FOTOGRAFICA ${i+1}/${listaFotos.length}`, 10, yFoto);
-      yFoto+=4;
+      doc.text(`EVIDENCIA FOTOGRAFICA ${i+1}/${listaFotos.length}`, 10, yFoto); yFoto+=5;
       doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(100);
       const infoFoto = filas[i] ? `${filas[i].serie} - ${filas[i].sucursal} - ${filas[i].area}` : "";
-      doc.text(infoFoto, 10, yFoto);
-      yFoto+=6;
+      doc.text(infoFoto, 10, yFoto); yFoto+=7;
 
-      // Medida grande 1 por página: 180 x 135 mm (centrada)
       const fotoW = 180;
       const fotoH = 135;
-      const xFoto = (pageW - fotoW)/2; // centrado
-
+      const xFoto = (pageW - fotoW)/2;
       try{
         doc.addImage(listaFotos[i], "JPEG", xFoto, yFoto, fotoW, fotoH);
         doc.setDrawColor(150); doc.setLineWidth(0.3); doc.rect(xFoto, yFoto, fotoW, fotoH);
-      }catch(e){
-        doc.setFontSize(8); doc.text(`Error cargando foto ${i+1}`, 10, yFoto+10);
-      }
-      
-      doc.setFontSize(7); doc.setTextColor(100);
-      doc.text(`Foto ${i+1} - ${new Date().toLocaleString('es-EC')}`, xFoto, yFoto+fotoH+5);
+      }catch(e){}
+      doc.setFontSize(7); doc.text(`Foto ${i+1}`, xFoto, yFoto+fotoH+5);
     }
   }
 
-  // Pie de página
   const totalPages = doc.internal.getNumberOfPages();
   for(let i=1;i<=totalPages;i++){
     doc.setPage(i);
@@ -1259,8 +1250,7 @@ async function generarConteo2PDF(){
   doc.autoPrint();
   window.open(doc.output('bloburl'), '_blank');
   return doc;
-}
-  
+}  
 
 // GRABA INVENTARIOS
 async function generarInvPDF(){
@@ -1934,15 +1924,13 @@ function guardarConteo2(){
   const idx = historial.findIndex(h=>h.serie===p.serie && h.cliente===clientCode);
 
   if(idx>=0){
-    if(!confirm(`Ya contaste ${p.serie} el ${historial[idx].fecha} con N:${historial[idx].negro} C:${historial[idx].color}. ¿Actualizar?`)) return;
+    if(!confirm(`Ya contaste ${p.serie} el ${historial[idx].fecha} N:${historial[idx].negro} C:${historial[idx].color}. ¿Actualizar?`)) return;
     historial[idx] = {...historial[idx], fecha, negro, color, scan, a3};
   } else {
     historial.push({fecha, cliente:c.codigo, serie:p.serie, codigo:p.codigo, negro, color, scan, a3});
   }
-  
   localStorage.setItem("ecoloimp_conteo2", JSON.stringify(historial));
   alert(`✅ ${idx>=0?'Actualizado':'Guardado'}: ${p.serie}`);
-  
   $("ct2Negro").value=0; $("ct2Color").value=0; $("ct2Scan").value=0; $("ct2A3").value=0;
   updateConteo2PrinterTable();
 }
