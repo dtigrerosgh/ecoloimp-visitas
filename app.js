@@ -7,6 +7,7 @@ const ARIAL_BASE64 = "AAEAAAAZAQAABACQRFNJR6jSM0wADRO0AAAdtEdERUYHHgrHAA0xaAAAA1
 const DB = { clientes:[], impresoras:[], tecnicos:[], bodegas:[], productos:[], inventarios:[], trabajos:[], visitaPrinter:null };
 let fotosVisita = []; // ponlo arriba con tus variables globales
 let fotosConteo = []; // ponlo arriba con tus variables globales
+let fotosConteo2 = []; // ponlo arriba con tus variables globales
 const gcorreo = "administracion@ecoloimp.com, servicio@ecoloimp.com";
 let usuariosTXT=[], firmaDibujada=false, firmaDibujadaCt=false;
 const $=id=>document.getElementById(id);
@@ -1655,7 +1656,7 @@ function initFotosConteo2(){
 
   input.addEventListener("change", async (e)=>{
     const files = Array.from(e.target.files);
-    if((fotosConteo.length + files.length) > 15){
+    if((fotosConteo2.length + files.length) > 15){
       alert("Máximo 15 fotos por conteo");
       return;
     }
@@ -1666,9 +1667,9 @@ function initFotosConteo2(){
         fr.onload = ()=>res(fr.result);
         fr.readAsDataURL(file);
       });
-      fotosConteo.push(b64);
+      fotosConteo2.push(b64);
 
-      const idx = fotosConteo.length - 1;
+      const idx = fotosConteo2.length - 1;
       const div = document.createElement("div");
       div.style.cssText="position:relative;width:90px;height:90px;border:1px solid #ddd;border-radius:8px;overflow:hidden";
       div.innerHTML = `
@@ -1678,15 +1679,15 @@ function initFotosConteo2(){
       `;
               // renumera
         const count = document.getElementById("ct2FotosCount");
-        if(count) count.textContent = `${fotosConteo.length} / 15`;
+        if(count) count.textContent = `${fotosConteo2.length} / 15`;
       div.querySelector("button").onclick = ()=>{
         // elimina de array y del DOM
-        const pos = fotosConteo.indexOf(b64);
-        if(pos>-1) fotosConteo.splice(pos,1);
+        const pos = fotosConteo2.indexOf(b64);
+        if(pos>-1) fotosConteo2.splice(pos,1);
         div.remove();
         // renumera
         const count = document.getElementById("ct2FotosCount");
-        if(count) count.textContent = `${fotosConteo.length} / 15`;
+        if(count) count.textContent = `${fotosConteo2.length} / 15`;
         //document.querySelectorAll("#ctFotosPreview span").forEach((s,i)=> s.textContent = `Foto ${i+1}`);
       };
       preview.appendChild(div);   
@@ -1748,7 +1749,7 @@ function cerrarSesion(){
   setTimeout(() => {
     document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;font-family:sans-serif'>Sesión cerrada correctamente<br><small>Puede cerrar esta pestaña</small></h1>";
     window.location.href = "about:blank";
-  }, 300);
+  }, 400);
 }
 
 function setupEvents(){
