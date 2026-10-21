@@ -277,6 +277,7 @@ function updateConteo2PrinterTable(){
     }
   }
 }
+
 function selectConteo2Printer(serie){
   DB.conteo2Printer = DB.impresoras.find(x=>x.serie===serie) || null;
   updateConteo2PrinterTable();
@@ -1213,7 +1214,7 @@ async function generarConteo2PDF(){
   doc.text($("ct2NombreFirma")?.value||"Firma Cliente",12,y);
 
   // --- FOTOS 1 X PAGINA - CORREGIDO ---
-  const listaFotos = (typeof fotosConteo2!=="undefined" ? fotosConteo2 : (typeof fotosConteo!=="undefined" ? fotosConteo : []));
+  const listaFotos = (typeof fotosConteo2!=="undefined" ? fotosConteo2 : (typeof fotosConteo2!=="undefined" ? fotosConteo2 : []));
   if(listaFotos && listaFotos.length>0){
     for(let i=0;i<listaFotos.length;i++){
       doc.addPage();
