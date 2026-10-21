@@ -1212,7 +1212,7 @@ async function generarConteo2PDF(){
   const tot = filas.reduce((a,f)=>({n:a.n+Number(f.negro||0), c:a.c+Number(f.color||0), s:a.s+Number(f.scan||0), a3:a.a3+Number(f.a3||0)}),{n:0,c:0,s:0,a3:0});
   doc.setFillColor(240,240,240); doc.setDrawColor(0); doc.setFont(undefined,'bold'); doc.setFontSize(8);
   doc.rect(10,y,tableW,7,"FD");
-  doc.text(`TOTAL: N:${tot.n.toLocaleString('es-EC')} | C:${tot.c.toLocaleString('es-EC')} | S:${tot.s.toLocaleString('es-EC')} | A3:${tot.a3.toLocaleString('es-EC')} | EQ:${filas.length}`,12,y+4.5);
+  doc.text(`TOTAL PAGINAS: NEGRO:${tot.n.toLocaleString('es-EC')}      |      COLOR:${tot.c.toLocaleString('es-EC')}     |      ESCANEADAS:${tot.s.toLocaleString('es-EC')}      |      A3:${tot.a3.toLocaleString('es-EC')}      |      EQUIPOS:${filas.length}`,12,y+4.5);
   y+=12;
 
   doc.setFont(undefined,'bold'); doc.setFontSize(9);
