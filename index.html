@@ -327,10 +327,12 @@
                 </div>
             </div>
         </div>
+      
         <div class="field span-2">
           <label for="ctNombreFirma">Nombre de quien firma</label>
           <input id="ctNombreFirma" type="text" placeholder="Ej. Dennis Tigreros - Jefe Sistemas">
         </div>   
+      
       <div class="card" style="margin-top:10px">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <label style="font-weight:bold">📷 Fotos de conteo</label>
@@ -416,7 +418,24 @@
           <div><small>Bodega</small><strong>-</strong></div>
           <div><small>Cliente</small><strong>-</strong></div>          
         </div>
-      </div>      
+      </div>     
+
+        <div class="field span-4">
+            <label>Firma del cliente / conformidad</label>
+            <div class="signature-wrap">
+                <canvas id="ct2FirmaCanvas" width="600" height="80"></canvas>
+                <div class="signature-actions">
+                  <button type="button" class="btn ghost" id="btnCt2FirmaLimpiar">Limpiar firma</button>
+                  <span id="firmaStatus2">Sin firma</span>
+                </div>
+            </div>
+        </div>
+      
+        <div class="field span-2">
+          <label for="ctNombreFirma">Nombre de quien firma</label>
+          <input id="ctNombreFirma" type="text" placeholder="Ej. Dennis Tigreros - Jefe Sistemas">
+        </div>   
+      
       <div class="actions">
         <button class="btn primary" id="btnConteo2Guardar">Guardar TXT y enviar por Gmail</button>
         <button class="btn secondary" id="btnConteo2Limpiar">Limiar Conteo</button>
