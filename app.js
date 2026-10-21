@@ -1676,7 +1676,7 @@ function initFotosConteo2(){
       div.innerHTML = `
         <img src="${b64}" style="width:100%;height:100%;object-fit:cover">
         <button type="button" data-idx="${idx}" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);color:white;border:0;border-radius:50%;width:22px;height:22px;font-size:12px">X</button>
-        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:9px;text-align:center">Foto ${fotosConteo.length}</span>
+        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:9px;text-align:center">Foto ${fotosConteo2.length}</span>
       `;
               // renumera
         const count = document.getElementById("ct2FotosCount");
