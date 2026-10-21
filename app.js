@@ -1100,19 +1100,11 @@ async function generarConteo2PDF(){
   const usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
   const logoBase64 = await getLogoBase64().catch(()=>null);
   
-  // Enriquecer con datos de impresora
   let filas = historial.map(h=>{
     const p = DB.impresoras.find(x=>x.serie===h.serie) || {};
-    return {
-      ...h,
-      modelo: p.modelo||"",
-      sucursal: p.sede||"",
-      area: p.ubicacion||"",
-      bodega: p.bodega||"",
-    };
+    return { ...h, modelo: p.modelo||"", sucursal: p.sede||"SIN SUCURSAL", area: p.ubicacion||"SIN AREA", bodega: p.bodega||"" };
   });
 
-  // ORDENAR: Sucursal -> Area -> Serie
   filas.sort((a,b)=>{
     const s = a.sucursal.localeCompare(b.sucursal,'es');
     if(s!==0) return s;
@@ -1121,7 +1113,6 @@ async function generarConteo2PDF(){
     return a.serie.localeCompare(b.serie);
   });
 
-  // AGRUPAR SOLO POR SUCURSAL
   const grupos = {};
   filas.forEach(f=>{
     const key = f.sucursal;
@@ -1157,13 +1148,12 @@ async function generarConteo2PDF(){
   }
 
   drawHeader();
-
   doc.setFontSize(9); doc.setFont(undefined,'bold');
   doc.text(`Cliente: ${c.codigo} - ${c.nombre.substring(0,60)}`, 10, y); y+=5;
   doc.setFont(undefined,'normal'); doc.setFontSize(8);
   doc.text(`Fecha: ${$("ct2Fecha")?.value || new Date().toISOString().slice(0,10)} | Equipos: ${filas.length}`, 10, y); y+=8;
 
-  const colW = [12, 28, 26, 30, 30, 16, 16, 16, 16]; // ETQ MODELO SERIE SUCURSAL AREA NEGRO COLOR SCAN A3
+  const colW = [12, 28, 26, 30, 30, 16, 16, 16, 16];
   const headers = ["ETQ","MODELO","SERIE","SUCURSAL","AREA","NEGRO","COLOR","SCAN","A3"];
   const tableW = colW.reduce((a,b)=>a+b,0);
 
@@ -1176,18 +1166,14 @@ async function generarConteo2PDF(){
     doc.setFont(undefined,'normal'); return yy+7;
   }
 
-  // DIBUJA AGRUPADO SOLO POR SUCURSAL
   Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'es')).forEach(sucursal=>{
-    const lista = grupos[sucursal]; // ya viene ordenada por area
-
+    const lista = grupos[sucursal];
     if(y > pageH-30){ doc.addPage(); drawHeader(); y=36; }
-
     doc.setFillColor(15,23,42); doc.setTextColor(255); doc.setFont(undefined,'bold'); doc.setFontSize(8);
     doc.rect(10, y, tableW, 7, "F");
     doc.text(`SUCURSAL: ${sucursal} (${lista.length} eq.)`, 12, y+4.5);
     doc.setTextColor(0); y+=7;
     y = drawTableHeader(y);
-
     lista.forEach(f=>{
       const rowH = 7;
       if(y + rowH > pageH-28){
@@ -1197,11 +1183,7 @@ async function generarConteo2PDF(){
         y=drawTableHeader(y);
       }
       let x=10;
-      const vals = [
-        f.bodega||"", (f.modelo||"").substring(0,16), f.serie,
-        (f.sucursal||"").substring(0,18), (f.area||"").substring(0,18),
-        fmtMiles(f.negro), fmtMiles(f.color), fmtMiles(f.scan), fmtMiles(f.a3)
-      ];
+      const vals = [f.bodega||"", (f.modelo||"").substring(0,16), f.serie, (f.sucursal||"").substring(0,18), (f.area||"").substring(0,18), fmtMiles(f.negro), fmtMiles(f.color), fmtMiles(f.scan), fmtMiles(f.a3)];
       doc.setFontSize(7); doc.setDrawColor(180);
       vals.forEach((val,i)=>{
         doc.setFillColor(255,255,255); doc.rect(x,y,colW[i],rowH,"FD");
@@ -1229,57 +1211,53 @@ async function generarConteo2PDF(){
   doc.setFontSize(8); doc.setFont(undefined,'normal');
   doc.text($("ct2NombreFirma")?.value||"Firma Cliente",12,y);
 
-// FOTOS CONTEO - GRID 3x3 CORRECTO
-   y+=8;
-const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo2 : []);
-  if(listaFotos.length>0){
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
-
-    if(y > 150){ doc.addPage(); drawHeader(); y=36; }
-
-    doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
-    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=8;
-
-    const fotosPorFila = 1;
-    const fotosPorPagina = 1; // 2x4
-    const fotoW = 180;
-    const fotoH = 120;
-    const gapX = 3;
-    const gapY = 2;
-
-    let x=10;
-    let countFila=0;
-    let countPagina=0;
-
+  // --- FOTOS 1 X PAGINA - CORREGIDO ---
+  const listaFotos = (typeof fotosConteo2!=="undefined" ? fotosConteo2 : (typeof fotosConteo!=="undefined" ? fotosConteo : []));
+  if(listaFotos && listaFotos.length>0){
     for(let i=0;i<listaFotos.length;i++){
-      // nueva fila (2 fotos)
-      if(countFila >= fotosPorFila){
-        x=10;
-        y+= fotoH + gapY;
-        countFila=0;
-         if(y > 150){ doc.addPage(); drawHeader(); y=36; countPagina=0;}           
-      }
-      // nueva pagina (8 fotos)
-      if(countPagina >= fotosPorPagina){
-        if(y > 150){ doc.addPage(); drawHeader(); y=36; countFila=0; countPagina=0;}     
-        doc.setFont(undefined,'bold'); doc.setFontSize(10);
-        doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=8;
-        x=10;
-      }
+      doc.addPage();
+      drawHeader();
+      
+      let yFoto = 35;
+      doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(0);
+      doc.text(`EVIDENCIA FOTOGRAFICA ${i+1}/${listaFotos.length}`, 10, yFoto);
+      yFoto+=4;
+      doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(100);
+      const infoFoto = filas[i] ? `${filas[i].serie} - ${filas[i].sucursal} - ${filas[i].area}` : "";
+      doc.text(infoFoto, 10, yFoto);
+      yFoto+=6;
+
+      // Medida grande 1 por página: 180 x 135 mm (centrada)
+      const fotoW = 180;
+      const fotoH = 135;
+      const xFoto = (pageW - fotoW)/2; // centrado
 
       try{
-        doc.addImage(listaFotos[i],"JPEG", x, y, fotoW, fotoH);
-        doc.setDrawColor(180); doc.setLineWidth(0.2); doc.rect(x,y,fotoW,fotoH);
-        doc.setFontSize(7); doc.text(`Foto ${i+1}`, x+2, y+fotoH-2);
-      }catch(e){}
-
-      x+= fotoW + gapX;
-      countFila++;
-      countPagina++;
+        doc.addImage(listaFotos[i], "JPEG", xFoto, yFoto, fotoW, fotoH);
+        doc.setDrawColor(150); doc.setLineWidth(0.3); doc.rect(xFoto, yFoto, fotoW, fotoH);
+      }catch(e){
+        doc.setFontSize(8); doc.text(`Error cargando foto ${i+1}`, 10, yFoto+10);
+      }
+      
+      doc.setFontSize(7); doc.setTextColor(100);
+      doc.text(`Foto ${i+1} - ${new Date().toLocaleString('es-EC')}`, xFoto, yFoto+fotoH+5);
     }
-    y+= fotoH + 12;
   }
+
+  // Pie de página
+  const totalPages = doc.internal.getNumberOfPages();
+  for(let i=1;i<=totalPages;i++){
+    doc.setPage(i);
+    doc.setFontSize(6); doc.setTextColor(100); doc.setDrawColor(180);
+    doc.line(10,pageH-10,pageW-10,pageH-10);
+    doc.text(`© 2026 DT Soluciones - ECOLOIMP Web | ${usuarioActual} - ${new Date().toLocaleString('es-EC')} | ${c.codigo}`,10,pageH-5);
+    doc.text(`Pag ${i}/${totalPages}`,pageW-10,pageH-5,{align:"right"});
+  }
+
+  doc.autoPrint();
+  window.open(doc.output('bloburl'), '_blank');
+  return doc;
+}
 
   
   const totalPages = doc.internal.getNumberOfPages();
