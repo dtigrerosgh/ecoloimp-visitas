@@ -1229,6 +1229,59 @@ async function generarConteo2PDF(){
   doc.setFontSize(8); doc.setFont(undefined,'normal');
   doc.text($("ct2NombreFirma")?.value||"Firma Cliente",12,y);
 
+// FOTOS CONTEO - GRID 3x3 CORRECTO
+   y+=8;
+const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo2 : []);
+  if(listaFotos.length>0){
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    if(y > 150){ doc.addPage(); drawHeader(); y=36; }
+
+    doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
+    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=8;
+
+    const fotosPorFila = 1;
+    const fotosPorPagina = 1; // 2x4
+    const fotoW = 180;
+    const fotoH = 120;
+    const gapX = 3;
+    const gapY = 2;
+
+    let x=10;
+    let countFila=0;
+    let countPagina=0;
+
+    for(let i=0;i<listaFotos.length;i++){
+      // nueva fila (2 fotos)
+      if(countFila >= fotosPorFila){
+        x=10;
+        y+= fotoH + gapY;
+        countFila=0;
+         if(y > 150){ doc.addPage(); drawHeader(); y=36; countPagina=0;}           
+      }
+      // nueva pagina (8 fotos)
+      if(countPagina >= fotosPorPagina){
+        if(y > 150){ doc.addPage(); drawHeader(); y=36; countFila=0; countPagina=0;}     
+        doc.setFont(undefined,'bold'); doc.setFontSize(10);
+        doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=8;
+        x=10;
+      }
+
+      try{
+        doc.addImage(listaFotos[i],"JPEG", x, y, fotoW, fotoH);
+        doc.setDrawColor(180); doc.setLineWidth(0.2); doc.rect(x,y,fotoW,fotoH);
+        doc.setFontSize(7); doc.text(`Foto ${i+1}`, x+2, y+fotoH-2);
+      }catch(e){}
+
+      x+= fotoW + gapX;
+      countFila++;
+      countPagina++;
+    }
+    y+= fotoH + 12;
+  }
+
+  
   const totalPages = doc.internal.getNumberOfPages();
   for(let i=1;i<=totalPages;i++){
     doc.setPage(i); doc.setFontSize(6); doc.setTextColor(100); doc.setDrawColor(180);
@@ -1241,6 +1294,7 @@ async function generarConteo2PDF(){
   window.open(doc.output('bloburl'), '_blank');
   return doc;
 }
+
 // GRABA INVENTARIOS
 async function generarInvPDF(){
   const { jsPDF } = window.jspdf;
