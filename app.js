@@ -1106,8 +1106,8 @@ async function generarConteo2PDF(){
     return {
       ...h,
       modelo: p.modelo||"",
-      sucursal: p.sede||"SIN SUCURSAL",
-      area: p.ubicacion||"SIN AREA",
+      sucursal: p.sede||"",
+      area: p.ubicacion||"",
       bodega: p.bodega||"",
     };
   });
