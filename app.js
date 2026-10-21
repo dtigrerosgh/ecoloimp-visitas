@@ -1261,18 +1261,6 @@ async function generarConteo2PDF(){
   return doc;
 }
   
-  const totalPages = doc.internal.getNumberOfPages();
-  for(let i=1;i<=totalPages;i++){
-    doc.setPage(i); doc.setFontSize(6); doc.setTextColor(100); doc.setDrawColor(180);
-    doc.line(10,pageH-10,pageW-10,pageH-10);
-    doc.text(`© 2026 DT Soluciones - ECOLOIMP Web | ${usuarioActual} - ${new Date().toLocaleString('es-EC')} | ${c.codigo}`,10,pageH-5);
-    doc.text(`Pag ${i}/${totalPages}`,pageW-10,pageH-5,{align:"right"});
-  }
-
-  doc.autoPrint();
-  window.open(doc.output('bloburl'), '_blank');
-  return doc;
-}
 
 // GRABA INVENTARIOS
 async function generarInvPDF(){
@@ -1932,7 +1920,8 @@ if(conteoBody){
 function guardarConteo2(){
   const p = DB.conteo2Printer;
   if(!p) return alert("Seleccione impresora primero");
-  const c = DB.clientes.find(x=>x.codigo===$("ct2Cliente")?.value);
+  const clientCode = $("ct2Cliente")?.value;
+  const c = DB.clientes.find(x=>x.codigo===clientCode);
   if(!c) return alert("Seleccione cliente");
 
   const negro = $("ct2Negro")?.value || "0";
@@ -1940,34 +1929,29 @@ function guardarConteo2(){
   const scan = $("ct2Scan")?.value || "0";
   const a3 = $("ct2A3")?.value || "0";
   const fecha = $("ct2Fecha")?.value || new Date().toISOString().slice(0,10);
-  const tecnico = DB.tecnicos.find(x=>x.codigo===$("ct2Tecnico")?.value) || {codigo:""};
-
-  // TXT igual que conteo1
-  const linea = `${c.codigo};${fecha};${tecnico.codigo};${p.codigo};${p.serie};${negro};${color};${scan};${a3}`;
   
-  // Guarda en localStorage para que no se pierda
   let historial = JSON.parse(localStorage.getItem("ecoloimp_conteo2")||"[]");
-  historial.push({fecha, cliente:c.codigo, serie:p.serie, codigo:p.codigo, negro, color, scan, a3});
-  localStorage.setItem("ecoloimp_conteo2", JSON.stringify(historial));
+  const idx = historial.findIndex(h=>h.serie===p.serie && h.cliente===clientCode);
 
-  console.log("Conteo2 guardado:", linea);
-  alert(`✅ Conteo guardado:\n${p.serie} - N:${negro} C:${color} S:${scan} A3:${a3}`);
+  if(idx>=0){
+    if(!confirm(`Ya contaste ${p.serie} el ${historial[idx].fecha} con N:${historial[idx].negro} C:${historial[idx].color}. ¿Actualizar?`)) return;
+    historial[idx] = {...historial[idx], fecha, negro, color, scan, a3};
+  } else {
+    historial.push({fecha, cliente:c.codigo, serie:p.serie, codigo:p.codigo, negro, color, scan, a3});
+  }
   
-  // Limpia inputs para la siguiente
-  $("ct2Negro").value = 0; $("ct2Color").value = 0; $("ct2Scan").value = 0; $("ct2A3").value = 0;
+  localStorage.setItem("ecoloimp_conteo2", JSON.stringify(historial));
+  alert(`✅ ${idx>=0?'Actualizado':'Guardado'}: ${p.serie}`);
+  
+  $("ct2Negro").value=0; $("ct2Color").value=0; $("ct2Scan").value=0; $("ct2A3").value=0;
+  updateConteo2PrinterTable();
 }
 
 function generarConteo2TXT(){
-  const c = DB.clientes.find(x=>x.codigo===$("ct2Cliente")?.value);
-  const p = DB.conteo2Printer;
-  const t = DB.tecnicos.find(x=>x.codigo===$("ct2Tecnico")?.value) || {codigo:""};
-  if(!c || !p) throw new Error("Seleccione cliente e impresora en Conteo2");
-  const fecha = $("ct2Fecha")?.value || new Date().toISOString().slice(0,10);
-  const n = $("ct2Negro")?.value || "0";
-  const co = $("ct2Color")?.value || "0";
-  const sc = $("ct2Scan")?.value || "0";
-  const a3 = $("ct2A3")?.value || "0";
-  return `${c.codigo};${fecha};${t.codigo};${p.codigo};${p.serie};${n};${co};${sc};${a3}`;
+  const historial = JSON.parse(localStorage.getItem("ecoloimp_conteo2")||"[]");
+  if(historial.length===0) throw new Error("No hay conteos en Conteo2 - guarde al menos uno");
+  const tecnico = $("ct2Tecnico")?.value || "";
+  return historial.map(h=>`${h.cliente};${h.fecha};${tecnico};${h.codigo};${h.serie};${h.negro};${h.color};${h.scan};${h.a3}`).join("\n");
 }
 
 async function init(){
