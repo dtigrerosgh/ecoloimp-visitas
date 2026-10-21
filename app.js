@@ -376,35 +376,57 @@ function selectVisitaPrinter(serie){
   
 function activateSection(id){
   document.querySelectorAll(".page-section").forEach(s=>{
-    const on=s.id===id;
+    const on = s.id===id;
     s.classList.toggle("active",on);
-    s.style.display=on?"block":"none";
+    // No toques el display, solo la clase
+    if(on) s.style.display="block";
+    else s.style.display="none";
   });
-  document.querySelectorAll("[data-section]").forEach(a=>a.classList.toggle("active",a.dataset.section===id));
+  document.querySelectorAll("[data-section]").forEach(a=>{
+    a.classList.toggle("active", a.dataset.section===id);
+  });
+  // Cierra menú móvil al cambiar sección
+  const nav = $("mainNav");
+  const btn = $("menuToggle");
+  if(nav) nav.classList.remove("open");
+  if(btn) btn.textContent="☰";
+  location.hash = "#"+id;
 }
 
 function setupNavigation(){ 
   const btn = $("menuToggle");
   const nav = $("mainNav");
 
+  console.log("Menu btn:", !!btn, "Nav:", !!nav);
+  if(!btn || !nav){
+    console.warn("No existe #menuToggle o #mainNav - revisa tu HTML");
+    return;
+  }
+
   document.querySelectorAll("[data-section]").forEach(el=>{
-    el.addEventListener("click",e=>{
+    el.addEventListener("click", e=>{
       e.preventDefault();
       activateSection(el.dataset.section);
-      nav?.classList.remove("open");
-      if(btn) btn.textContent="☰";
     });
   }); 
 
-  btn?.addEventListener("click",(e)=>{
+  btn.addEventListener("click", (e)=>{
     e.stopPropagation();
     const isOpen = nav.classList.toggle("open");
     btn.textContent = isOpen ? "✕" : "☰";
   });
   
+  // Cierra al hacer click fuera
   document.addEventListener("click", (e)=>{
-    if(!nav || !btn) return;
     if(!nav.contains(e.target) && !btn.contains(e.target)){
+      nav.classList.remove("open");
+      btn.textContent="☰";
+    }
+  });
+
+  // Cierra con ESC
+  document.addEventListener("keydown", (e)=>{
+    if(e.key==="Escape"){
       nav.classList.remove("open");
       btn.textContent="☰";
     }
