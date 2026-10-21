@@ -208,23 +208,55 @@ function updateConteo2PrinterTable(){
   const p = DB.conteo2Printer;
   const c = DB.clientes.find(x=>x.codigo===client);
 
-  if($("ct2SelectedPrinterStatus")) $("ct2SelectedPrinterStatus").textContent = client ? `Tiene ${total} - Mostrando ${rows.length} ${selectedSerie?`- Sel: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
+  // Historial para marcar
+  const historial = JSON.parse(localStorage.getItem("ecoloimp_conteo2")||"[]");
+  const seriesContadas = new Set(historial.filter(h=>h.cliente===client).map(h=>h.serie));
+  const contadasCount = seriesContadas.size;
+
+  if($("ct2SelectedPrinterStatus")){
+    $("ct2SelectedPrinterStatus").innerHTML = client ? 
+      `Tiene ${total} | Mostrando ${rows.length} | Contadas: <b style="color:#16a34a">${contadasCount}/${total}</b> ${selectedSerie?` - Sel: ${selectedSerie}`:""}` 
+      : "Ninguna impresora seleccionada";
+  }
   
   if($("conteo2Body")){
     $("conteo2Body").innerHTML = rows.length ? rows.map(pr=>{
       const isSel = pr.serie === selectedSerie;
-      return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
-        <td><button class="btn primary" data-select-printer-c2="${esc(pr.serie)}">${isSel?'✓':'Seleccionar'}</button></td>
-        <td>${pr.bodega||''}</td><td>${pr.codigo||''}</td><td>${pr.modelo||''}</td><td>${pr.serie}</td><td>${pr.sede||''}</td><td>${pr.ubicacion||''}</td><td>${pr.ip||''}</td>
+      const yaContada = seriesContadas.has(pr.serie);
+      const hist = historial.find(h=>h.serie===pr.serie && h.cliente===client);
+      
+      let estilo = "";
+      let btnTexto = "Seleccionar";
+      let btnClase = "btn primary";
+      
+      if(yaContada){
+        estilo = "background:#dcfce7 !important; border-left:4px solid #16a34a;";
+        btnTexto = `✓ ${hist?.negro||0}/${hist?.color||0}`;
+        btnClase = "btn ghost";
+        if(isSel) estilo = "background:#bbf7d0 !important;outline:2px solid #16a34a;";
+      } else if(isSel){
+        estilo = "background:#dbeafe;outline:2px solid #2563eb;";
+        btnTexto = "✓ Seleccionada";
+      }
+
+      return `<tr class="${isSel?'selected':''}" style="${estilo}">
+        <td><button class="${btnClase}" data-select-printer-c2="${esc(pr.serie)}" style="${yaContada?'color:#16a34a;font-weight:bold':''}">${btnTexto}</button></td>
+        <td>${pr.bodega||''} ${yaContada?'<span style="color:#16a34a">✓</span>':''}</td>
+        <td>${pr.codigo||''}</td><td>${pr.modelo||''}</td>
+        <td><b>${pr.serie}</b> ${yaContada?`<br><small style="color:#16a34a">N:${hist.negro} C:${hist.color} S:${hist.scan} A3:${hist.a3}</small>`:''}</td>
+        <td>${pr.sede||''}</td><td>${pr.ubicacion||''}</td><td>${pr.ip||''}</td>
       </tr>`;
     }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
   }
 
   if($("ct2PrinterDetails")){
     if(p){
-      // AQUI ESTA EL FIX: muestra datos + inputs de conteo
+      const yaContada = seriesContadas.has(p.serie);
+      const hist = historial.find(h=>h.serie===p.serie && h.cliente===client);
+      
       $("ct2PrinterDetails").innerHTML = `
-          <div><small>Código</small><strong>${esc(p.codigo)}</strong></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:${yaContada?'#dcfce7':'#f8fafc'};padding:12px;border-radius:8px;border:1px solid ${yaContada?'#16a34a':'#e2e8f0'}">
+          <div><small>Código</small><strong>${esc(p.codigo)} ${yaContada?'✓ YA CONTADA':''}</strong></div>
           <div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div>
           <div><small>Serie</small><strong>${esc(p.serie)}</strong></div>
           <div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div>
@@ -232,22 +264,21 @@ function updateConteo2PrinterTable(){
           <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
           <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
           <div><small>Cliente</small><strong>${c ? esc(c.codigo) : "-"}</strong></div>
-
-            <label><small>Negro</small><input type="number" id="ct2Negro" data-campo-c2="negro" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
-            <label><small>Color</small><input type="number" id="ct2Color" data-campo-c2="color" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
-            <label><small>Scanner</small><input type="number" id="ct2Scan" data-campo-c2="scan" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
-            <label><small>A3</small><input type="number" id="ct2A3" data-campo-c2="a3" data-serie="${esc(p.serie)}" value="0" style="width:100%;padding:8px;border:2px solid #2563eb;border-radius:6px"></label>
-            
-        <div style="margin-top:8px"><button class="btn primary" onclick="guardarConteo2()">💾 Guardar Conteo ${esc(p.serie)}</button></div>
+        </div>
+        ${yaContada?`<div style="background:#fef9c3;padding:8px;border-radius:6px;margin-top:8px;font-size:12px">⚠️ Ya contaste esta serie el ${hist.fecha}: N:${hist.negro} C:${hist.color} S:${hist.scan} A3:${hist.a3} - Si guardas se actualizará</div>`:''}
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <label><small>Negro</small><input type="number" id="ct2Negro" value="${yaContada?hist.negro:0}" style="width:100%;padding:8px;border:2px solid ${yaContada?'#16a34a':'#2563eb'};border-radius:6px"></label>
+          <label><small>Color</small><input type="number" id="ct2Color" value="${yaContada?hist.color:0}" style="width:100%;padding:8px;border:2px solid ${yaContada?'#16a34a':'#2563eb'};border-radius:6px"></label>
+          <label><small>Scanner</small><input type="number" id="ct2Scan" value="${yaContada?hist.scan:0}" style="width:100%;padding:8px;border:2px solid ${yaContada?'#16a34a':'#2563eb'};border-radius:6px"></label>
+          <label><small>A3</small><input type="number" id="ct2A3" value="${yaContada?hist.a3:0}" style="width:100%;padding:8px;border:2px solid ${yaContada?'#16a34a':'#2563eb'};border-radius:6px"></label>
+        </div>
+        <div style="margin-top:8px"><button class="btn primary" onclick="guardarConteo2()" style="background:${yaContada?'#16a34a':'#2563eb'}">${yaContada?'🔄 Actualizar Conteo':'💾 Guardar Conteo'} ${esc(p.serie)}</button></div>
       `;
     } else if(c){
-      $("ct2PrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - ${total} imp. - Seleccione una arriba</strong></div>`;
-    } else {
-      $("ct2PrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
+      $("ct2PrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - ${total} imp. | ${contadasCount} contadas - Seleccione una arriba</strong></div>`;
     }
   }
 }
-
 function selectConteo2Printer(serie){
   DB.conteo2Printer = DB.impresoras.find(x=>x.serie===serie) || null;
   updateConteo2PrinterTable();
