@@ -1545,11 +1545,10 @@ function limpiarConteo(){
 }
  
 function initFotosDinamico(inputId, previewId, countId, arrayName){
-  let arrayName = [];
   let input = document.getElementById(inputId);
+  let preview = document.getElementById(previewId);
   if(!input) return;
 
-  let preview = document.getElementById(previewId);
   if(!preview){
     preview = document.createElement("div");
     preview.id = previewId;
@@ -1561,13 +1560,13 @@ function initFotosDinamico(inputId, previewId, countId, arrayName){
   input.dataset.init = "1";
 
   input.addEventListener("change", async (e)=>{
-    const arr = window[arrayName];
+    const arr = Array.from(e.target.files); //window[arrayName];
     if(!arr){ 
-      alert("Array no existe:", arrayName); 
-      console.error("Array no existe:", arrayName); 
+      alert("Array no existe:", arr); 
+      console.error("Array no existe:", arr); 
       return; 
     }
-    const files = Array.from(e.target.files);
+    //const files = Array.from(e.target.files);
     if((arr.length + files.length) > 15){ alert("Máximo 15 fotos"); e.target.value=""; return; }
     for(let file of files){
       const b64 = await new Promise(r=>{
@@ -1581,8 +1580,10 @@ function initFotosDinamico(inputId, previewId, countId, arrayName){
     e.target.value = "";
   });
 
+
+  
 function render(){
-    const arr = window[arrayName]; // <-- CORREGIDO arrayName
+    const arr = Array.from(e.target.files);   //window[arrayName]; // <-- CORREGIDO arrayName
     preview.innerHTML = "";
     arr.forEach((b64, i)=>{
       const div = document.createElement("div");
