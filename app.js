@@ -1604,12 +1604,13 @@ document.addEventListener("click",e=>{
   });
 
   $("btnVisitaPDF")?.addEventListener("click",async()=>{
-    try{
-      const docpdf = await generarVisitaPDF();
-    }catch(err){
-      showMessage("vtMessage",err.message,true);
-    }
-  });
+  try{
+    if(!$("vtCliente")?.value) throw new Error("Seleccione cliente");
+    if(!DB.visitaPrinter) throw new Error("Seleccione impresora de la tabla");
+    const doc = await generarVisitaPDF();
+  }catch(err){
+    showMessage("vtMessage", err.message, true);
+  }
   
   $("btnVisitaLimpiar")?.addEventListener("click",async()=>{
     try{
