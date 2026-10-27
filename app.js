@@ -722,7 +722,7 @@ async function generarVisitaPDF(){
   doc.line(10, y, 80, y); y+=5;
   doc.text(firmaNombre || "Firma cliente", 10, y);
 
-   // FOTOS VISITA - GRID 3x3 CORRECTO
+   // FOTOS VISITA - GRID 2x4 CORRECTO
   y+=10;
 const listaFotos = (typeof fotosVisita!=="undefined"? fotosVisita : []);
   if(listaFotos.length>0){
@@ -735,7 +735,7 @@ const listaFotos = (typeof fotosVisita!=="undefined"? fotosVisita : []);
     doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=8;
 
     const fotosPorFila = 2;
-    const fotosPorPagina = 8; // 2x4
+    const fotosPorPagina = 4; // 2x4
     const fotoW = 86;
     const fotoH = 48;
     const gapX = 8;
@@ -753,7 +753,7 @@ const listaFotos = (typeof fotosVisita!=="undefined"? fotosVisita : []);
         countFila=0;
          if(y > 150){ doc.addPage(); drawHeader(); y=36; countPagina=0;}
       }
-      // nueva pagina (8 fotos)
+      // nueva pagina (4 fotos)
       if(countPagina >= fotosPorPagina){
         if(y > 150){ doc.addPage(); drawHeader(); y=36; countFila=0; countPagina=0;}
         doc.setFont(undefined,'bold'); doc.setFontSize(10);
@@ -1606,7 +1606,7 @@ function initFotosDinamico(inputId, previewId, countId, arrayName){
 
 function initTodasLasFotos() {
   initFotosDinamico("vtFotos", "vtFotosPreview", "vtFotosCount", "fotosVisita");
-  initFotosDinamico("vtFotos2", "vtFotos2Preview", "vtFotos2Count", "fotosVisita2"); // <--- tu nuevo
+  initFotosDinamico("vtFotos2", "vtFotos2Preview", "vtFotos2Count", "fotos2Visita"); // <--- tu nuevo
   
   initFotosDinamico("ctFotos", "ctFotosPreview", "ctFotosCount", "fotosConteo");
   initFotosDinamico("ct2Fotos", "ct2FotosPreview", "ct2FotosCount", "fotosConteo2");
