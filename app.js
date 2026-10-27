@@ -1495,79 +1495,54 @@ function limpiarVisitaTecnica(){
 
 
 function limpiarConteo(){
-  if(!confirm("¿Limpiar toda la pantalla de Conteo de Impresiones?\nSe borrarán contadores, fotos e impresoras.")) return;
-  fotosConteo = [];
-  window.fotosConteo = fotosConteo;
-  const sec = document.getElementById("ctFotosPreview");
-  if(!sec) return;
-
-  // 1. Inputs, selects, textarea
-  sec.querySelectorAll('input:not([type="file"]), select, textarea').forEach(el => {
-    if(el.type === 'checkbox' || el.type === 'radio') el.checked = false;
-    else if(el.tagName === 'SELECT') el.selectedIndex = 0;
-    else el.value = '';
+  if(!confirm("¿Limpiar Conteo?")) return;
+  
+  // Limpia FOTOS_DB
+  FOTOS_DB.fotosConteo = [];
+  FOTOS_DB.fotosConteo2 = [];
+  
+  const p1 = document.getElementById("ctFotosPreview");
+  const p2 = document.getElementById("ct2FotosPreview");
+  if(p1) p1.innerHTML="";
+  if(p2) p2.innerHTML="";
+  if($("ctFotosCount")) $("ctFotosCount").textContent="0 / 15";
+  if($("ct2FotosCount")) $("ct2FotosCount").textContent="0 / 15";
+  
+  document.querySelectorAll('#conteo input[type="file"], #conteo2 input[type="file"]').forEach(f=>f.value='');
+  document.querySelectorAll("#conteoBody tr").forEach(tr=>{
+    tr.querySelectorAll('input[data-campo]').forEach(inp=>inp.value=0);
   });
-
-  // 2. Archivos y previews de fotos
-  sec.querySelectorAll('input[type="file"]').forEach(f => f.value = '');
-  sec.querySelectorAll('#previewConteo, #fotosConteo, .preview-foto').forEach(c => {
-    if(c.tagName === 'IMG'){ c.src = ''; c.style.display = 'none'; }
-    else c.innerHTML = '';
-  });
-
-  // 3. Tablas de impresoras / conteos
-  const selectoresTabla = [
-    "#tablaConteo tbody",
-    "#conteo tbody",
-    "#tablaConteoImpresoras tbody",
-    "#listaConteo tbody",
-    "#conteo table tbody"
-  ];
-  selectoresTabla.forEach(sel => {
-    document.querySelectorAll(sel).forEach(tbody => tbody.innerHTML = '');
-  });
-
-  // 4. Contenedores de impresoras de clientes en conteo
-  document.querySelectorAll('#contenedorConteo, #impresorasConteo, #listaImpresorasConteo').forEach(c => c.innerHTML = '');
-
-  // 5. Arrays en memoria
-  if(window.conteos) window.conteos = [];
-  if(window.impresorasConteo) window.impresorasConteo = [];
-  if(window.listaConteo) window.listaConteo = [];
-
-  // 6. Borra storage solo de conteo
-  localStorage.removeItem("conteo_borrador");
-  localStorage.removeItem("ecoloimp_conteo");
-  localStorage.removeItem("conteo_fotos");
-  localStorage.removeItem("conteo_impresoras");
-
+  const cCanvas = document.getElementById("ctFirmaCanvas");
+  if(cCanvas) cCanvas.getContext("2d").clearRect(0,0,cCanvas.width,cCanvas.height);
+  firmaDibujadaCt=false;
   console.log("✅ Conteo limpio");
-}
- 
-function initFotosDinamico(inputId, previewId, countId, arrayName){
-  let input = document.getElementById(inputId);
-  let preview = document.getElementById(previewId);
-  if(!input) return;
+} 
 
+function initFotosDinamico(inputId, previewId, countId, key){
+  const input = document.getElementById(inputId);
+  let preview = document.getElementById(previewId);
+  const count = document.getElementById(countId);
+  
+  if(!input) return;
   if(!preview){
     preview = document.createElement("div");
     preview.id = previewId;
     preview.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;min-height:60px;border:1px dashed #ccc;padding:5px;border-radius:8px";
     input.insertAdjacentElement("afterend", preview);
   }
-  let count = document.getElementById(countId);
   if(input.dataset.init === "1") return;
   input.dataset.init = "1";
 
   input.addEventListener("change", async (e)=>{
-    const arr = Array.from(e.target.files); //window[arrayName];
-    if(!arr){ 
-      alert("Array no existe:", arr); 
-      console.error("Array no existe:", arr); 
-      return; 
+    const files = Array.from(e.target.files);
+    const arr = FOTOS_DB[key];
+    if(!arr){ alert("Key no existe: "+key); return; }
+    
+    if((arr.length + files.length) > 15){
+      alert("Máximo 15 fotos");
+      e.target.value="";
+      return;
     }
-    //const files = Array.from(e.target.files);
-    if((arr.length + files.length) > 15){ alert("Máximo 15 fotos"); e.target.value=""; return; }
     for(let file of files){
       const b64 = await new Promise(r=>{
         const fr = new FileReader();
@@ -1580,10 +1555,8 @@ function initFotosDinamico(inputId, previewId, countId, arrayName){
     e.target.value = "";
   });
 
-
-  
-function render(){
-    const arr = Array.from(e.target.files);   //window[arrayName]; // <-- CORREGIDO arrayName
+  function render(){
+    const arr = FOTOS_DB[key];
     preview.innerHTML = "";
     arr.forEach((b64, i)=>{
       const div = document.createElement("div");
@@ -1594,14 +1567,13 @@ function render(){
         <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:9px;text-align:center">Foto ${i+1}</span>
       `;
       div.querySelector("button").onclick = ()=>{
-        window[arrayName].splice(i,1); // <-- CORREGIDO arrayName
+        FOTOS_DB[key].splice(i,1);
         render();
       };
       preview.appendChild(div);
     });
     if(count) count.textContent = `${arr.length} / 15`;
   }
-  window['render_' + arrayName] = render;
 }
 
 function initTodasLasFotos() {
