@@ -1543,31 +1543,24 @@ function limpiarConteo(){
 
 function initFotosDinamico(inputId, previewId, countId, arrayName){
   let input = document.getElementById(inputId);
-  if(!input) { console.warn("No existe input", inputId); return; }
+  if(!input) return;
 
-  // si el preview no existe, lo crea (FIX de tu captura)
   let preview = document.getElementById(previewId);
   if(!preview){
     preview = document.createElement("div");
     preview.id = previewId;
-    preview.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;min-height:60px";
+    preview.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;min-height:60px;border:1px dashed #ccc;padding:5px;border-radius:8px";
     input.insertAdjacentElement("afterend", preview);
   }
   let count = document.getElementById(countId);
-
-  // evita duplicar listeners
   if(input.dataset.init === "1") return;
   input.dataset.init = "1";
 
   input.addEventListener("change", async (e)=>{
-    const files = Array.from(e.target.files);
     const arr = window[arrayName];
-
-    if((arr.length + files.length) > 15){
-      alert("Máximo 15 fotos");
-      e.target.value = "";
-      return;
-    }
+    if(!arr){ console.error("Array no existe:", arrayName); return; }
+    const files = Array.from(e.target.files);
+    if((arr.length + files.length) > 15){ alert("Máximo 15 fotos"); e.target.value=""; return; }
     for(let file of files){
       const b64 = await new Promise(r=>{
         const fr = new FileReader();
@@ -1580,28 +1573,26 @@ function initFotosDinamico(inputId, previewId, countId, arrayName){
     e.target.value = "";
   });
 
-  function render() {
-    const arr = window[arrayRef];
+function render(){
+    const arr = window[arrayName]; // <-- CORREGIDO arrayName
     preview.innerHTML = "";
-    arr.forEach((b64, i) => {
+    arr.forEach((b64, i)=>{
       const div = document.createElement("div");
-      div.style.cssText = "position:relative;width:90px;height:90px;border:1px solid #ddd;border-radius:8px;overflow:hidden;flex-shrink:0";
+      div.style.cssText = "position:relative;width:90px;height:90px;border:1px solid #ddd;border-radius:8px;overflow:hidden;flex-shrink:0;background:white";
       div.innerHTML = `
         <img src="${b64}" style="width:100%;height:100%;object-fit:cover;display:block">
-        <button type="button" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);color:white;border:0;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer">X</button>
-        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:9px;text-align:center">Foto ${i + 1}</span>
+        <button type="button" style="position:absolute;top:2px;right:2px;background:#e11d48;color:white;border:0;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer">X</button>
+        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:9px;text-align:center">Foto ${i+1}</span>
       `;
-      div.querySelector("button").onclick = () => {
-        window[arrayRef].splice(i, 1);
+      div.querySelector("button").onclick = ()=>{
+        window[arrayName].splice(i,1); // <-- CORREGIDO arrayName
         render();
       };
       preview.appendChild(div);
     });
-    if (count) count.textContent = `${arr.length} / 15`;
+    if(count) count.textContent = `${arr.length} / 15`;
   }
-
-  // expone render por si lo necesitas fuera
-  window['render_' + arrayRef] = render;
+  window['render_' + arrayName] = render;
 }
 
 function initTodasLasFotos() {
