@@ -1604,7 +1604,7 @@ function render(){
 
 function initTodasLasFotos() {
   initFotosDinamico("vtFotos", "vtFotosPreview", "vtFotosCount", "fotosVisita");
-  initFotosDinamico("vtFotos2", "vtFotos2Preview", "vtFotos2Count", "fotos2Visita"); // <--- tu nuevo
+  initFotosDinamico("vtFotos2", "vtFotos2Preview", "vtFotos2Count", "fotosVisita2"); // <--- tu nuevo
   
   initFotosDinamico("ctFotos", "ctFotosPreview", "ctFotosCount", "fotosConteo");
   initFotosDinamico("ct2Fotos", "ct2FotosPreview", "ct2FotosCount", "fotosConteo2");
