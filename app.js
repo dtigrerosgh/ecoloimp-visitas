@@ -725,7 +725,7 @@ async function generarVisitaPDF(){
   doc.text(firmaNombre || "Firma cliente", 10, y);
   y+=10;
 
-function agregarSeccionFotos(titulo, lista, fxf, fxp){
+async function agregarSeccionFotos(titulo, lista, fxf, fxp){
     if(!lista || lista.length===0) return;
     const fotosPorFila = fxf;
     const fotosPorPagina = fxp; 
