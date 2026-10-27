@@ -1556,7 +1556,7 @@ function initFotosDinamico(inputId, previewId, countId, key){
     if(count) count.textContent = `${arr.length} / 15`;
   }
 }
-
+ 
 function initTodasLasFotos() {
   initFotosDinamico("vtFotos", "vtFotosPreview", "vtFotosCount", "fotosVisita");
   initFotosDinamico("vtFotos2", "vtFotos2Preview", "vtFotos2Count", "fotosVisita2"); // <--- tu nuevo
