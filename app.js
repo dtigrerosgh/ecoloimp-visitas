@@ -1541,36 +1541,43 @@ function limpiarConteo(){
   console.log("✅ Conteo limpio");
 }
 
-function initFotosDinamico(inputId, previewId, countId, arrayRef) {
-  const input = document.getElementById(inputId);
-  const preview = document.getElementById(previewId);
-  const count = document.getElementById(countId);
-  if (!input || !preview) return;
+function initFotosDinamico(inputId, previewId, countId, arrayName){
+  let input = document.getElementById(inputId);
+  if(!input) { console.warn("No existe input", inputId); return; }
 
-  if (input.dataset.init) return;
+  // si el preview no existe, lo crea (FIX de tu captura)
+  let preview = document.getElementById(previewId);
+  if(!preview){
+    preview = document.createElement("div");
+    preview.id = previewId;
+    preview.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;min-height:60px";
+    input.insertAdjacentElement("afterend", preview);
+  }
+  let count = document.getElementById(countId);
+
+  // evita duplicar listeners
+  if(input.dataset.init === "1") return;
   input.dataset.init = "1";
 
-  input.addEventListener("change", async (e) => {
+  input.addEventListener("change", async (e)=>{
     const files = Array.from(e.target.files);
-    const arr = window[arrayRef];
+    const arr = window[arrayName];
 
-    if ((arr.length + files.length) > 15) {
+    if((arr.length + files.length) > 15){
       alert("Máximo 15 fotos");
-      input.value = "";
+      e.target.value = "";
       return;
     }
-
-    for (let file of files) {
-      const b64 = await new Promise(res => {
+    for(let file of files){
+      const b64 = await new Promise(r=>{
         const fr = new FileReader();
-        fr.onload = () => res(fr.result);
+        fr.onload = ()=>r(fr.result);
         fr.readAsDataURL(file);
       });
       arr.push(b64);
     }
-
     render();
-    input.value = "";
+    e.target.value = "";
   });
 
   function render() {
