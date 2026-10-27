@@ -6,7 +6,7 @@ const ARIAL_BASE64 = "AAEAAAAZAQAABACQRFNJR6jSM0wADRO0AAAdtEdERUYHHgrHAA0xaAAAA1
 // app.js FINAL - MENU + TXT + VISITA + CONTEO SEPARADOS
 const DB = { clientes:[], impresoras:[], tecnicos:[], bodegas:[], productos:[], inventarios:[], trabajos:[], visitaPrinter:null };
 let fotosVisita = []; // ponlo arriba con tus variables globales
-let fotosVisita2 = []; // ponlo arriba con tus variables globales
+let fotos2Visita = []; // ponlo arriba con tus variables globales
 let fotosConteo = []; // ponlo arriba con tus variables globales
 let fotosConteo2 = []; // ponlo arriba con tus variables globales
 
