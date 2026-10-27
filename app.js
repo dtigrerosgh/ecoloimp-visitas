@@ -1559,7 +1559,11 @@ function initFotosDinamico(inputId, previewId, countId, arrayName){
 
   input.addEventListener("change", async (e)=>{
     const arr = window[arrayName];
-    if(!arr){ console.error("Array no existe:", arrayName); return; }
+    if(!arr){ 
+      alert("Array no existe:", arrayName); 
+      console.error("Array no existe:", arrayName); 
+      return; 
+    }
     const files = Array.from(e.target.files);
     if((arr.length + files.length) > 15){ alert("Máximo 15 fotos"); e.target.value=""; return; }
     for(let file of files){
