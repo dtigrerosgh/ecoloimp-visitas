@@ -5,10 +5,12 @@ const ARIAL_BASE64 = "AAEAAAAZAQAABACQRFNJR6jSM0wADRO0AAAdtEdERUYHHgrHAA0xaAAAA1
 
 // app.js FINAL - MENU + TXT + VISITA + CONTEO SEPARADOS
 const DB = { clientes:[], impresoras:[], tecnicos:[], bodegas:[], productos:[], inventarios:[], trabajos:[], visitaPrinter:null };
-let fotosVisita = []; // ponlo arriba con tus variables globales
-let fotos2Visita = []; // ponlo arriba con tus variables globales
-let fotosConteo = []; // ponlo arriba con tus variables globales
-let fotosConteo2 = []; // ponlo arriba con tus variables globales
+const FOTOS_DB = {
+  fotosVisita: [],
+  fotosVisita2: [],
+  fotosConteo: [],
+  fotosConteo2: []
+};
 
 const gcorreo = "administracion@ecoloimp.com, servicio@ecoloimp.com";
 let usuariosTXT=[], firmaDibujada=false, firmaDibujadaCt=false, firmaDibujadaCt2=false;
