@@ -725,15 +725,15 @@ async function generarVisitaPDF(){
   doc.text(firmaNombre || "Firma cliente", 10, y);
   y+=10;
 
-async function agregarSeccionFotos(titulo, lista){
+async function agregarSeccionFotos(titulo, lista, fxf, fxp){
     if(!lista || lista.length===0) return;
-    const fotosPorFila = 2;
-    const fotosPorPagina = 4; 
+    const fotosPorFila = fxf;
+    const fotosPorPagina = fxp; 
     doc.addPage(); drawHeader(); let yFoto = 36;
     doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.text(`${titulo} (${lista.length} fotos)`, 10, yFoto); yFoto+=8;
     const fotoW=86, fotoH=48, gapX=8, gapY=7; let x=10, fila=0;
     for(let i=0;i<lista.length;i++){
-    if(fila>=2){ x=10; yFoto+=fotoH+gapY; fila=0; 
+    if(fila>=fotosPorFila){ x=10; yFoto+=fotoH+gapY; fila=0; 
       if(yFoto>240){ 
         doc.addPage(); drawHeader(); yFoto=36; } 
       }
