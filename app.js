@@ -725,21 +725,6 @@ async function generarVisitaPDF(){
   doc.text(firmaNombre || "Firma cliente", 10, y);
   y+=10;
 
-
-  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (4 x PAG)", FOTOS_DB.fotosVisita,2,4);
-  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1,1);
-  const texto = `© 2026 DT Soluciones Informaticas Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
-  doc.setFontSize(8);
-  const coordenadaY = altoPagina - margenInferior;
-  doc.text(texto, 105, coordenadaY, { align: "center" });
-  //doc.autoPrint();
-  //window.open(doc.output('bloburl'), '_blank');
-  return doc;  
-}
-  
-
-
-
 async function agregarSeccionFotos(titulo, lista, fxf, fxp){
     if(!lista || lista.length===0) return;
     const fotosPorFila = fxf;
@@ -756,6 +741,21 @@ async function agregarSeccionFotos(titulo, lista, fxf, fxp){
       x+=fotoW+gapX; fila++;
     }
   }
+  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (4 x PAG)", FOTOS_DB.fotosVisita,2,4);
+  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1,1);
+  
+  const texto = `© 2026 DT Soluciones Informaticas Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
+  doc.setFontSize(8);
+  const coordenadaY = altoPagina - margenInferior;
+  doc.text(texto, 105, coordenadaY, { align: "center" });
+
+  return doc;  
+}
+  
+
+
+
+
 //-----------------------------------------
 
 async function enviarCorreoVisita(){
