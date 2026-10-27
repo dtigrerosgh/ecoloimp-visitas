@@ -1541,7 +1541,7 @@ function limpiarConteo(){
 
   console.log("✅ Conteo limpio");
 }
-
+ 
 function initFotosDinamico(inputId, previewId, countId, arrayName){
   let input = document.getElementById(inputId);
   if(!input) return;
