@@ -1494,8 +1494,9 @@ function limpiarVisitaTecnica(){
 
 function limpiarConteo(){
   if(!confirm("¿Limpiar toda la pantalla de Conteo de Impresiones?\nSe borrarán contadores, fotos e impresoras.")) return;
-
-  const sec = document.getElementById("conteo");
+  fotosConteo = [];
+  window.fotosConteo = fotosConteo;
+  const sec = document.getElementById("ctFotosPreview");
   if(!sec) return;
 
   // 1. Inputs, selects, textarea
