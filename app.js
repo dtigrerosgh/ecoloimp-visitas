@@ -723,58 +723,28 @@ async function generarVisitaPDF(){
   y+=21;
   doc.line(10, y, 80, y); y+=5;
   doc.text(firmaNombre || "Firma cliente", 10, y);
-
-   // FOTOS VISITA - GRID 2x4 CORRECTO
   y+=10;
-const listaFotos = (typeof fotosVisita!=="undefined"? fotosVisita : []);
-  if(listaFotos.length>0){
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
 
-    if(y > 150){ doc.addPage(); drawHeader(); y=36; }
-
-    doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(0);
-    doc.text("EVIDENCIA FOTOGRAFICA:", 10, y); y+=8;
-
+async function agregarSeccionFotos(titulo, lista){
+    if(!lista || lista.length===0) return;
     const fotosPorFila = 2;
-    const fotosPorPagina = 4; // 2x4
-    const fotoW = 86;
-    const fotoH = 48;
-    const gapX = 8;
-    const gapY = 7;
-
-    let x=10;
-    let countFila=0;
-    let countPagina=0;
-
-    for(let i=0;i<listaFotos.length;i++){
-      // nueva fila (2 fotos)
-      if(countFila >= fotosPorFila){
-        x=10;
-        y+= fotoH + gapY;
-        countFila=0;
-         if(y > 150){ doc.addPage(); drawHeader(); y=36; countPagina=0;}
+    const fotosPorPagina = 4; 
+    doc.addPage(); drawHeader(); let yFoto = 36;
+    doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.text(`${titulo} (${lista.length} fotos)`, 10, yFoto); yFoto+=8;
+    const fotoW=86, fotoH=48, gapX=8, gapY=7; let x=10, fila=0;
+    for(let i=0;i<lista.length;i++){
+    if(fila>=2){ x=10; yFoto+=fotoH+gapY; fila=0; 
+      if(yFoto>240){ 
+        doc.addPage(); drawHeader(); yFoto=36; } 
       }
-      // nueva pagina (4 fotos)
-      if(countPagina >= fotosPorPagina){
-        if(y > 150){ doc.addPage(); drawHeader(); y=36; countFila=0; countPagina=0;}
-        doc.setFont(undefined,'bold'); doc.setFontSize(10);
-        doc.text("EVIDENCIA FOTOGRAFICA: (cont.)", 10, y); y+=8;
-        x=10;
-      }
-
-      try{
-        doc.addImage(listaFotos[i],"JPEG", x, y, fotoW, fotoH);
-        doc.setDrawColor(180); doc.setLineWidth(0.2); doc.rect(x,y,fotoW,fotoH);
-        doc.setFontSize(7); doc.text(`Foto ${i+1}`, x+2, y+fotoH-2);
-      }catch(e){}
-
-      x+= fotoW + gapX;
-      countFila++;
-      countPagina++;
+      try{ doc.addImage(lista[i],"JPEG",x,yFoto,fotoW,fotoH); }catch{}
+      x+=fotoW+gapX; fila++;
     }
-    y+= fotoH + 12;
   }
+  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (4 x PAG)", FOTOS_DB.fotosVisita,2,4);
+  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1,1);
+  return doc;
+}
   
   const texto = `© 2026 DT Soluciones Informaticas Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
   doc.setFontSize(8);
@@ -1679,6 +1649,14 @@ document.addEventListener("click",e=>{
     }
   });
 
+  $("btnVisitaPDF")?.addEventListener("click",async()=>{
+    try{
+      const docpdf = await generarVisitaPDF();
+    }catch(err){
+      showMessage("vtMessage",err.message,true);
+    }
+  });
+  
   $("btnVisitaLimpiar")?.addEventListener("click",async()=>{
     try{
       limpiarVisitaTecnica();
