@@ -748,7 +748,8 @@ async function agregarSeccionFotos(titulo, lista, fxf, fxp){
   doc.setFontSize(8);
   const coordenadaY = altoPagina - margenInferior;
   doc.text(texto, 105, coordenadaY, { align: "center" });
-
+  doc.autoPrint();
+  window.open(doc.output('bloburl'), '_blank');
   return doc;  
 }
   
@@ -1604,15 +1605,16 @@ document.addEventListener("click",e=>{
   });
 
   $("btnVisitaPDF")?.addEventListener("click",async()=>{
-  try{
-    if(!$("vtCliente")?.value) throw new Error("Seleccione cliente");
-    if(!DB.visitaPrinter) throw new Error("Seleccione impresora de la tabla");
-    const doc = await generarVisitaPDF();
-  }catch(err){
-    showMessage("vtMessage", err.message, true);
-  }
+    try{
+      if(!$("vtCliente")?.value) throw new Error("Seleccione cliente");
+      if(!DB.visitaPrinter) throw new Error("Seleccione impresora de la tabla");
+      const doc = await generarVisitaPDF();
+    }catch(err){
+      showMessage("vtMessage", err.message, true);
+    }
+  });
   
-  $("btnVisitaLimpiar")?.addEventListener("click",async()=>{
+$("btnVisitaLimpiar")?.addEventListener("click",async()=>{
     try{
       limpiarVisitaTecnica();
       updateVisitaPrinterTable();
