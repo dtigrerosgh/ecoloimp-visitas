@@ -725,13 +725,17 @@ async function generarVisitaPDF(){
   doc.text(firmaNombre || "Firma cliente", 10, y);
   y+=10;
 
-async function agregarSeccionFotos(titulo, lista, fxf, fxp){
+async function agregarSeccionFotos(titulo, lista,fxp){
     if(!lista || lista.length===0) return;
-    const fotosPorFila = fxf;
-    const fotosPorPagina = fxp; 
+    const fotosPorFila = fxp;
     doc.addPage(); drawHeader(); let yFoto = 36;
     doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.text(`${titulo} (${lista.length} fotos)`, 10, yFoto); yFoto+=8;
-    const fotoW=86, fotoH=48, gapX=8, gapY=7; let x=10, fila=0;
+    const fotosPorPagina = fotosPorFila === 1 ? 1 : 4; // 1x1 = 1 por página, 2x2 = 4 por página
+    const fotoW = fotosPorFila === 1 ? 180 : 86;
+    const fotoH = fotosPorFila === 1 ? 130 : 55;
+    const gapX = 8;
+    const gapY = 10;
+    let x=10, fila=0;
     for(let i=0;i<lista.length;i++){
     if(fila>=fotosPorFila){ x=10; yFoto+=fotoH+gapY; fila=0; 
       if(yFoto>240){ 
