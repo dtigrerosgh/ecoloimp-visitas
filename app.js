@@ -745,7 +745,7 @@ async function generarVisitaPDF(){
     
     for(let i=0; i<lista.length; i+= fotosPorPagina){
       doc.addPage(); drawHeader();
-      let yFoto = 35;
+      let yFoto = 30;
       doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(0);
       doc.text(`${titulo} Pag ${Math.floor(i/fotosPorPagina)+1}/${Math.ceil(lista.length/fotosPorPagina)} (${lista.length} fotos)`, 10, yFoto);
       yFoto+=5;
@@ -772,7 +772,7 @@ async function generarVisitaPDF(){
   agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (3 x PAG)", FOTOS_DB.fotosVisita,3);
   agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1);
   
-  const texto = `© 2026 DT Soluciones Informaticas           Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
+  const texto = `© 2026 DT Soluciones Informaticas     Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
   doc.setFontSize(8);
   const coordenadaY = altoPagina - margenInferior;
   doc.setFontSize(6); doc.setTextColor(100);
