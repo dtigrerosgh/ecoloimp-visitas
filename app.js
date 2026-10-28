@@ -725,46 +725,34 @@ async function generarVisitaPDF(){
   doc.text(firmaNombre || "Firma cliente", 10, y);
   y+=10;
  
-// ===== FUNCION CORREGIDA 3 x PAGINA =====
+// ===== FUNCION CORREGIDA 3 x PAGINA VERTICAL =====
   function agregarSeccionFotos(titulo, lista, fotosPorPagina){
     if(!lista || lista.length===0) return;
-    const fotosPorFila  === 1 ? 1 : 3;;
-    const fotoW = fotosPorPagina === 1 ? 180 : 180;
-    const fotoH = fotosPorPagina === 1 ? 150 : 75;
-    const gapX = 8;
-    const gapY = 10;
-    alert(fotoW);
-    alert(fotoH);
     
-    const pageWidth = 210;  // Ancho A4 en mm
-    const pageHeight = 297; // Alto A4 en mm
-    const margin = 15;      // Margen en mm
-
-    const imgWidth = 180;   // Ancho de la foto
-    const imgHeight = 75;   // Alto de la foto
+    const fotosPorFila = fotosPorPagina === 1 ? 1 : 1; // 1 por fila para que queden una debajo de otra
+    const fotoW = fotosPorPagina === 1 ? 180 : 180;
+    const fotoH = fotosPorPagina === 1 ? 120 : 70; // 70mm *3 = 210mm entra perfecto en A4
+    const gapY = 8;
+    
+    const pageWidth = 210;
     
     for(let i=0; i<lista.length; i+= fotosPorPagina){
       doc.addPage(); drawHeader();
-      let yFoto = 30;
+      let yFoto = 35;
       doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(0);
       doc.text(`${titulo} Pag ${Math.floor(i/fotosPorPagina)+1}/${Math.ceil(lista.length/fotosPorPagina)} (${lista.length} fotos)`, 10, yFoto);
-      yFoto+=5;
-      let x=10;
-      let enFila=0;
+      yFoto+=8;
+      
       const hasta = Math.min(i+fotosPorPagina, lista.length);
       for(let j=i; j<hasta; j++){
-        if(enFila>=fotosPorFila){ 
-          x = (pageWidth - imgWidth) / 2; // Centrado horizontal
-          yFoto+=fotoH+gapY; 
-          enFila=0; 
-        }
+        const x = (pageWidth - fotoW) / 2; // centrado horizontal
         try{
           doc.addImage(lista[j],"JPEG",x,yFoto,fotoW,fotoH);
-          doc.setDrawColor(180); doc.rect(x,yFoto,fotoW,fotoH);
-          doc.setFontSize(7); doc.text(`Foto ${j+1}`, x+2, yFoto+fotoH-2);
-        }catch{}
-        if(fotosPorFila===1) yFoto+=fotoH+gapY;
-        else{ x+=fotoW+gapX; enFila++; }
+          doc.setDrawColor(180); doc.setLineWidth(0.2); doc.rect(x,yFoto,fotoW,fotoH);
+          doc.setFontSize(7); doc.setTextColor(80);
+          doc.text(`Foto ${j+1} - ${p.serie}`, x+2, yFoto+fotoH-2);
+        }catch(e){ console.log("Error foto",j,e); }
+        yFoto+=fotoH+gapY;
       }
     }
   }
