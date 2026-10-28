@@ -761,8 +761,8 @@ async function generarVisitaPDF(){
       }
     }
   }
-  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (3 x PAG)", FOTOS_DB.fotosVisita,3);
-  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1);
+  agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (3 x PAG)", FOTOS_DB.fotosVisita,3);
+  agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1);
   
   const texto = `© 2026 DT Soluciones Informaticas Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
   doc.setFontSize(8);
