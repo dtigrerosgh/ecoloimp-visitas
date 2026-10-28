@@ -725,26 +725,42 @@ async function generarVisitaPDF(){
   doc.text(firmaNombre || "Firma cliente", 10, y);
   y+=10;
  
-async function agregarSeccionFotos(titulo, lista, fxp) {
+// ===== FUNCION CORREGIDA 3 x PAGINA =====
+  function agregarSeccionFotos(titulo, lista, fotosPorFila){
     if(!lista || lista.length===0) return;
-    const fotosPorFila = fxp;
-    doc.addPage(); drawHeader(); let yFoto = 36;
-    doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.text(`${titulo} (${lista.length} fotos)`, 10, yFoto); yFoto+=8;
-    const fotosPorPagina = fotosPorFila === 1 ? 1 : 3; // 1x1 = 1 por página, 2x2 = 4 por página
+    
+    const fotosPorPagina = fotosPorFila === 1 ? 1 : 3;
     const fotoW = fotosPorFila === 1 ? 180 : 58;
     const fotoH = fotosPorFila === 1 ? 130 : 62;
     const gapX = 8;
     const gapY = 10;
-    let x=10, fila=0;
-    for(let i=0;i<lista.length;i++){
-      if(fila>=fotosPorFila){ x=10; yFoto+=fotoH+gapY; fila=0; 
-        if(yFoto>240){ 
-          doc.addPage(); drawHeader(); yFoto=36; } 
+    
+    for(let i=0; i<lista.length; i+= fotosPorPagina){
+      doc.addPage(); drawHeader();
+      let yFoto = 36;
+      doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(0);
+      doc.text(`${titulo} Pag ${Math.floor(i/fotosPorPagina)+1}/${Math.ceil(lista.length/fotosPorPagina)} (${lista.length} fotos)`, 10, yFoto);
+      yFoto+=10;
+      
+      let x=10;
+      let enFila=0;
+      const hasta = Math.min(i+fotosPorPagina, lista.length);
+      
+      for(let j=i; j<hasta; j++){
+        if(enFila>=fotosPorFila){ x=10; yFoto+=fotoH+gapY; enFila=0; }
+        try{
+          doc.addImage(lista[j],"JPEG",x,yFoto,fotoW,fotoH);
+          doc.setDrawColor(180); doc.rect(x,yFoto,fotoW,fotoH);
+          doc.setFontSize(7); doc.text(`Foto ${j+1}`, x+2, yFoto+fotoH-2);
+        }catch{}
+        if(fotosPorFila===1){
+          yFoto+=fotoH+gapY;
+        }else{
+          x+=fotoW+gapX; enFila++;
         }
-        try{ doc.addImage(lista[i],"JPEG",x,yFoto,fotoW,fotoH); }catch{}
-        x+=fotoW+gapX; fila++;
       }
     }
+  }
   await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (3 x PAG)", FOTOS_DB.fotosVisita,3);
   await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1;
   
