@@ -762,7 +762,7 @@ async function generarVisitaPDF(){
     }
   }
   await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (3 x PAG)", FOTOS_DB.fotosVisita,3);
-  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1;
+  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1);
   
   const texto = `© 2026 DT Soluciones Informaticas Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
   doc.setFontSize(8);
@@ -1031,7 +1031,7 @@ async function generarConteoPDF(){
 
    // FOTOS CONTEO - GRID 3x3 CORRECTO
    y+=8;
-const listaFotos = (typeof fotosConteo!=="undefined"? fotosConteo : []);
+const listaFotos = FOTOS_DB.fotosConteo;
   if(listaFotos.length>0){
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
