@@ -728,9 +728,9 @@ async function generarVisitaPDF(){
 // ===== FUNCION CORREGIDA 3 x PAGINA =====
   function agregarSeccionFotos(titulo, lista, fotosPorFila){
     if(!lista || lista.length===0) return;
-    const fotosPorPagina = fotosPorFila === 1 ? 1 : 3;
+    const fotosPorPagina = fotosPorFila;
     const fotoW = fotosPorFila === 1 ? 180 : 180;
-    const fotoH = fotosPorFila === 1 ? 80 : 75;
+    const fotoH = fotosPorFila === 1 ? 150 : 75;
     const gapX = 8;
     const gapY = 10;
 
