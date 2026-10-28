@@ -725,12 +725,12 @@ async function generarVisitaPDF(){
   doc.text(firmaNombre || "Firma cliente", 10, y);
   y+=10;
 
-async function agregarSeccionFotos(titulo, lista,fxp){
+async function agregarSeccionFotos(titulo, lista, fxp) {
     if(!lista || lista.length===0) return;
     const fotosPorFila = fxp;
     doc.addPage(); drawHeader(); let yFoto = 36;
     doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.text(`${titulo} (${lista.length} fotos)`, 10, yFoto); yFoto+=8;
-    const fotosPorPagina = fotosPorFila === 1 ? 1 : 4; // 1x1 = 1 por página, 2x2 = 4 por página
+    const fotosPorPagina = fotosPorFila === 1 ? 1 : 3; // 1x1 = 1 por página, 2x2 = 4 por página
     const fotoW = fotosPorFila === 1 ? 180 : 58;
     const fotoH = fotosPorFila === 1 ? 130 : 55;
     const gapX = 8;
@@ -745,8 +745,8 @@ async function agregarSeccionFotos(titulo, lista,fxp){
       x+=fotoW+gapX; fila++;
     }
   }
-  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (4 x PAG)", FOTOS_DB.fotosVisita,2,4);
-  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1,1);
+  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (3 x PAG)", FOTOS_DB.fotosVisita,3);
+  await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1;
   
   const texto = `© 2026 DT Soluciones Informaticas Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
   doc.setFontSize(8);
