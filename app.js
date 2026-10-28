@@ -730,9 +730,16 @@ async function generarVisitaPDF(){
     if(!lista || lista.length===0) return;
     const fotosPorPagina = fotosPorFila === 1 ? 1 : 3;
     const fotoW = fotosPorFila === 1 ? 180 : 58;
-    const fotoH = fotosPorFila === 1 ? 130 : 62;
+    const fotoH = fotosPorFila === 1 ? 80 : 62;
     const gapX = 8;
     const gapY = 10;
+
+    const pageWidth = 210;  // Ancho A4 en mm
+    const pageHeight = 297; // Alto A4 en mm
+    const margin = 15;      // Margen en mm
+
+    const imgWidth = 180;   // Ancho de la foto
+    const imgHeight = 80;   // Alto de la foto
     
     for(let i=0; i<lista.length; i+= fotosPorPagina){
       doc.addPage(); drawHeader();
@@ -744,7 +751,11 @@ async function generarVisitaPDF(){
       let enFila=0;
       const hasta = Math.min(i+fotosPorPagina, lista.length);
       for(let j=i; j<hasta; j++){
-        if(enFila>=fotosPorFila){ x=10; yFoto+=fotoH+gapY; enFila=0; }
+        if(enFila>=fotosPorFila){ 
+          x = (pageWidth - imgWidth) / 2; // Centrado horizontal
+          yFoto+=fotoH+gapY; 
+          enFila=0; 
+        }
         try{
           doc.addImage(lista[j],"JPEG",x,yFoto,fotoW,fotoH);
           doc.setDrawColor(180); doc.rect(x,yFoto,fotoW,fotoH);
