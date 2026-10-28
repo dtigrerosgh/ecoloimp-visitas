@@ -728,7 +728,6 @@ async function generarVisitaPDF(){
 // ===== FUNCION CORREGIDA 3 x PAGINA =====
   function agregarSeccionFotos(titulo, lista, fotosPorFila){
     if(!lista || lista.length===0) return;
-    
     const fotosPorPagina = fotosPorFila === 1 ? 1 : 3;
     const fotoW = fotosPorFila === 1 ? 180 : 58;
     const fotoH = fotosPorFila === 1 ? 130 : 62;
@@ -741,11 +740,9 @@ async function generarVisitaPDF(){
       doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(0);
       doc.text(`${titulo} Pag ${Math.floor(i/fotosPorPagina)+1}/${Math.ceil(lista.length/fotosPorPagina)} (${lista.length} fotos)`, 10, yFoto);
       yFoto+=10;
-      
       let x=10;
       let enFila=0;
       const hasta = Math.min(i+fotosPorPagina, lista.length);
-      
       for(let j=i; j<hasta; j++){
         if(enFila>=fotosPorFila){ x=10; yFoto+=fotoH+gapY; enFila=0; }
         try{
@@ -753,21 +750,21 @@ async function generarVisitaPDF(){
           doc.setDrawColor(180); doc.rect(x,yFoto,fotoW,fotoH);
           doc.setFontSize(7); doc.text(`Foto ${j+1}`, x+2, yFoto+fotoH-2);
         }catch{}
-        if(fotosPorFila===1){
-          yFoto+=fotoH+gapY;
-        }else{
-          x+=fotoW+gapX; enFila++;
-        }
+        if(fotosPorFila===1) yFoto+=fotoH+gapY;
+        else{ x+=fotoW+gapX; enFila++; }
       }
     }
   }
+  
   agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (3 x PAG)", FOTOS_DB.fotosVisita,3);
   agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1);
   
   const texto = `© 2026 DT Soluciones Informaticas Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
   doc.setFontSize(8);
   const coordenadaY = altoPagina - margenInferior;
+  doc.setFontSize(6); doc.setTextColor(100);
   doc.text(texto, 105, coordenadaY, { align: "center" });
+  
   doc.autoPrint();
   window.open(doc.output('bloburl'), '_blank');
   return doc;  
