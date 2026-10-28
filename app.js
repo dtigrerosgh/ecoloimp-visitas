@@ -737,14 +737,14 @@ async function agregarSeccionFotos(titulo, lista, fxp) {
     const gapY = 12;
     let x=10, fila=0;
     for(let i=0;i<lista.length;i++){
-    if(fila>=fotosPorFila){ x=10; yFoto+=fotoH+gapY; fila=0; 
-      if(yFoto>240){ 
-        doc.addPage(); drawHeader(); yFoto=36; } 
+      if(fila>=fotosPorFila){ x=10; yFoto+=fotoH+gapY; fila=0; 
+        if(yFoto>240){ 
+          doc.addPage(); drawHeader(); yFoto=36; } 
+        }
+        try{ doc.addImage(lista[i],"JPEG",x,yFoto,fotoW,fotoH); }catch{}
+        x+=fotoW+gapX; fila++;
       }
-      try{ doc.addImage(lista[i],"JPEG",x,yFoto,fotoW,fotoH); }catch{}
-      x+=fotoW+gapX; fila++;
     }
-  }
   await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (3 x PAG)", FOTOS_DB.fotosVisita,3);
   await agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1;
   
