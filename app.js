@@ -726,14 +726,15 @@ async function generarVisitaPDF(){
   y+=10;
  
 // ===== FUNCION CORREGIDA 3 x PAGINA =====
-  function agregarSeccionFotos(titulo, lista, fotosPorFila){
+  function agregarSeccionFotos(titulo, lista, fotosPorPagina){
     if(!lista || lista.length===0) return;
-    const fotosPorPagina = fotosPorFila;
-    const fotoW = fotosPorFila === 1 ? 180 : 180;
-    const fotoH = fotosPorFila === 1 ? 150 : 75;
+    const fotosPorFila = 1;
+    const fotoW = fotosPorPagina === 1 ? 180 : 180;
+    const fotoH = fotosPorPagina === 1 ? 150 : 75;
     const gapX = 8;
     const gapY = 10;
-
+    alert(fotoW);
+    alert(fotoH);
     const pageWidth = 210;  // Ancho A4 en mm
     const pageHeight = 297; // Alto A4 en mm
     const margin = 15;      // Margen en mm
