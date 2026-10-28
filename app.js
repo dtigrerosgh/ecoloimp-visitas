@@ -731,10 +731,10 @@ async function agregarSeccionFotos(titulo, lista,fxp){
     doc.addPage(); drawHeader(); let yFoto = 36;
     doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.text(`${titulo} (${lista.length} fotos)`, 10, yFoto); yFoto+=8;
     const fotosPorPagina = fotosPorFila === 1 ? 1 : 4; // 1x1 = 1 por página, 2x2 = 4 por página
-    const fotoW = fotosPorFila === 1 ? 180 : 86;
+    const fotoW = fotosPorFila === 1 ? 180 : 58;
     const fotoH = fotosPorFila === 1 ? 130 : 55;
     const gapX = 8;
-    const gapY = 10;
+    const gapY = 12;
     let x=10, fila=0;
     for(let i=0;i<lista.length;i++){
     if(fila>=fotosPorFila){ x=10; yFoto+=fotoH+gapY; fila=0; 
