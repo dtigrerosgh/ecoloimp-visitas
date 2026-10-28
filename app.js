@@ -728,13 +728,14 @@ async function generarVisitaPDF(){
 // ===== FUNCION CORREGIDA 3 x PAGINA =====
   function agregarSeccionFotos(titulo, lista, fotosPorPagina){
     if(!lista || lista.length===0) return;
-    const fotosPorFila = 1;
+    const fotosPorFila  === 1 ? 1 : 3;;
     const fotoW = fotosPorPagina === 1 ? 180 : 180;
     const fotoH = fotosPorPagina === 1 ? 150 : 75;
     const gapX = 8;
     const gapY = 10;
     alert(fotoW);
     alert(fotoH);
+    
     const pageWidth = 210;  // Ancho A4 en mm
     const pageHeight = 297; // Alto A4 en mm
     const margin = 15;      // Margen en mm
@@ -744,7 +745,7 @@ async function generarVisitaPDF(){
     
     for(let i=0; i<lista.length; i+= fotosPorPagina){
       doc.addPage(); drawHeader();
-      let yFoto = 36;
+      let yFoto = 30;
       doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(0);
       doc.text(`${titulo} Pag ${Math.floor(i/fotosPorPagina)+1}/${Math.ceil(lista.length/fotosPorPagina)} (${lista.length} fotos)`, 10, yFoto);
       yFoto+=10;
