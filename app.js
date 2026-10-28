@@ -730,7 +730,7 @@ async function generarVisitaPDF(){
     if(!lista || lista.length===0) return;
     const fotosPorPagina = fotosPorFila === 1 ? 1 : 3;
     const fotoW = fotosPorFila === 1 ? 180 : 180;
-    const fotoH = fotosPorFila === 1 ? 80 : 80;
+    const fotoH = fotosPorFila === 1 ? 80 : 75;
     const gapX = 8;
     const gapY = 10;
 
@@ -739,7 +739,7 @@ async function generarVisitaPDF(){
     const margin = 15;      // Margen en mm
 
     const imgWidth = 180;   // Ancho de la foto
-    const imgHeight = 80;   // Alto de la foto
+    const imgHeight = 75;   // Alto de la foto
     
     for(let i=0; i<lista.length; i+= fotosPorPagina){
       doc.addPage(); drawHeader();
