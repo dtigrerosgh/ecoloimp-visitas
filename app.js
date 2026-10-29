@@ -738,7 +738,7 @@ async function generarVisitaPDF(){
     
     for(let i=0; i<lista.length; i+= fotosPorPagina){
       doc.addPage(); drawHeader();
-      let yFoto = 35;
+      let yFoto = 33;
       doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(0);
       doc.text(`${titulo} Pag ${Math.floor(i/fotosPorPagina)+1}/${Math.ceil(lista.length/fotosPorPagina)} (${lista.length} fotos)`, 10, yFoto);
       yFoto+=8;
