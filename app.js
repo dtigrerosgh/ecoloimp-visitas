@@ -36,6 +36,12 @@ const parseProductos=t=>parse(t).filter(r=>r.length>=2).map(r=>{
 });
 const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],codigo:r[1],alterno:r[2],nombre:r[3]||"",cantidad:Number((r[4]||"0").replace(",","."))||0}));
 
+function getUsuarioActual(){
+  let u = localStorage.getItem('ecoloimp_session') || 'Invitado';
+  // limpia caracteres raros para usar como key
+  return u.toString().trim().replace(/[^a-zA-Z0-9]/g,"_").toLowerCase();
+}
+
 async function loadFile(type,file,parser){
   const url = "data/"+file+"?v="+Date.now();
   try{
