@@ -231,6 +231,20 @@
           <textarea id="vtDetalle" rows="10" placeholder="Describe el trabajo realizado, hallazgos, repuestos, recomendaciones, etc."></textarea>
         </div>
 
+      <div class="form-grid">
+        <div class="card">  
+          <label>📷 Fotos visita 3 x pag</label> <small id="vtFotosCount">0 / 15</small>
+          <input type="file" id="vtFotos" accept="image/*" multiple>
+          <div id="vtFotosPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        </div>
+        <br>
+        <div class="card">
+          <label>📷 Fotos visita 1 x pag</label> <small id="vtFotos2Count">0 / 15</small>
+          <input type="file" id="vtFotos2" accept="image/*" multiple>
+          <div id="vtFotos2Preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        </div>
+      </div>
+     <div class="form-grid visit-data-grid">
         <div class="field span-4">
             <label>Firma del cliente / conformidad</label>
             <div class="signature-wrap">
@@ -245,21 +259,8 @@
           <label for="vtNombreFirma">Nombre de quien firma</label>
           <input id="vtNombreFirma" type="text" placeholder="Ej. Dennis Tigreros - Jefe Sistemas">
         </div>        
-      </div>
-      <div class="form-grid">
-        <div class="card">  
-          <label>📷 Fotos visita 3 x pag</label> <small id="vtFotosCount">0 / 15</small>
-          <input type="file" id="vtFotos" accept="image/*" multiple>
-          <div id="vtFotosPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
-        </div>
-        <br>
-        <div class="card">
-          <label>📷 Fotos visita 1 x pag</label> <small id="vtFotos2Count">0 / 15</small>
-          <input type="file" id="vtFotos2" accept="image/*" multiple>
-          <div id="vtFotos2Preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
-        </div>
-      </div>
-      
+     </div>
+       
       <div class="actions">
         <button class="btn primary" id="btnVisitaGuardar">Guardar TXT y enviar por Gmail</button>
         <button class="btn secondary" id="btnVisitaPDF">PDF</button>
