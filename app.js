@@ -42,6 +42,10 @@ function getUsuarioActual(){
   return u.toString().trim().replace(/[^a-zA-Z0-9]/g,"_").toLowerCase();
 }
 
+// AHORA - POR USUARIO:
+function keyVisita(){ return `ecoloimp_visita_${getUsuarioActual()}`; }
+function keyConteo2(){ return `ecoloimp_conteo2_${getUsuarioActual()}`; }
+
 async function loadFile(type,file,parser){
   const url = "data/"+file+"?v="+Date.now();
   try{
@@ -467,6 +471,83 @@ function abrirGmailUniversal(to, cc, subject, body){
 }
 
 async function getLogoBase64(){try{const r=await fetch("assets/logo.jpg?v="+Date.now(),{cache:"no-store"});const b=await r.blob();return await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(b);});}catch{return null;}}
+
+function guardarVisita(){
+  const c = selectedClientVisita();
+  const p = DB.visitaPrinter;
+  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
+  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
+  if(!c) return alert("Seleccione cliente");
+  if(!p) return alert("Seleccione impresora");
+
+  const visita = {
+    id: Date.now(),
+    usuario: getUsuarioActual(), // <--- guarda quien la hizo
+    fecha: $("vtFecha").value,
+    hora: $("vtHora").value,
+    cliente: c.codigo,
+    clienteNombre: c.nombre,
+    codigo: p.codigo,
+    modelo: p.modelo,
+    serie: p.serie,
+    sede: p.sede,
+    ubicacion: p.ubicacion,
+    ip: p.ip,
+    bodega: p.bodega,
+    contador: $("vtContador").value,
+    tecnico: t.codigo,
+    tecnicoNombre: t.nombre,
+    trabajo: tr ? tr.codigo : "",
+    trabajoNombre: tr ? tr.nombre : "",
+    tipo: $("vtTipo").value,
+    estado: $("vtEstado").value,
+    email: $("vtEmail").value,
+    detalle: $("vtDetalle").value,
+    nombreFirma: $("vtNombreFirma").value,
+    fotos: [...FOTOS_DB.fotosVisita],
+    fotos2: [...FOTOS_DB.fotosVisita2]
+  };
+
+  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
+  const idx = hist.findIndex(h=>h.serie===p.serie && h.fecha===visita.fecha);
+  if(idx>=0){
+    if(!confirm(`Ya existe ${p.serie} el ${visita.fecha}. ¿Actualizar?`)) return;
+    hist[idx]=visita;
+  }else{
+    hist.push(visita);
+  }
+  localStorage.setItem(keyVisita(), JSON.stringify(hist));
+  alert(`✅ [${getUsuarioActual()}] Guardada ${p.serie} - Total: ${hist.length}`);
+  FOTOS_DB.fotosVisita=[]; FOTOS_DB.fotosVisita2=[];
+  if($("vtFotosPreview")) $("vtFotosPreview").innerHTML="";
+  if($("vtFotos2Preview")) $("vtFotos2Preview").innerHTML="";
+  actualizarVisitaHistorialTabla();
+}
+
+function actualizarVisitaHistorialTabla(){
+  const hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
+  if($("vtHistorialCount")) $("vtHistorialCount").innerHTML = `Usuario: <b>${getUsuarioActual()}</b> - Guardadas: <b>${hist.length}</b>`;
+  if($("vtHistorialBody")){
+    $("vtHistorialBody").innerHTML = hist.length? hist.map((h,i)=>`
+      <tr><td>${i+1}</td><td>${h.fecha}</td><td><b>${h.serie}</b></td><td>${h.sede}</td><td>${h.contador}</td><td>${h.fotos.length+h.fotos2.length} fotos</td><td><button class="btn ghost" onclick="borrarVisitaHistorial(${h.id})">X</button></td></tr>
+    `).join("") : `<tr><td colspan="7">Sin visitas de ${getUsuarioActual()}</td></tr>`;
+  }
+}
+
+function borrarVisitaHistorial(id){
+  if(!confirm("¿Borrar esta visita?")) return;
+  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
+  hist = hist.filter(h=>h.id!==id);
+  localStorage.setItem(keyVisita(), JSON.stringify(hist));
+  actualizarVisitaHistorialTabla();
+}
+
+function limpiarHistorialVisita(){
+  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
+  if(!confirm(`¿Borrar TODAS las ${hist.length} visitas de ${getUsuarioActual()}?`)) return;
+  localStorage.removeItem(keyVisita());
+  actualizarVisitaHistorialTabla();
+}
 
 function generarVisitaTXT(){
   const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);
@@ -1813,6 +1894,9 @@ async function init(){
   await loadFile("productos","productos.txt",parseProductos);
   await loadFile("inventarios","inventarios.txt",parseInventarios);
   await loadFile("trabajos","trabajos.txt",parseTrabajos);
+
+  actualizarVisitaHistorialTabla(); // muestra solo las de este usuario
+  console.log("Usuario actual:", getUsuarioActual(), "Key:", keyVisita());  
   
   refreshStats();
   filterClientes();
