@@ -590,7 +590,14 @@ function setupEvents(){
   
   $("ct2ClienteFilter")?.addEventListener("input",filterClientes);
   
-  $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
+  $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;
+  if(typeof updateVisitaPrinterTable === "function"){
+  updateVisitaPrinterTable();
+}else{
+  console.log("Esperando pdfs.js...");
+  setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateVisitaPrinterTable(); }, 500);
+}
+                                                });
 
   
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
