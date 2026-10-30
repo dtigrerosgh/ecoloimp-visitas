@@ -334,15 +334,6 @@ function updateInvPrinterTable(){
   }
 }
 
-function selectVisitaPrinter(serie){
-  const p = DB.impresoras.find(x=>x.serie===serie);
-  if(!p) return;
-  DB.visitaPrinter = p;
-  updateVisitaPrinterTable();
-  // scroll para que vea que quedó seleccionado
-  const row = document.querySelector(`#vtPrinterBody tr.selected`);
-  if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
-}
   
 function activateSection(id){
   document.querySelectorAll(".page-section").forEach(s=>{
