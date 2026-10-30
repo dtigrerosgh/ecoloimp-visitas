@@ -590,12 +590,7 @@ function setupEvents(){
   
   $("ct2ClienteFilter")?.addEventListener("input",filterClientes);
   
-  //$("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
-
-  $("vtCliente")?.addEventListener("change", ()=>{
-    console.log("Cliente visita cambiado a:", $("vtCliente").value);
-    updateVisitaPrinterTable();
-  });
+  $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
 
   
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
