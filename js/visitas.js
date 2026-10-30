@@ -1,15 +1,14 @@
 function selectVisitaPrinter(serie){
-  const p = DB.impresoras.find(x=>x.serie===serie);
+  const p = DB.impresoras.find(x=> (x.serie||"").trim() === (serie||"").trim());
   if(!p) return;
   DB.visitaPrinter = p;
-
-  if(typeof updateVisitaPrinterTable === "function"){
-    updateVisitaPrinterTable();
-    }else{
-    console.log("Esperando visitas.js...");
-    setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateVisitaPrinterTable(); }, 500);
-    }
-  };
+  updateVisitaPrinterTable();
+  // scroll suave
+  setTimeout(()=>{
+    const row = document.querySelector(`#vtPrinterBody tr.selected`);
+    if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
+  }, 50);
+}
   
   // scroll para que vea que quedó seleccionado
   const row = document.querySelector(`#vtPrinterBody tr.selected`);
