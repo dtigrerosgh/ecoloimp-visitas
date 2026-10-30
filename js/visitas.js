@@ -14,10 +14,6 @@ function selectVisitaPrinter(serie){
   }, 50);
 }
   
-  // scroll para que vea que quedó seleccionado
-  const row = document.querySelector(`#vtPrinterBody tr.selected`);
-  if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
-}
  
 function updateVisitaPrinterTable(){
   const client = ($("vtCliente")?.value||"").trim();
