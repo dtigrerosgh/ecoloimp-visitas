@@ -648,7 +648,7 @@ document.addEventListener("click",e=>{
       console.log("Esperando visitas.js...");
       setTimeout(()=>{ if(typeof selectVisitaPrinter();==="function") selectVisitaPrinter(b.dataset.selectPrinter);; }, 500);
     }
-  });  
+  });   
 
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-select-printer-c2]");
