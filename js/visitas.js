@@ -3,6 +3,15 @@ function selectVisitaPrinter(serie){
   if(!p) return;
   DB.visitaPrinter = p;
   updateVisitaPrinterTable();
+
+  if(typeof updateVisitaPrinterTable === "function"){
+    updateVisitaPrinterTable();
+    }else{
+    console.log("Esperando visitas.js...");
+    setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateVisitaPrinterTable(); }, 500);
+    }
+  };
+  
   // scroll para que vea que quedó seleccionado
   const row = document.querySelector(`#vtPrinterBody tr.selected`);
   if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
