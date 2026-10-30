@@ -2031,6 +2031,7 @@ async function init(){
   await loadFile("trabajos","trabajos.txt",parseTrabajos);
 
   actualizarVisitaHistorialTabla(); // muestra solo las de este usuario
+  keyVisita();
   console.log("Usuario actual:", getUsuarioActual(), "Key:", keyVisita());  
   
   refreshStats();
