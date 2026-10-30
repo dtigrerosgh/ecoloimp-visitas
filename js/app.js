@@ -1738,9 +1738,7 @@ async function init(){
   if($("pgCorreo"))$("pgCorreo").value=gcorreo;
   if($("year"))$("year").textContent=new Date().getFullYear();
   setupNavigation();
-  setupEvents();
-  initFirma();
-  initTodasLasFotos();  
+
   const ahora=new Date();
   if($("vtFecha"))$("vtFecha").value=ahora.toISOString().slice(0,10);
   if($("vtHora"))$("vtHora").value=ahora.toTimeString().slice(0,5);
@@ -1757,8 +1755,7 @@ async function init(){
   await loadFile("inventarios","inventarios.txt",parseInventarios);
   await loadFile("trabajos","trabajos.txt",parseTrabajos);
 
-  actualizarVisitaHistorialTabla(); // muestra solo las de este usuario
-  keyVisita();
+
   console.log("Usuario actual:", getUsuarioActual(), "Key:", keyVisita());  
   
   refreshStats();
@@ -1766,10 +1763,19 @@ async function init(){
   fillTecnicos();
   fillTrabajos();
   fillProductos();
+  
   updateVisitaPrinterTable();
   updateConteoPrinterTable();
   updateConteo2PrinterTable();
   updateInvPrinterTable();
+
+  actualizarVisitaHistorialTabla(); // muestra solo las de este usuario
+  keyVisita();
+
+  setupEvents();
+  initFirma();
+  initTodasLasFotos();  
+  
   activateSection((location.hash||"#bienvenido").slice(1));
   console.log("MENU OK - TXT OK - VISITA OK - CONTEO OK");
 }
