@@ -594,15 +594,30 @@ function setupEvents(){
   if(typeof updateVisitaPrinterTable === "function"){
   updateVisitaPrinterTable();
 }else{
-  console.log("Esperando pdfs.js...");
+  console.log("Esperando visitas.js...");
   setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateVisitaPrinterTable(); }, 500);
 }
-                                                });
+  });
 
   
-  $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
+  $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;
+    if(typeof updateConteoPrinterTable === "function"){
+  updateConteoPrinterTable();
+}else{
+  console.log("Esperando conteos.js...");
+  setTimeout(()=>{ if(typeof updateConteoPrinterTable==="function") updateConteoPrinterTable(); }, 500);
+}
+  });
   
-  $("ct2Cliente")?.addEventListener("change",()=>{DB.conteo2Printer=null;updateConteo2PrinterTable();});
+  $("ct2Cliente")?.addEventListener("change",()=>{DB.conteo2Printer=null;
+    if(typeof updateConteo2PrinterTable === "function"){
+  updateConteo2PrinterTable();
+}else{
+  console.log("Esperando conteos.js...");
+  setTimeout(()=>{ if(typeof updateConteo2PrinterTable==="function") updateConteo2PrinterTable(); }, 500);
+}
+  });
+  
   //$("ivCliente")?.addEventListener("change",()=>{DB.invPrinter=null;updateInvPrinterTable();});//
 // INVENTARIO: Cliente -> Bodegas -> Saldos
 $("ivCliente")?.addEventListener("change",()=>{
