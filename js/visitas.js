@@ -9,12 +9,11 @@ function selectVisitaPrinter(serie){
 }
  
 function updateVisitaPrinterTable(){
-  const client = $("vtCliente")?.value;
+  const client = ($("vtCliente")?.value||"").trim();
   const q = norm($("vtPrinterFilter")?.value||"");
   const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
   const total = DB.impresoras.filter(p=>p.cliente===client).length;
   const selectedSerie = DB.visitaPrinter?.serie || "";
-  alert(client);
   
   if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length} ${selectedSerie?`- Seleccionada: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
   
