@@ -641,8 +641,15 @@ $("ivProductoFilter")?.addEventListener("input",()=>updateInvPrinterTable());
 
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-select-printer]");
-  if(b) selectVisitaPrinter(b.dataset.selectPrinter);
-});
+  if(b) 
+    if(typeof selectVisitaPrinter === "function"){
+      selectVisitaPrinter(b.dataset.selectPrinter);
+    }else{
+      console.log("Esperando visitas.js...");
+      setTimeout(()=>{ if(typeof selectVisitaPrinter();==="function") selectVisitaPrinter(b.dataset.selectPrinter);; }, 500);
+    }
+  });  
+
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-select-printer-c2]");
   if(b) selectConteo2Printer(b.dataset.selectPrinterC2);
