@@ -849,6 +849,13 @@ async function init(){
   fillProductos();
   
   //updateVisitaPrinterTable();
+  if(typeof updateVisitaPrinterTable === "function"){
+  updateVisitaPrinterTable();
+}else{
+  console.log("Esperando pdfs.js...");
+  setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateVisitaPrinterTable(); }, 500);
+}
+  
   updateConteoPrinterTable();
   updateConteo2PrinterTable();
   updateInvPrinterTable();
