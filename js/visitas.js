@@ -2,7 +2,6 @@ function selectVisitaPrinter(serie){
   const p = DB.impresoras.find(x=>x.serie===serie);
   if(!p) return;
   DB.visitaPrinter = p;
-  updateVisitaPrinterTable();
 
   if(typeof updateVisitaPrinterTable === "function"){
     updateVisitaPrinterTable();
