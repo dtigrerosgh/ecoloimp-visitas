@@ -848,7 +848,7 @@ async function init(){
   fillTrabajos();
   fillProductos();
   
-  updateVisitaPrinterTable();
+  //updateVisitaPrinterTable();
   updateConteoPrinterTable();
   updateConteo2PrinterTable();
   updateInvPrinterTable();
