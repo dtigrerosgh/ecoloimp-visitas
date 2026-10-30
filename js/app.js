@@ -884,8 +884,12 @@ async function init(){
   setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateInvPrinterTable(); }, 500);
 } 
 
-
-  actualizarVisitaHistorialTabla(); // muestra solo las de este usuario
+      if(typeof actualizarVisitaHistorialTabla === "function"){
+  actualizarVisitaHistorialTabla();
+}else{
+  console.log("Esperando inv.js...");
+  setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") actualizarVisitaHistorialTabla(); }, 500);
+} 
   keyVisita();
 
   setupEvents();
