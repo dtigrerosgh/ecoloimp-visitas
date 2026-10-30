@@ -859,13 +859,31 @@ async function init(){
   if(typeof updateVisitaPrinterTable === "function"){
   updateVisitaPrinterTable();
 }else{
-  console.log("Esperando pdfs.js...");
+  console.log("Esperando visitas.js...");
   setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateVisitaPrinterTable(); }, 500);
 }
   
+  if(typeof updateConteoPrinterTable === "function"){
   updateConteoPrinterTable();
+}else{
+  console.log("Esperando conteos.js...");
+  setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateConteoPrinterTable(); }, 500);
+}  
+
+    if(typeof updateConteo2PrinterTable === "function"){
   updateConteo2PrinterTable();
+}else{
+  console.log("Esperando conteos.js...");
+  setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateConteo2PrinterTable(); }, 500);
+} 
+
+      if(typeof updateInvPrinterTable === "function"){
   updateInvPrinterTable();
+}else{
+  console.log("Esperando conteos.js...");
+  setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateInvPrinterTable(); }, 500);
+} 
+
 
   actualizarVisitaHistorialTabla(); // muestra solo las de este usuario
   keyVisita();
