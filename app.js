@@ -39,7 +39,7 @@ const parseInventarios=t=>parse(t).filter(r=>r.length>=3).map(r=>({bodega:r[0],c
 function getUsuarioActual(){
   let u = localStorage.getItem('ecoloimp_session') || 'Invitado';
   // limpia caracteres raros para usar como key
-  return u.toString().trim().replace(/[^a-zA-Z0-9]/g,"_").toLowerCase();
+  return u.toString().trim().replace(/[^a-zA-Z0-9]/g,"_").toUpperCase();
 }
 
 // AHORA - POR USUARIO:
