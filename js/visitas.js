@@ -132,7 +132,6 @@ function limpiarHistorialVisita(){
 }
 
 async function generarVisitaHistorialPDF(){
-  /7const hist = JSON.parse(localStorage.getItem("ecoloimp_visita")||"[]");
   let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
   if(hist.length===0) throw new Error("No hay visitas guardadas");
   
