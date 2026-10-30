@@ -550,7 +550,8 @@ function limpiarHistorialVisita(){
 }
 
 async function generarVisitaHistorialPDF(){
-  const hist = JSON.parse(localStorage.getItem("ecoloimp_visita")||"[]");
+  /7const hist = JSON.parse(localStorage.getItem("ecoloimp_visita")||"[]");
+  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
   if(hist.length===0) throw new Error("No hay visitas guardadas");
   
   const c = DB.clientes.find(x=>x.codigo===hist[0].cliente) || {codigo:hist[0].cliente, nombre:hist[0].clienteNombre};
