@@ -1,4 +1,6 @@
 
+  
+
 function generarConteoTXT(){
   const c = DB.clientes.find(x=>x.codigo===$("ctCliente")?.value);
   const t = DB.tecnicos.find(x=>x.codigo===$("ctTecnico")?.value) || {codigo:"", nombre:""};
