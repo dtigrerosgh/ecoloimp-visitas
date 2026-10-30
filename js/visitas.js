@@ -1,4 +1,48 @@
+function updateVisitaPrinterTable(){
+  const client = $("vtCliente")?.value;
+  const q = norm($("vtPrinterFilter")?.value||"");
+  const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
+  const total = DB.impresoras.filter(p=>p.cliente===client).length;
+  const selectedSerie = DB.visitaPrinter?.serie || "";
 
+  if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length} ${selectedSerie?`- Seleccionada: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
+  
+  if($("vtPrinterBody")){
+    $("vtPrinterBody").innerHTML = rows.length ? rows.map(p=>{
+      const isSel = p.serie === selectedSerie;
+      return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
+        <td><button class="btn primary" data-select-printer="${esc(p.serie)}">${isSel?'✓ Seleccionada':'Seleccionar'}</button></td>
+        <td data-label="Código">${p.codigo||''}</td>
+        <td data-label="Modelo">${p.modelo||''}</td>
+        <td data-label="Serie">${p.serie}</td>
+        <td data-label="Sucursal">${p.sede||''}</td>
+        <td data-label="Area"><span>${p.ubicacion||''}</span></td>
+        <td data-label="Ubic">${p.ip||''}</td>
+        <td data-label="Bodega">${p.bodega||''}</td>
+      </tr>`;
+    }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
+  }
+
+  const p = DB.visitaPrinter;
+  const c = DB.clientes.find(x=>x.codigo===client);
+  if($("vtPrinterDetails")){
+    if(p){
+      $("vtPrinterDetails").innerHTML = `
+        <div><small>Código</small><strong>${esc(p.codigo)}</strong></div>
+        <div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div>
+        <div><small>Serie</small><strong>${esc(p.serie)}</strong></div>
+        <div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div>
+        <div><small>Área</small><strong>${esc(p.ubicacion)}</strong></div>
+        <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
+        <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
+        <div><small>Cliente</small><strong>${c ? esc(c.codigo+" · "+c.nombre) : "-"} (${total} imp.)</strong></div>`;
+    } else if(c){
+      $("vtPrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - Tiene ${total} impresora(s)</strong></div>`;
+    } else {
+      $("vtPrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
+    }
+  }
+}
 
 function guardarVisita(){
   const c = selectedClientVisita();
