@@ -1464,7 +1464,14 @@ function setupEvents(){
   
   $("ct2ClienteFilter")?.addEventListener("input",filterClientes);
   
-  $("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
+  //$("vtCliente")?.addEventListener("change",()=>{DB.visitaPrinter=null;updateVisitaPrinterTable();});
+
+  $("vtCliente")?.addEventListener("change", ()=>{
+    console.log("Cliente visita cambiado a:", $("vtCliente").value);
+    updateVisitaPrinterTable();
+  });
+
+  
   $("ctCliente")?.addEventListener("change",()=>{DB.conteoPrinter=null;updateConteoPrinterTable();});
   
   $("ct2Cliente")?.addEventListener("change",()=>{DB.conteo2Printer=null;updateConteo2PrinterTable();});
