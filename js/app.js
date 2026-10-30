@@ -880,7 +880,7 @@ async function init(){
       if(typeof updateInvPrinterTable === "function"){
   updateInvPrinterTable();
 }else{
-  console.log("Esperando conteos.js...");
+  console.log("Esperando inv.js...");
   setTimeout(()=>{ if(typeof updateVisitaPrinterTable==="function") updateInvPrinterTable(); }, 500);
 } 
 
