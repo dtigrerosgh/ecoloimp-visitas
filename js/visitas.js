@@ -7,7 +7,7 @@ function selectVisitaPrinter(serie){
   const row = document.querySelector(`#vtPrinterBody tr.selected`);
   if(row) row.scrollIntoView({block:"nearest", behavior:"smooth"});
 }
-
+ 
 function updateVisitaPrinterTable(){
   const client = $("vtCliente")?.value;
   const q = norm($("vtPrinterFilter")?.value||"");
