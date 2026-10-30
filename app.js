@@ -1731,7 +1731,18 @@ $("btnVisitaLimpiar")?.addEventListener("click",async()=>{
       showMessage("vtMessage",err.message,true);
     }
   });
-   
+
+$("btnVisitaAgregar")?.addEventListener("click", ()=>{ guardarVisita(); });
+$("btnVisitaHistorialPDF")?.addEventListener("click", async()=>{
+  try{ await generarVisitaHistorialPDF(); }catch(e){ showMessage("vtMessage",e.message,true); }
+});
+$("btnVisitaHistorialEnviar")?.addEventListener("click", async()=>{
+  try{ await enviarCorreoVisitaHistorial(); }catch(e){ showMessage("vtMessage",e.message,true); }
+});
+$("btnVisitaHistorialLimpiar")?.addEventListener("click", ()=>{ limpiarHistorialVisita(); });
+
+
+  
   $("btnConteoGuardar")?.addEventListener("click",async()=>{
     try{
       const email=$("ctEmail")?.value.trim();
