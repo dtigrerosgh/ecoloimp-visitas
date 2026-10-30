@@ -282,7 +282,7 @@ function setupNavigation(){
     btn.textContent = nav.classList.contains("open") ? "✕" : "☰";
   };
 }
-function selectedClientVisita(){ return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); }
+
 function selectedClientConteo(){ return DB.clientes.find(c=>c.codigo===$("ctCliente")?.value); }
 function selectedClientConteo2(){ return DB.clientes.find(c=>c.codigo===$("ct2Cliente")?.value); }
 function selectedClientInv(){ return DB.clientes.find(c=>c.codigo===$("ivCliente")?.value); }
