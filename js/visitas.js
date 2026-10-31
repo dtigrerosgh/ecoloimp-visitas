@@ -160,6 +160,24 @@ async function generarVisitaHistorialPDF(){
     y=30;
   }
 
+  function drawTable(x,yy,w1,w2,h, rows){
+    doc.setDrawColor(180); doc.setLineWidth(0.3);
+    doc.rect(x, yy, w1+w2, h*rows.length);
+    let cy = yy;
+    rows.forEach((r,i)=>{
+      if(i>0){ doc.line(x, cy, x+w1+w2, cy); }
+      doc.line(x+w1, cy, x+w1, cy+h);
+      doc.setFontSize(9); doc.setFont(undefined,'bold');
+      doc.text(r[0], x+2, cy+5);
+      doc.setFont(undefined,'normal');
+      let lines = doc.splitTextToSize(r[1], w2-4);
+      doc.text(lines, x+w1+2, cy+5);
+      let lh = Math.max(h, lines.length*5+2);
+      cy += lh;
+    });
+    return cy;
+  }
+  
   drawHeader();
   doc.setFontSize(9); doc.setFont(undefined,'bold');
   doc.text(`Cliente: ${c.codigo} - ${c.nombre} | Fecha: ${$("vtFecha").value} | Total equipos: ${hist.length}`,10,y); y+=8;
@@ -173,6 +191,7 @@ async function generarVisitaHistorialPDF(){
     headers.forEach((h,i)=>{ doc.setFillColor(230,230,230); doc.rect(x,yy,colW[i],7,"FD"); doc.text(h,x+1,yy+4.5); x+=colW[i]; });
     return yy+7;
   }
+  
   y=drawTableHeader(y);
   
   hist.forEach(h=>{
@@ -187,6 +206,18 @@ async function generarVisitaHistorialPDF(){
   for(let idx=0; idx<hist.length; idx++){
     const h=hist[idx];
     doc.addPage(); drawHeader();
+    let rows1 = [
+      ["FECHA", $("vtFecha").value + " " + $("vtHora").value],
+      ["CLIENTE", `${c.codigo} - ${c.nombre}`],
+      ["EQUIPO", `${p.codigo} - ${p.modelo}`],
+      ["SERIE", `${p.serie}`],
+      ["SUCURSAL", `${p.sede}`],
+      ["AREA", `${p.ubicacion}`],
+      ["UBICACION", `${p.ip}`],
+      ["CONTADOR", $("vtContador").value],
+    ];
+    y = drawTable(10, y, 35, 145, 8, rows1) + 8;
+    
     doc.setFont(undefined,'bold'); doc.setFontSize(11);
     doc.text(`VISITA ${idx+1}/${hist.length} - ${h.serie} - ${h.modelo}`,10,y); y+=6;
     doc.setFontSize(8); doc.setFont(undefined,'normal');
