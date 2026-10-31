@@ -220,7 +220,7 @@ async function generarVisitaHistorialPDF(){
 
     let rows2 = [
       ["TECNICO", `${h.tecnico} - ${h.tecnicoNombre}`],
-      ["TIPO VISITA", $("vtTipo").value],
+      ["TIPO VISITA", h.tipo || $("vtTipo").value],
       ["TRABAJO", `${h.trabajo} - ${h.trabajoNombre}`],
       ["ESTADO", `${h.estado}`],
       ["EMAIL CLIENTE", ${h.email} || "-"],
