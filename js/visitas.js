@@ -151,13 +151,13 @@ async function generarVisitaHistorialPDF(){
     let yh=10;
     if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,yh,45,14); }catch{} }
     doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.setTextColor(0);
-    doc.text("REPORTE DE VISITAS TECNICAS - ACUMULADO", 70, yh+5);
+    doc.text("REPORTE DE VISITAS TECNICAS", 70, yh+5);
     doc.setFontSize(10); doc.setTextColor(30,64,175);
     doc.text(`Usuario: ${usuarioActual} | ${hist.length} visitas`, 195, yh+5, {align:"right"});
     doc.setFontSize(7); doc.setTextColor(100);
     doc.text(new Date().toLocaleString('es-EC'), 195, yh+9, {align:"right"});
-    doc.setTextColor(0); doc.line(10,24,200,24);
-    y=30;
+    doc.setTextColor(0); doc.line(10,27,200,27);
+    y=34;
   }
 
   function drawTable(x,yy,w1,w2,h, rows){
@@ -217,6 +217,16 @@ async function generarVisitaHistorialPDF(){
       ["CONTADOR", $("vtContador").value],
     ];
     y = drawTable(10, y, 35, 145, 8, rows1) + 8;
+
+    let rows2 = [
+      ["TECNICO", `${t.codigo} - ${t.nombre}`],
+      ["TIPO VISITA", $("vtTipo").value],
+      ["TRABAJO", `${tr.codigo} - ${tr.nombre}`],
+      ["ESTADO", $("vtEstado").value],
+      ["EMAIL CLIENTE", $("vtEmail")?.value || "-"],
+      ["FIRMA DIGITAL", firmaDibujada? "SI" : "NO"],
+    ];
+    y = drawTable(10, y, 35, 145, 8, rows2) + 6;    
     
     doc.setFont(undefined,'bold'); doc.setFontSize(11);
     doc.text(`VISITA ${idx+1}/${hist.length} - ${h.serie} - ${h.modelo}`,10,y); y+=6;
