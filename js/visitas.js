@@ -214,7 +214,7 @@ async function generarVisitaHistorialPDF(){
       ["SUCURSAL", `${h.sede}`],
       ["AREA", `${h.ubicacion}`],
       ["UBICACION", `${h.ip}`],
-      ["CONTADOR", $("vtContador").value],
+      ["CONTADOR", `${h.contador}`],
     ];
     y = drawTable(10, y, 35, 145, 8, rows1) + 8;
 
@@ -223,7 +223,7 @@ async function generarVisitaHistorialPDF(){
       ["TIPO VISITA", $("vtTipo").value],
       ["TRABAJO", `${h.trabajo} - ${h.trabajoNombre}`],
       ["ESTADO", `${h.estado}`],
-      ["EMAIL CLIENTE", ${h.emal} || "-"],
+      ["EMAIL CLIENTE", ${h.email} || "-"],
       ["FIRMA DIGITAL", firmaDibujada? "SI" : "NO"],
     ];
     y = drawTable(10, y, 35, 145, 8, rows2) + 6;    
