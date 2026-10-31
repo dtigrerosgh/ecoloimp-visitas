@@ -209,11 +209,11 @@ async function generarVisitaHistorialPDF(){
     let rows1 = [
       ["FECHA", $("vtFecha").value + " " + $("vtHora").value],
       ["CLIENTE", `${c.codigo} - ${c.nombre}`],
-      ["EQUIPO", `${p.codigo} - ${p.modelo}`],
-      ["SERIE", `${p.serie}`],
-      ["SUCURSAL", `${p.sede}`],
-      ["AREA", `${p.ubicacion}`],
-      ["UBICACION", `${p.ip}`],
+      ["EQUIPO", `${h.codigo} - ${h.modelo}`],
+      ["SERIE", `${h.serie}`],
+      ["SUCURSAL", `${h.sede}`],
+      ["AREA", `${h.ubicacion}`],
+      ["UBICACION", `${h.ip}`],
       ["CONTADOR", $("vtContador").value],
     ];
     y = drawTable(10, y, 35, 145, 8, rows1) + 8;
