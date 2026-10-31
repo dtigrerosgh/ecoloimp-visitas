@@ -8,7 +8,7 @@ function selectVisitaPrinter(serie){
   DB.visitaPrinter = p;
   updateVisitaPrinterTable();
 }
-  
+
 function updateVisitaPrinterTable(){
   const client = ($("vtCliente")?.value||"").trim();
   const q = norm($("vtPrinterFilter")?.value||"");
