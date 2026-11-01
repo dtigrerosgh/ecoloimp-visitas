@@ -234,14 +234,23 @@ async function generarVisitaHistorialPDF(){
   doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=4;
   doc.setFont(undefined,'normal'); doc.setFontSize(9);
   let detLines = doc.splitTextToSize(h.detalle||"(Sin detalle)",180);
-  let alturaTexto = detLines.length * 4.2 + 10;
+    
+  let alturaTexto = detLines.length * 4 + 6;
   let alturaCuadro = Math.max(25, alturaTexto);
+  let alt = Math.max(15, det.length*4+6);
   if(y + alturaCuadro > 275){ doc.addPage(); drawHeader(); }
-  doc.setDrawColor(180); doc.setLineWidth(0.3);
-  doc.rect(10, y, 180, alturaCuadro);
-  doc.text(detLines, 15, y+6, {align:"left", maxWidth:165});
-  y += alturaCuadro + 10;
+  //doc.setDrawColor(180); doc.setLineWidth(0.3);
+  //doc.rect(10, y, 180, alturaCuadro);
+  //doc.text(detLines, 15, y+6, {align:"left", maxWidth:165});
+  //y += alturaCuadro + 10;
 
+
+    // Renderizar el texto justificado
+doc.text(detLines, 15, y+6, {
+  align: 'justify',
+  maxWidth: 165,
+  lineHeightFactor: 1.6 // Espaciado entre líneas para mejorar la lectura
+});
     
     //doc.setFont(undefined,'bold'); doc.setFontSize(11);
     //doc.text(`VISITA ${idx+1}/${hist.length} - ${h.serie} - ${h.modelo}`,10,y); y+=6;
