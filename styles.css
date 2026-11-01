@@ -323,6 +323,13 @@ html, body {
   .table-wrap{border-radius:12px}
   .data-table{min-width:600px}
   .printer-selection-wrap{max-height:320px}
+
+  /* Ocultar columnas que no necesitas para elegir */
+  #vtPrinterTable .col-codigo,
+  #vtPrinterTable .col-ubicacion,
+  #vtPrinterTable .col-bodega{
+    display: none !important;
+  }  
 }
 @media(max-width:430px){
   .stats-grid{grid-template-columns:1fr 1fr;gap:8px}.stat-card{padding:12px}.stat-card strong{font-size:23px}
@@ -338,11 +345,8 @@ html, body {
   .main-nav.open{ display:flex; }
   #menuToggle{ display:block; }
 
-  /* Ocultar columnas que no necesitas para elegir */
-  #vtPrinterHead th:nth-child(1), nth-child(2),
-  #vtPrinterBody td:nth-child(1), nth-child(2) {
-    display: none !important;
-  }  
+
+
 }
 @media (max-width: 768px) and (orientation: landscape) {
   .container{max-width:768px;margin:auto;padding:30px 20px 55px;min-height:calc(100vh - 170px)}  
