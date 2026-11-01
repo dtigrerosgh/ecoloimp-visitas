@@ -1,10 +1,3 @@
-const VT_OCULTAR_COLUMNAS = {
-  bodega: true,    // true = ocultar
-  ip: true,        // Ubic
-  ubicacion: false, // Area
-  sede: false,
-  codigo: false
-};
 
 function selectedClientVisita(){ 
   return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); 
@@ -32,13 +25,13 @@ function updateVisitaPrinterTable(){
       const isSel = p.serie === selectedSerie;
       return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
         <td><button class="btn primary" data-select-printer="${esc(p.serie)}">${isSel?'✓ Seleccionada':'Seleccionar'}</button></td>
-        <td data-label="Código">${p.codigo||''}</td>
+        <td class="col-codigo" data-label="Código">${p.codigo||''}</td>
         <td data-label="Modelo">${p.modelo||''}</td>
         <td data-label="Serie">${p.serie}</td>
         <td data-label="Sucursal">${p.sede||''}</td>
         <td data-label="Area"><span>${p.ubicacion||''}</span></td>
-        <td data-label="Ubic">${p.ip||''}</td>
-        <td data-label="Bodega">${p.bodega||''}</td>
+        <td class="col-ubicacion" data-label="Ubic">${p.ip||''}</td>
+        <td class="col-bodega" data-label="Bodega">${p.bodega||''}</td>
       </tr>`;
     }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
   }
