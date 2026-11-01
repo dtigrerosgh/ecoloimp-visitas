@@ -1,3 +1,11 @@
+const VT_OCULTAR_COLUMNAS = {
+  bodega: true,    // true = ocultar
+  ip: true,        // Ubic
+  ubicacion: false, // Area
+  sede: false,
+  codigo: false
+};
+
 function selectedClientVisita(){ 
   return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); 
 }
