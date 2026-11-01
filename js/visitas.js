@@ -25,15 +25,15 @@ function updateVisitaPrinterTable(){
       const isSel = p.serie === selectedSerie;
       return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
         <td><button class="btn primary btn-sel" data-select-printer="${esc(p.serie)}"><span class="txt-pc">${isSel?'✓ Seleccionada':'Seleccionar'}</span><span class="txt-mob">${isSel?'✓':'...'}</span></button></td>
-        <td class="col-codigo" data-label="Código">${p.codigo||''}</td>
-        <td data-label="Modelo">${p.modelo||''}</td>
-        <td data-label="Serie">${p.serie}</td>
-        <td data-label="Sucursal">${p.sede||''}</td>
-        <td data-label="Area"><span>${p.ubicacion||''}</span></td>
-        <td class="col-ubicacion" data-label="Ubic">${p.ip||''}</td>
-        <td class="col-bodega" data-label="Bodega">${p.bodega||''}</td>
+        <td class="col-codigo" data-label="Código">${esc(p.codigo||'')}</td>
+        <td data-label="Modelo">${esc(p.modelo||'')}</td>
+        <td data-label="Serie"><b>${esc(p.serie)}</b></td>
+        <td data-label="Sucursal">${esc(p.sede||'')}</td>
+        <td data-label="Area">${esc(p.ubicacion||'')}</td>
+        <td class="col-ubicacion" data-label="Ubic">${esc(p.ip||'')}</td>
+        <td class="col-bodega" data-label="Bodega">${esc(p.bodega||'')}</td>
       </tr>`;
-    }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras" : "Seleccione cliente"}</td></tr>`;
+    }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras para "+esc(client) : "Seleccione cliente"}</td></tr>`;
   }
 
   const p = DB.visitaPrinter;
