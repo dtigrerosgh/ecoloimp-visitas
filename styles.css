@@ -215,6 +215,17 @@ html, body {
 }
 
 
+#vtHistorialTable { width:100%; border-collapse:collapse; font-size:13px; background:white; border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+#vtHistorialTable th { background:#f8fafc; text-align:left; padding:10px 8px; font-weight:700; color:#334155; border-bottom:2px solid #e2e8f0; white-space:nowrap; }
+#vtHistorialTable td { padding:10px 8px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+#vtHistorialTable tr:hover { background:#f8fafc; }
+@media(max-width:768px){
+  #vtHistorialTable thead { display:none; }
+  #vtHistorialTable tr { display:block; border:1px solid #e2e8f0; margin-bottom:10px; border-radius:10px; padding:8px; }
+  #vtHistorialTable td { display:flex; justify-content:space-between; border:0; padding:4px 0; }
+  #vtHistorialTable td:before { content:attr(data-label); font-weight:700; color:#64748b; margin-right:10px; }
+}
+
 @media (max-width: 768px){
   .menu-toggle{display:flex;align-items:center;justify-content:center}
   
