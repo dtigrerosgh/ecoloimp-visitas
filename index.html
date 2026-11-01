@@ -254,21 +254,33 @@
     <button id="btnVisitaHistorialEnviar" class="btn" style="background:#16a34a;color:white">📧 Enviar Todo</button>
     <button id="btnVisitaHistorialLimpiar" class="btn ghost">🗑️ Limpiar Memoria</button>
   </div>
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Fecha</th>
-        <th>Equipo</th>
-        <th>Sucursal</th>
-        <th>Cont</th>
-        <th>Trabajo</th>
-        <th>Fotos</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="vtHistorialBody"></tbody>
-  </table>
+<div class="card historial-card">
+  <div class="historial-header">
+    <div>
+      <h3>Historial de Visitas a Equipos</h3>
+      <p>Registro de visitas y mantenimiento</p>
+    </div>
+    <div class="historial-actions">
+      <span id="vtHistorialCount" class="badge-count">0 visitas</span>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table id="vtHistorialTable" class="pro-table">
+      <thead>
+        <tr>
+          <th><span>#</span> Fecha</th>
+          <th>Equipo</th>
+          <th>Sucursal</th>
+          <th>Cont.</th>
+          <th>Trabajo</th>
+          <th>Fotos</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="vtHistorialBody"></tbody>
+    </table>
+  </div>
+</div>
 </div>
 
       
