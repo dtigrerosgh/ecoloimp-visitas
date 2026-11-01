@@ -123,6 +123,7 @@ function actualizarVisitaHistorialTabla(){
       <td><b>${esc(h.fecha||'')}</b></td>
       <td><span class="pill-blue">${esc(h.serie)}</span></td>
       <td><span class="pill-gray">${esc(h.sede||'Matriz')}</span></td>
+      <td><span class="pill-gray">${esc(h.ubicacion||'')}</span></td>
       <td><input type="number" value="${esc(h.contador||'0')}" 
            onchange="editarContadorHistorial(${h.id}, this.value)"
            style="width:80px;border:1px solid #e2e8f0;border-radius:8px;padding:6px;font-weight:700;text-align:center"></td>
