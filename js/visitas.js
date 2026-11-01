@@ -110,26 +110,25 @@ function guardarVisita(){
 
 function actualizarVisitaHistorialTabla(){
   const hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
-  if($("vtHistorialCount")) $("vtHistorialCount").innerHTML = `Usuario: <b>${getUsuarioActual()}</b> - Guardadas: <b>${hist.length}</b>`;
-  
-  if($("vtHistorialBody")){
-    if(hist.length === 0){
-      $("vtHistorialBody").innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#999">Sin visitas de ${getUsuarioActual()}</td></tr>`;
-      return;
-    }
-    $("vtHistorialBody").innerHTML = hist.map((h,i)=>`
-      <tr>
-        <td data-label="#">${i+1}</td>
-        <td data-label="Fecha">${esc(h.fecha||'')}</td>
-        <td data-label="Equipo"><b>${esc(h.serie)}</b><br><small style="color:#64748b">${esc(h.modelo||'')}</small></td>
-        <td data-label="Sucursal">${esc(h.sede||'')}</td>
-        <td data-label="Cont">${esc(h.contador||'0')}</td>
-        <td data-label="Trabajo"><small>${esc((h.trabajoNombre||'').substring(0,18))}</small></td>
-        <td data-label="Fotos"><span style="background:#e0f2fe;padding:2px 6px;border-radius:10px;font-size:11px">${h.fotos.length + h.fotos2.length} fotos</span></td>
-        <td data-label=""><button class="btn ghost" onclick="borrarVisitaHistorial(${h.id})" style="background:#f1f5f9;border:1px solid #ddd;padding:6px 12px;border-radius:8px;cursor:pointer">X</button></td>
-      </tr>
-    `).join("");
+  if($("vtHistorialCount")) $("vtHistorialCount").textContent = `${hist.length} visitas`;
+  if(!$("vtHistorialBody")) return;
+  if(!hist.length){
+    $("vtHistorialBody").innerHTML = `<tr><td colspan="7" class="empty">Sin visitas de ${getUsuarioActual()}</td></tr>`;
+    return;
   }
+  $("vtHistorialBody").innerHTML = hist.map((h,i)=>{
+    const fotos = (h.fotos?.length||0)+(h.fotos2?.length||0);
+    const tipoColor = h.tipo?.includes('Preventivo') ? 'dot-green' : h.tipo?.includes('Correctivo') ? 'dot-orange' : 'dot-blue';
+    return `<tr>
+      <td><b>${String(h.fecha||'').slice(2)}</b></td>
+      <td><span class="pill-blue">${esc(h.serie)}</span></td>
+      <td><span class="pill-gray">${esc(h.sede||'-')}</span></td>
+      <td><b>${esc(h.contador||'0')}</b></td>
+      <td><span class="${tipoColor}"></span> ${esc(h.trabajoNombre||h.tipo||'-')}</td>
+      <td><span class="fotos-badge">📷 ${fotos}</span></td>
+      <td><button onclick="borrarVisitaHistorial(${h.id})" class="btn-x">✕</button></td>
+    </tr>`;
+  }).join("");
 }
 
 function borrarVisitaHistorial(id){
