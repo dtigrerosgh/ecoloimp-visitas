@@ -111,10 +111,24 @@ function guardarVisita(){
 function actualizarVisitaHistorialTabla(){
   const hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
   if($("vtHistorialCount")) $("vtHistorialCount").innerHTML = `Usuario: <b>${getUsuarioActual()}</b> - Guardadas: <b>${hist.length}</b>`;
+  
   if($("vtHistorialBody")){
-    $("vtHistorialBody").innerHTML = hist.length? hist.map((h,i)=>`
-      <tr><td>${i+1}</td><td>${h.fecha}</td><td><b>${h.serie}</b></td><td>${h.sede}</td><td>${h.contador}</td><td>${h.fotos.length+h.fotos2.length} fotos</td><td><button class="btn ghost" onclick="borrarVisitaHistorial(${h.id})">X</button></td></tr>
-    `).join("") : `<tr><td colspan="7">Sin visitas de ${getUsuarioActual()}</td></tr>`;
+    if(hist.length === 0){
+      $("vtHistorialBody").innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#999">Sin visitas de ${getUsuarioActual()}</td></tr>`;
+      return;
+    }
+    $("vtHistorialBody").innerHTML = hist.map((h,i)=>`
+      <tr>
+        <td data-label="#">${i+1}</td>
+        <td data-label="Fecha">${esc(h.fecha||'')}</td>
+        <td data-label="Equipo"><b>${esc(h.serie)}</b><br><small style="color:#64748b">${esc(h.modelo||'')}</small></td>
+        <td data-label="Sucursal">${esc(h.sede||'')}</td>
+        <td data-label="Cont">${esc(h.contador||'0')}</td>
+        <td data-label="Trabajo"><small>${esc((h.trabajoNombre||'').substring(0,18))}</small></td>
+        <td data-label="Fotos"><span style="background:#e0f2fe;padding:2px 6px;border-radius:10px;font-size:11px">${h.fotos.length + h.fotos2.length} fotos</span></td>
+        <td data-label=""><button class="btn ghost" onclick="borrarVisitaHistorial(${h.id})" style="background:#f1f5f9;border:1px solid #ddd;padding:6px 12px;border-radius:8px;cursor:pointer">X</button></td>
+      </tr>
+    `).join("");
   }
 }
 
