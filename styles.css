@@ -236,6 +236,9 @@ html, body {
 .btn-edit{width:32px;height:32px;border-radius:50%;border:1px solid #dbeafe;background:#eff6ff;color:#2563eb;cursor:pointer;font-weight:700}
 .btn-edit:hover{background:#dbeafe}
 
+#vtPrinterTable .txt-mob{ display:none; }
+#vtPrinterTable .txt-pc{ display:inline; }
+
 @media (max-width: 768px){
   .menu-toggle{display:flex;align-items:center;justify-content:center}
   
