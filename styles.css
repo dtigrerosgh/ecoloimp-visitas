@@ -375,7 +375,11 @@ html, body {
     font-weight:800;
   }
   /* Ocultar columnas que no necesitas para elegir */
-
+  #vtPrinterHead th:nth-child(1), nth-child(2),
+  #vtPrinterBody td:nth-child(1), nth-child(2) {
+    display: none !important;
+  }
+  
   #conteoHead th:nth-child(1),
   #conteoBody td:nth-child(1) {
     display: none !important;
