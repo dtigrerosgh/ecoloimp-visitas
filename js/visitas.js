@@ -112,23 +112,62 @@ function actualizarVisitaHistorialTabla(){
   const hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
   if($("vtHistorialCount")) $("vtHistorialCount").textContent = `${hist.length} visitas`;
   if(!$("vtHistorialBody")) return;
-  if(!hist.length){
-    $("vtHistorialBody").innerHTML = `<tr><td colspan="7" class="empty">Sin visitas de ${getUsuarioActual()}</td></tr>`;
+  
+  if(hist.length===0){
+    $("vtHistorialBody").innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Sin visitas - Agrega equipos con el botón Guardar</td></tr>`;
     return;
   }
-  $("vtHistorialBody").innerHTML = hist.map((h,i)=>{
-    const fotos = (h.fotos?.length||0)+(h.fotos2?.length||0);
-    const tipoColor = h.tipo?.includes('Preventivo') ? 'dot-green' : h.tipo?.includes('Correctivo') ? 'dot-orange' : 'dot-blue';
-    return `<tr>
-      <td><b>${String(h.fecha||'').slice(2)}</b></td>
+  
+  $("vtHistorialBody").innerHTML = hist.map((h,i)=>`
+    <tr>
+      <td><b>${esc(h.fecha||'')}</b></td>
       <td><span class="pill-blue">${esc(h.serie)}</span></td>
-      <td><span class="pill-gray">${esc(h.sede||'-')}</span></td>
-      <td><b>${esc(h.contador||'0')}</b></td>
-      <td><span class="${tipoColor}"></span> ${esc(h.trabajoNombre||h.tipo||'-')}</td>
-      <td><span class="fotos-badge">📷 ${fotos}</span></td>
-      <td><button onclick="borrarVisitaHistorial(${h.id})" class="btn-x">✕</button></td>
-    </tr>`;
-  }).join("");
+      <td><span class="pill-gray">${esc(h.sede||'Matriz')}</span></td>
+      <td><input type="number" value="${esc(h.contador||'0')}" 
+           onchange="editarContadorHistorial(${h.id}, this.value)"
+           style="width:80px;border:1px solid #e2e8f0;border-radius:8px;padding:6px;font-weight:700;text-align:center"></td>
+      <td><span class="dot-blue"></span> ${esc(h.trabajoNombre||'MANTENIMIENTO PREVENTIVO')}</td>
+      <td><span class="fotos-badge">📷 ${ (h.fotos?.length||0)+(h.fotos2?.length||0) }</span></td>
+      <td style="display:flex;gap:6px">
+        <button onclick="editarVisitaHistorial(${h.id})" class="btn-edit" title="Editar">✎</button>
+        <button onclick="borrarVisitaHistorial(${h.id})" class="btn-x" title="Borrar">✕</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function editarContadorHistorial(id, nuevoValor){
+  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
+  const idx = hist.findIndex(x=>x.id===id);
+  if(idx>=0){ 
+    hist[idx].contador = nuevoValor; 
+    localStorage.setItem(keyVisita(), JSON.stringify(hist));
+    toast(`Contador ${hist[idx].serie} actualizado a ${nuevoValor}`, "ok");
+  }
+}
+
+function editarVisitaHistorial(id){
+  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
+  const h = hist.find(x=>x.id===id);
+  if(!h) return;
+  
+  // Carga los datos en el formulario para editar
+  if($("vtContador")) $("vtContador").value = h.contador;
+  if($("vtDetalle")) $("vtDetalle").value = h.detalle;
+  if($("vtTrabajo")) $("vtTrabajo").value = h.trabajo;
+  
+  // Selecciona la impresora
+  DB.visitaPrinter = DB.impresoras.find(x=>x.serie===h.serie) || null;
+  updateVisitaPrinterTable();
+  
+  // Scroll arriba
+  window.scrollTo({top:0, behavior:'smooth'});
+  
+  // Marca que está editando
+  if(confirm(`¿Editar visita ${h.serie} del ${h.fecha}?\nSe cargará en el formulario.\nDespués dale Guardar para actualizar.`)){
+    // Borra la vieja para que guardar cree la nueva actualizada
+    borrarVisitaHistorial(id);
+  }
 }
 
 function borrarVisitaHistorial(id){
