@@ -331,7 +331,7 @@ async function generarVisitaHistorialPDF(){
   doc.setDrawColor(180); doc.setLineWidth(0.3);
   doc.rect(10, y, 180, alturaCuadro);
   doc.setFontSize(9);
-  justificarTextoPDF(doc, detalleTexto, 15, y+6, 165, 5);
+  justificarTextoPDF(doc, detLines, 15, y+6, 165, 5);
   y += alturaCuadro + 10;
     
     //doc.setFont(undefined,'bold'); doc.setFontSize(11);
