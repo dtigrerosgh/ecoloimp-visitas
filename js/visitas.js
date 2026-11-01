@@ -185,6 +185,44 @@ function limpiarHistorialVisita(){
   actualizarVisitaHistorialTabla();
 }
 
+// JUSTIFICAR TEXTO EN jsPDF - profesional
+function justificarTextoPDF(doc, texto, x, y, maxWidth, lineHeight = 5){
+  const parrafos = texto.split("\n");
+  let cy = y;
+  
+  parrafos.forEach(parrafo => {
+    if(parrafo.trim() === ""){
+      cy += lineHeight; // salto de párrafo
+      return;
+    }
+    // Divide en lineas que caben en maxWidth
+    let lineas = doc.splitTextToSize(parrafo.trim(), maxWidth);
+    
+    lineas.forEach((linea, idx) => {
+      const esUltima = idx === lineas.length - 1;
+      const palabras = linea.trim().split(" ");
+      
+      if(palabras.length <= 1 || esUltima){
+        // Ultima linea o una sola palabra = alineada izquierda
+        doc.text(linea, x, cy);
+      } else {
+        // Justificar: calcula espacio extra entre palabras
+        const anchoTexto = doc.getTextWidth(linea);
+        const espacioExtra = (maxWidth - anchoTexto) / (palabras.length - 1);
+        let cx = x;
+        palabras.forEach(pal => {
+          doc.text(pal, cx, cy);
+          cx += doc.getTextWidth(pal + " ") + espacioExtra;
+        });
+      }
+      cy += lineHeight;
+    });
+    cy += 2; // espacio entre párrafos
+  });
+  
+  return cy; // retorna donde terminó para seguir dibujando
+}
+
 async function generarVisitaHistorialPDF(){
   let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
   if(hist.length===0) throw new Error("No hay visitas guardadas");
@@ -285,24 +323,16 @@ async function generarVisitaHistorialPDF(){
   doc.setFont(undefined,'bold'); doc.setFontSize(10);
   doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=4;
   doc.setFont(undefined,'normal'); doc.setFontSize(9);
-  let detLines = doc.splitTextToSize(h.detalle||"(Sin detalle)",180);
 
-  let alturaTexto = detLines.length * 4 + 6;
-  let alturaCuadro = Math.max(25, alturaTexto);
-  let alt = Math.max(15, detLines.length*4+6);
+  let detLines = doc.splitTextToSize(h.detalle||"(Sin detalle)", 165);
+  let alturaTexto = detLines.length * 5 + 12;
+  let alturaCuadro = Math.max(30, alturaTexto);
   if(y + alturaCuadro > 275){ doc.addPage(); drawHeader(); }
-  //doc.setDrawColor(180); doc.setLineWidth(0.3);
-  //doc.rect(10, y, 180, alturaCuadro);
-  //doc.text(detLines, 15, y+6, {align:"left", maxWidth:165});
-  //y += alturaCuadro + 10;
-
-
-    // Renderizar el texto justificado
-doc.text(detLines, 15, y+6, {
-  align: 'justify',
-  maxWidth: 165,
-  lineHeightFactor: 1.6 // Espaciado entre líneas para mejorar la lectura
-});
+  doc.setDrawColor(180); doc.setLineWidth(0.3);
+  doc.rect(10, y, 180, alturaCuadro);
+  doc.setFontSize(9);
+  justificarTextoPDF(doc, detalleTexto, 15, y+6, 165, 5);
+  y += alturaCuadro + 10;
     
     //doc.setFont(undefined,'bold'); doc.setFontSize(11);
     //doc.text(`VISITA ${idx+1}/${hist.length} - ${h.serie} - ${h.modelo}`,10,y); y+=6;
