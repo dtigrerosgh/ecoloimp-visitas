@@ -1,4 +1,5 @@
 
+
 // GRABA INVENTARIOS
 async function generarInvPDF(){
   const { jsPDF } = window.jspdf;
