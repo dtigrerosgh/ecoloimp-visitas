@@ -1,3 +1,11 @@
+function cargarTrabajosVisita(){
+  const sel = $("vtTrabajo");
+  if(!sel || !DB.trabajos) return;
+  sel.innerHTML = `<option value="">-- Seleccione trabajo --</option>` + 
+    DB.trabajos.map(tr=> `<option value="${esc(tr.codigo)}">${esc(tr.codigo)} - ${esc(tr.nombre)}</option>`).join("");
+  // Deja en vacío para que obligue a elegir
+  sel.value = "";
+}
 
 function selectedClientVisita(){ 
   return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); 
@@ -107,6 +115,7 @@ function guardarVisita(){
   if($("vtFotosPreview")) $("vtFotosPreview").innerHTML="";
   if($("vtFotos2Preview")) $("vtFotos2Preview").innerHTML="";
   if($("vtContador")) $("vtContador").innerHTML="";
+  cargarTrabajosVisita();
   actualizarVisitaHistorialTabla();
 }
 
