@@ -106,6 +106,7 @@ function guardarVisita(){
   FOTOS_DB.fotosVisita=[]; FOTOS_DB.fotosVisita2=[];
   if($("vtFotosPreview")) $("vtFotosPreview").innerHTML="";
   if($("vtFotos2Preview")) $("vtFotos2Preview").innerHTML="";
+  if($("vtContador")) $("vtContador").innerHTML="";
   actualizarVisitaHistorialTabla();
 }
 
