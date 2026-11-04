@@ -674,6 +674,7 @@ $("btnVisitaLimpiar")?.addEventListener("click",async()=>{
   });
 
 $("btnVisitaAgregar")?.addEventListener("click", ()=>{ guardarVisita(); });
+  
 $("btnVisitaHistorialPDF")?.addEventListener("click", async()=>{
   try{ await generarVisitaHistorialPDF(); }catch(e){ showMessage("vtMessage",e.message,true); }
 });
