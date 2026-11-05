@@ -10,7 +10,7 @@ function cargarTrabajosVisita(){
 function selectedClientVisita(){ 
   return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); 
 }
-
+ 
 function selectVisitaPrinter(serie){
   const p = DB.impresoras.find(x=> (x.serie||"").trim() === (serie||"").trim());
   if(!p) return;
