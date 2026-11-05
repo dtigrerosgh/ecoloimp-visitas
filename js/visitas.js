@@ -151,6 +151,7 @@ function guardarVisita(){
   
   cargarTrabajosVisita();
   actualizarVisitaHistorialTabla();
+  updateVisitaPrinterTable();
 }
 
 function actualizarVisitaHistorialTabla(){
