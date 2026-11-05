@@ -21,27 +21,59 @@ function selectVisitaPrinter(serie){
 function updateVisitaPrinterTable(){
   const client = ($("vtCliente")?.value||"").trim();
   const q = norm($("vtPrinterFilter")?.value||"");
+  const normClient = client.replace(/^0+/,'').toLowerCase();
   
-  const rows = DB.impresoras.filter(p=>p.cliente===client && norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
-  const total = DB.impresoras.filter(p=>p.cliente===client).length;
+  // --- NUEVO: series ya guardadas en el historial ---
+  let hist = [];
+  try{ hist = JSON.parse(localStorage.getItem(keyVisita())||"[]"); }catch{ hist=[]; }
+  const seriesHechas = new Set(hist.map(h=> (h.serie||"").trim().toUpperCase()));
+  
+  const base = DB.impresoras.filter(p=>{
+    const cli = (p.cliente||"").toString().trim().replace(/^0+/,'').toLowerCase();
+    return cli === normClient || (p.cliente||"").toString().trim() === client;
+  });
+  
+  const rows = base.filter(p=> !q || norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
+  const total = base.length;
   const selectedSerie = DB.visitaPrinter?.serie || "";
   
-  if($("vtSelectedPrinterStatus")) $("vtSelectedPrinterStatus").textContent = client ? `Cliente tiene ${total} imp. - Mostrando ${rows.length} ${selectedSerie?`- Seleccionada: ${selectedSerie}`:""}` : "Ninguna impresora seleccionada";
+  if($("vtSelectedPrinterStatus")){
+    const hechas = base.filter(p=> seriesHechas.has((p.serie||"").trim().toUpperCase())).length;
+    $("vtSelectedPrinterStatus").textContent = !client ? "Seleccione cliente" : `Cliente: ${total} imp. | Hechas: ${hechas} | Mostrando: ${rows.length} ${selectedSerie?` - Actual: ${selectedSerie}`:""}`;
+  }
   
   if($("vtPrinterBody")){
     $("vtPrinterBody").innerHTML = rows.length ? rows.map(p=>{
-      const isSel = p.serie === selectedSerie;
-      return `<tr class="${isSel?'selected':''}" ${isSel?'style="background:#dbeafe;outline:2px solid #2563eb;"':''}>
-        <td><button class="btn primary btn-sel" data-select-printer="${esc(p.serie)}"><span class="txt-pc">${isSel?'✓ Seleccionada':'Seleccionar'}</span><span class="txt-mob">${isSel?'✓':'...'}</span></button></td>
-        <td class="col-codigo" data-label="Código">${esc(p.codigo||'')}</td>
-        <td data-label="Modelo">${esc(p.modelo||'')}</td>
-        <td data-label="Serie"><b>${esc(p.serie)}</b></td>
-        <td data-label="Sucursal">${esc(p.sede||'')}</td>
-        <td data-label="Area">${esc(p.ubicacion||'')}</td>
-        <td class="col-ubicacion" data-label="Ubic">${esc(p.ip||'')}</td>
-        <td class="col-bodega" data-label="Bodega">${esc(p.bodega||'')}</td>
+      const serieNorm = (p.serie||"").trim().toUpperCase();
+      const isSel = serieNorm === (selectedSerie||"").trim().toUpperCase();
+      const isHecha = seriesHechas.has(serieNorm);
+      
+      // Clase y estilo según estado
+      let clase = "";
+      let estilo = "";
+      let txtBoton = "Seleccionar";
+      
+      if(isSel){
+        clase = "selected";
+        estilo = 'style="background:#dbeafe !important;outline:2px solid #2563eb;"';
+        txtBoton = "✓ Seleccionada";
+      }else if(isHecha){
+        clase = "hecha";
+        estilo = 'style="background:#dcfce7 !important;outline:1px solid #22c55e;"';
+        txtBoton = "✓ Hecha";
+      }
+      
+      return `<tr class="${clase}" ${estilo}>
+        <td><button class="btn primary btn-sel ${isHecha&&!isSel?'btn-hecha':''}" data-select-printer="${esc(p.serie)}"><span class="txt-pc">${esc(txtBoton)}</span><span class="txt-mob">${isSel||isHecha?'✓':'...'}</span></button></td>
+        <td class="col-codigo">${esc(p.codigo||'')}</td>
+        <td>${esc(p.modelo||'')}</td>
+        <td><b>${esc(p.serie)}</b> ${isHecha?'✅':''}</td>
+        <td>${esc(p.sede||'')}</td>
+        <td>${esc(p.ubicacion||'')}</td>
+        <td>${esc(p.ip||'')}</td>
+        <td class="col-bodega">${esc(p.bodega||'')}</td>
       </tr>`;
-    }).join("") : `<tr><td colspan="8">${client ? "Sin impresoras para "+esc(client) : "Seleccione cliente"}</td></tr>`;
+    }).join("") : `<tr><td colspan="8">Sin impresoras</td></tr>`;
   }
 
   const p = DB.visitaPrinter;
@@ -148,6 +180,7 @@ function actualizarVisitaHistorialTabla(){
       </td>
     </tr>
   `).join("");
+  updateVisitaPrinterTable(); // repinta marcadas
 }
 
 function editarContadorHistorial(id, nuevoValor){
