@@ -271,37 +271,95 @@ tr:hover{background:#f8fafc}
 #btnHamburguesa{ display:none; }
 
 @media (max-width: 768px){
-  #btnHamburguesa{
-    display:block;
-    font-size:26px;
-    background:none;
-    border:none;
-    color:white;
-    padding:4px 10px;
-  }
-
-  #menuPrincipal{
-    display:none !important;
-    position:fixed;
-    top:55px;
-    left:0;
-    right:0;
-    z-index:9999;
-    background:#1a1a2e;
-    flex-direction:column;
-    padding:10px;
-    gap:8px;
-  }
-
-  #menuPrincipal.abierto{
+  /* El header de ECOLOIMP para que entre el botón */
+  header, .header, .topbar{
     display:flex !important;
+    align-items:center !important;
+    gap:8px !important;
+    padding:8px 10px !important;
   }
 
-  #menuPrincipal button{
-    width:100%;
-    text-align:left;
-    padding:13px 14px;
-    font-size:15px;
-    border-radius:10px;
+  #btnHamburguesa{
+    display:block !important;
+    font-size:26px !important;
+    background:none !important;
+    border:none !important;
+    cursor:pointer !important;
+    padding:2px 8px !important;
+    color:#1a7a3a !important;
+    order:-1 !important;
+  }
+
+  /* TU MENU REAL - aquí está el truco */
+  .tabs, .menu, #menuPrincipal, .nav-tabs{
+    display:none !important;
+  }
+
+  .tabs.abierto, .menu.abierto, #menuPrincipal.abierto, .nav-tabs.abierto{
+    display:flex !important;
+    flex-direction:column !important;
+    position:fixed !important;
+    top:62px !important;
+    left:0 !important;
+    right:0 !important;
+    z-index:9999 !important;
+    background:white !important;
+    padding:12px !important;
+    gap:10px !important;
+    box-shadow:0 10px 20px rgba(0,0,0,0.25) !important;
+    overflow-y:auto !important;
+    max-height: calc(100vh - 70px) !important;
+  }
+
+  .tabs.abierto button, .menu.abierto button{
+    width:100% !important;
+    text-align:left !important;
+    padding:13px 14px !important;
+    font-size:15px !important;
+    border-radius:12px !important;
+    white-space:nowrap !important;
+  }
+}
+
+/* SOLO CELULAR - LOGO A LA IZQUIERDA */
+@media (max-width: 768px){
+  header, .header, .topbar{
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    text-align: left !important;
+    padding: 8px 10px !important;
+  }
+
+  /* Logo ECOLOIMP a la izquierda */
+  header h1, .header h1, .topbar h1,
+  header .logo, .header .logo, .topbar .logo,
+  header img, .header img{
+    margin: 0 !important;
+    margin-right: auto !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
+    order: 1 !important;
+  }
+
+  /* Botón hamburguesa a la izquierda del logo, o si lo quieres a la derecha cámbialo a order: 3 */
+  #btnHamburguesa{
+    order: 0 !important;
+    margin: 0 !important;
+    margin-right: 6px !important;
+  }
+
+  /* ADMIN a la derecha */
+  header span, .header span, .topbar span,
+  .user-info, .admin-name{
+    order: 2 !important;
+    margin-left: auto !important;
+    text-align: right !important;
+    font-size: 12px !important;
+    max-width: 110px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 }
