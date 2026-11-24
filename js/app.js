@@ -5,6 +5,13 @@ const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwhsoiMq7lPCBwW
 
 const esc=s=>(s??"").toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 
+function toggleMenu(cerrar){
+  const m = document.getElementById('menuPrincipal');
+  if(!m) return;
+  if(cerrar === true) m.classList.remove('abierto');
+  else m.classList.toggle('abierto');
+}
+
 async function cargarTxt(ruta){
   try{
     const r = await fetch(ruta+'?v='+Date.now());
