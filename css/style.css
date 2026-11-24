@@ -268,48 +268,40 @@ tr:hover{background:#f8fafc}
 }
 
 /* ===== FIX MENU CELULAR ===== */
+#btnHamburguesa{ display:none; }
+
 @media (max-width: 768px){
-  /* 1. Header - que no se corte el nombre */
-  .header, .topbar, header{
-    flex-wrap: wrap !important;
-    padding: 8px 10px !important;
-  }
-  .header h1, .topbar h1{
-    font-size: 18px !important;
-  }
-  /* Ocultar nombre largo, solo mostrar "ADMIN" */
-  .user-name, .admin-name{
-    max-width: 110px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    font-size: 13px !important;
+  #btnHamburguesa{
+    display:block;
+    font-size:26px;
+    background:none;
+    border:none;
+    color:white;
+    padding:4px 10px;
   }
 
-  /* 2. MENU - que haga scroll horizontal, no se corte */
- .menu, .tabs, .nav, .nav-tabs{
-    display: flex !important;
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-    gap: 6px !important;
-  }
-  .menu button, .tabs button, .nav button{
-    flex: 1 1 45% !important;
-    font-size: 12px !important;
-    text-align: center !important;
-  }
-
-  /* 3. Botones del menú - que no se aplasten */
-  .menu button, .tabs button, .nav button, .nav-tabs button, .botones-menu button{
-    flex: 0 0 auto !important;
-    white-space: nowrap !important;
-    font-size: 13px !important;
-    padding: 8px 12px !important;
-    border-radius: 20px !important;
+  #menuPrincipal{
+    display:none !important;
+    position:fixed;
+    top:55px;
+    left:0;
+    right:0;
+    z-index:9999;
+    background:#1a1a2e;
+    flex-direction:column;
+    padding:10px;
+    gap:8px;
   }
 
-  /* 4. Contenido - que no quede pegado */
-  .container, main, .content{
-    padding: 10px !important;
+  #menuPrincipal.abierto{
+    display:flex !important;
+  }
+
+  #menuPrincipal button{
+    width:100%;
+    text-align:left;
+    padding:13px 14px;
+    font-size:15px;
+    border-radius:10px;
   }
 }
