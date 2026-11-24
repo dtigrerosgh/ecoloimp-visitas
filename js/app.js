@@ -204,3 +204,13 @@ function toggleMenu(cerrar){
   if(cerrar === true) menu.classList.remove('abierto');
   else menu.classList.toggle('abierto');
 }
+
+// FORZAR MODO CELULAR - no depende solo del CSS
+function aplicarModoCelular(){
+  const esCelular = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
+  document.body.classList.toggle('es-celular', esCelular);
+  console.log('Es celular?', esCelular, 'Ancho:', window.innerWidth);
+}
+window.addEventListener('resize', aplicarModoCelular);
+document.addEventListener('DOMContentLoaded', aplicarModoCelular);
+aplicarModoCelular();
