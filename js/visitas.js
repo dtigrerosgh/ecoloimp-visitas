@@ -1,3 +1,59 @@
+let fotosVisita=[]; window.fotosVisita=fotosVisita;
+let impresoraSeleccionada=null; window._impresorasTemp=[]; let cacheImp=null;
+let cacheUsuarios=null; let cacheUsuariosLista=[];
+let LOGO_BASE64=null;
+
+// ====== VARIABLES DE FIRMA - UNA SOLA VEZ ARRIBA ======
+let firmaDibujada = false;
+let firmaDataURL = null;
+let firmaBase64 = null;
+let ctxFirma = null;
+
+function getKeyVisitas(usuario, clienteCodigo){
+  const u = String(usuario||getUsuarioActual()||'').trim().toUpperCase();
+  const c = String(clienteCodigo||document.getElementById('vCliente')?.value||'').trim().toUpperCase();
+  return 'ecoloimp_visitas_'+u+'_'+c;
+}
+function norm(s){ return String(s||'').trim().toUpperCase(); }
+
+async function cargarLogo(){
+  if(LOGO_BASE64) return LOGO_BASE64;
+  const urls=['./img/logo.png'];
+  for(let url of urls){
+    try{
+      const r=await fetch(url+'?v='+Date.now()); if(!r.ok) continue;
+      const blob=await r.blob();
+      const b64=await new Promise(res=>{
+        const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(blob);
+      });
+      LOGO_BASE64=b64;
+      localStorage.setItem('ecoloimp_logo_base64', b64);
+      return b64;
+    }catch(e){}
+  }
+  try{ const loc=localStorage.getItem('ecoloimp_logo_base64'); if(loc){LOGO_BASE64=loc; return loc;} }catch(e){}
+  return null;
+}
+async function cargarUsuariosTxt(){
+  if(cacheUsuarios) return cacheUsuarios;
+  try{
+    const r=await fetch('./data/usuarios.txt?v='+Date.now()); const txt=await r.text();
+    const map={}; const lista=[];
+    txt.split('\n').forEach(line=>{
+      line=line.trim(); if(!line||line.startsWith('#')) return;
+      const p=line.split(';').map(x=>x.trim());
+      if(p.length>=3){ map[p[0].toUpperCase()]=p[2]; lista.push({usuario:p[0], password:p[1], nombre:p[2], tipo:p[3], tecnico:p[4]}); }
+    });
+    cacheUsuarios=map; cacheUsuariosLista=lista;
+    localStorage.setItem('ecoloimp_usuarios_map', JSON.stringify(map));
+    localStorage.setItem('ecoloimp_usuarios_lista', JSON.stringify(lista));
+    return map;
+  }catch(e){ return {}; }
+}
+function getUsuarioActual(){ const h=document.getElementById('uUsuario')?.innerText?.trim(); if(h&&h.length>1) return h.toUpperCase(); return (localStorage.getItem('ecoloimp_usuario')||'ARUGEL').toUpperCase(); }
+function getNombreUsuario(){ const u=getUsuarioActual(); if(cacheUsuarios&&cacheUsuarios[u]) return cacheUsuarios[u]; try{ const m=JSON.parse(localStorage.getItem('ecoloimp_usuarios_map')||'{}'); if(m[u]) return m[u]; }catch(e){} return document.getElementById('uName')?.innerText?.trim()||u; }
+function getDatosUsuarioCompleto(){ const u=getUsuarioActual(); try{ const lista=cacheUsuariosLista.length?cacheUsuariosLista:JSON.parse(localStorage.getItem('ecoloimp_usuarios_lista')||'[]'); const enc=lista.find(x=>String(x.usuario).toUpperCase()===u); if(enc) return enc; }catch(e){} return {usuario:u, nombre:getNombreUsuario()}; }
+
 function cargarTrabajosVisita(){
   const sel = $("vtTrabajo");
   if(!sel || !DB.trabajos) return;
@@ -7,668 +63,841 @@ function cargarTrabajosVisita(){
   sel.value = "";
 }
 
+function getClienteActual(){ 
+  const sel = document.getElementById('vCliente'); 
+  if(!sel) return null;
+  return { id: sel.value, codigo: sel.value, nombre: sel.options[sel.selectedIndex]?.text || sel.value };
+}
+
+function obtenerCodigoYNombre(){
+  const c = getClienteActual();
+  if(window.DB?.clientes){
+    const f = DB.clientes.find(x => x.id === c.id);
+    if(f) c.nombre = f.nombre;
+  }
+  return {codigo:c.id, nombre:c.nombre};
+}
+
 function selectedClientVisita(){ 
-  return DB.clientes.find(c=>c.codigo===$("vtCliente")?.value); 
-}
- 
-function selectVisitaPrinter(serie){
-  const p = DB.impresoras.find(x=> (x.serie||"").trim() === (serie||"").trim());
-  if(!p) return;
-  DB.visitaPrinter = p;
-  updateVisitaPrinterTable();
+  return DB.clientes.find(c=>c.codigo===$("vCliente")?.value); 
 }
 
-function updateVisitaPrinterTable(){
-  const client = ($("vtCliente")?.value||"").trim();
-  const q = norm($("vtPrinterFilter")?.value||"");
-  const normClient = client.replace(/^0+/,'').toLowerCase();
-  
-  // --- NUEVO: series ya guardadas en el historial ---
-  let hist = [];
-  try{ hist = JSON.parse(localStorage.getItem(keyVisita())||"[]"); }catch{ hist=[]; }
-  const seriesHechas = new Set(hist.map(h=> (h.serie||"").trim().toUpperCase()));
-  
-  const base = DB.impresoras.filter(p=>{
-    const cli = (p.cliente||"").toString().trim().replace(/^0+/,'').toLowerCase();
-    return cli === normClient || (p.cliente||"").toString().trim() === client;
-  });
-  
-  const rows = base.filter(p=> !q || norm([p.codigo,p.modelo,p.serie,p.sede,p.ubicacion,p.ip,p.bodega].join(" ")).includes(q));
-  const total = base.length;
-  const selectedSerie = DB.visitaPrinter?.serie || "";
-  
-  if($("vtSelectedPrinterStatus")){
-    const hechas = base.filter(p=> seriesHechas.has((p.serie||"").trim().toUpperCase())).length;
-    $("vtSelectedPrinterStatus").textContent = !client ? "Seleccione cliente" : `Cliente: ${total} imp. | Hechas: ${hechas} | Mostrando: ${rows.length} ${selectedSerie?` - Actual: ${selectedSerie}`:""}`;
+function getTodasImpresoras(){ 
+  if(window.DB?.impresoras?.length) return window.DB.impresoras; 
+  if(cacheImp?.length) return cacheImp; 
+  try{ const loc=JSON.parse(localStorage.getItem('ecoloimp_impresoras')||'[]'); if(loc.length) return loc; }catch(e){} 
+  return []; 
+}
+
+async function cargaDirecta(){ 
+  for(let url of ['./data/impresoras.txt','data/impresoras.txt']){
+    try{ 
+      const r=await fetch(url+'?v='+Date.now()); 
+      if(!r.ok) continue; 
+      const txt=await r.text(); 
+      const lista=txt.split('\n').map(s=>s.trim()).filter(s=>s&&!s.startsWith('#')).map(l=>{ 
+        const p=l.split(';').map(x=>x.trim());
+        // tu archivo real es: CLIENTE;CODIGO;MODELO;SERIE;SUCURSAL;AREA;UBICACION;IP;BODEGA
+        // lo dejamos a prueba de filas cortas
+        return {cliente:p[0]||'',codigo:p[1]||'',modelo:p[2]||'',serie:p[3]||'',sucursal:p[4]||'',area:p[5]||'',ubicacion:p[6]||'',bodega:p[7]||''}; 
+      }).filter(x=>x.cliente&&x.serie); 
+      if(lista.length){ 
+        // NO BORRAR DB, solo agregar impresoras
+        window.DB = window.DB || {};
+        window.DB.impresoras = lista; 
+        cacheImp=lista; 
+        localStorage.setItem('ecoloimp_impresoras', JSON.stringify(lista));
+        return lista; 
+      } 
+    }catch(e){}
+  } 
+  return [];
+}
+
+async function filtrarImpresorasCliente(){
+  const sel=document.getElementById('vCliente'); 
+  const cont=document.getElementById('listaImpresoras');
+
+  if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
+
+  const val=sel?.value?.trim(); 
+  if(!val || val.toLowerCase().includes('seleccione') || val === ""){
+    if(cont) cont.innerHTML='<div style="padding:20px;text-align:center;color:#64748b;border:1.5px dashed #cbd5e1;border-radius:14px">👆 Selecciona un cliente</div>'; 
+    const d1=document.getElementById('datosImpresoraSeleccionada'); if(d1) d1.innerHTML='';
+    const d2=document.getElementById('formDatosVisita'); if(d2) d2.innerHTML='';
+    return; 
   }
   
-  if($("vtPrinterBody")){
-    $("vtPrinterBody").innerHTML = rows.length ? rows.map(p=>{
-      const serieNorm = (p.serie||"").trim().toUpperCase();
-      const isSel = serieNorm === (selectedSerie||"").trim().toUpperCase();
-      const isHecha = seriesHechas.has(serieNorm);
-      
-      // Clase y estilo según estado
-      let clase = "";
-      let estilo = "";
-      let txtBoton = "Seleccionar";
-      
-      if(isSel){
-        clase = "selected";
-        estilo = 'style="background:#dbeafe !important;outline:2px solid #2563eb;"';
-        txtBoton = "✓ Seleccionada";
-      }else if(isHecha){
-        clase = "hecha";
-        estilo = 'style="background:#dcfce7 !important;outline:1px solid #22c55e;"';
-        txtBoton = "✓ Hecha";
-      }
-      
-      return `<tr class="${clase}" ${estilo}>
-        <td><button class="btn primary btn-sel ${isHecha&&!isSel?'btn-hecha':''}" data-select-printer="${esc(p.serie)}"><span class="txt-pc">${esc(txtBoton)}</span><span class="txt-mob">${isSel||isHecha?'✓':'...'}</span></button></td>
-        <td class="col-codigo">${esc(p.codigo||'')}</td>
-        <td>${esc(p.modelo||'')}</td>
-        <td><b>${esc(p.serie)}</b> ${isHecha?'✅':''}</td>
-        <td>${esc(p.sede||'')}</td>
-        <td>${esc(p.ubicacion||'')}</td>
-        <td>${esc(p.ip||'')}</td>
-        <td class="col-bodega">${esc(p.bodega||'')}</td>
-      </tr>`;
-    }).join("") : `<tr><td colspan="8">Sin impresoras</td></tr>`;
+  // TU SELECT TIENE SOLO EL CODIGO, no "CODIGO - NOMBRE"
+  const cliente = val.split('-')[0].trim().toUpperCase(); 
+  
+  if(cont) cont.innerHTML='<div style="padding:15px;text-align:center">⏳ Cargando impresoras de '+cliente+'...</div>';
+
+  let todas=getTodasImpresoras(); 
+  if(todas.length===0) todas=await cargaDirecta();
+    // DEBUG REAL
+  console.log('DB:', window.DB?.impresoras?.length, 'cacheImp:', cacheImp?.length, 'todas:', todas.length);
+  console.log('Ejemplo impresora:', todas[0]);
+  console.log('Valor select:', val, 'Cliente a buscar:', cliente);
+  console.log('Total impresoras cargadas:', todas.length, 'Buscando cliente:', cliente);
+
+  // FILTRO MAS TOLERANTE: cliente, codigo o nombre
+  window._impresorasTemp=todas.filter(i=> String(i.cliente||'').toUpperCase().includes(cliente) || String(i.codigo||'').toUpperCase()===cliente );
+
+  if(window._impresorasTemp.length===0){
+    if(cont) cont.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444;border:1.5px dashed #fecaca;border-radius:14px">❌ No hay impresoras para '+cliente+'<br><small>Total en base: '+todas.length+'</small></div>';
+    return;
   }
 
-  const p = DB.visitaPrinter;
-  const c = DB.clientes.find(x=>x.codigo===client);
-  if($("vtPrinterDetails")){
-    if(p){
-      $("vtPrinterDetails").innerHTML = `
-        <div><small>Código</small><strong>${esc(p.codigo)}</strong></div>
-        <div><small>Modelo</small><strong>${esc(p.modelo)}</strong></div>
-        <div><small>Serie</small><strong>${esc(p.serie)}</strong></div>
-        <div><small>Sucursal</small><strong>${esc(p.sede)}</strong></div>
-        <div><small>Área</small><strong>${esc(p.ubicacion)}</strong></div>
-        <div><small>Ubicación</small><strong>${esc(p.ip)}</strong></div>
-        <div><small>Bodega</small><strong>${esc(p.bodega)}</strong></div>
-        <div><small>Cliente</small><strong>${c ? esc(c.codigo+" · "+c.nombre) : "-"} (${total} imp.)</strong></div>`;
-    } else if(c){
-      $("vtPrinterDetails").innerHTML = `<div><small>Cliente seleccionado</small><strong>${esc(c.codigo+" · "+c.nombre)} - Tiene ${total} impresora(s)</strong></div>`;
-    } else {
-      $("vtPrinterDetails").innerHTML = `<div><small>Cliente</small><strong>-</strong></div>`;
+  let html = `
+ <style> 
+    .tabla-verde thead th{ background:#73D17D !important; color:#0f172a !important; }
+    .fila-sel{
+      background:#0f172a !important;
+      transform:scale(1.01);
+      box-shadow: 0 0 0 3px #73D17D, 0 8px 20px rgba(0,0,0,.25) !important;
+      border-left:6px solid #73D17D !important;
+      position:relative;
+      z-index:1;
     }
-  }
+    .fila-sel td{ 
+      color:#fff !important; 
+      font-weight:800 !important;
+      background:transparent !important;
+    }
+    .fila-sel td b{ color:#73D17D !important; }
+  </style>
+  <div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:auto;max-height:420px;background:#fff">
+  <table class="tabla-verde" style="width:100%;border-collapse:collapse;font-size:13px">
+  <thead style="position:sticky;top:0;z-index:2;background:#73D17D !important">
+    <tr>
+      <th style="padding:12px 10px;text-align:left;font-weight:800;background:#73D17D !important;color:#0f172a !important">ACCIÓN</th>
+      <th style="padding:12px 10px;text-align:left;font-weight:800;background:#73D17D !important;color:#0f172a !important">CÓDIGO</th>
+      <th style="padding:12px 10px;text-align:left;font-weight:800;background:#73D17D !important;color:#0f172a !important">MODELO</th>
+      <th style="padding:12px 10px;text-align:left;font-weight:800;background:#73D17D !important;color:#0f172a !important">SERIE</th>
+      <th style="padding:12px 10px;text-align:left;font-weight:800;background:#73D17D !important;color:#0f172a !important">SUCURSAL</th>
+      <th style="padding:12px 10px;text-align:left;font-weight:800;background:#73D17D !important;color:#0f172a !important">AREA</th>
+      <th style="padding:12px 10px;text-align:left;font-weight:800;background:#73D17D !important;color:#0f172a !important">UBICACION</th>
+      <th style="padding:12px 10px;text-align:left;font-weight:800;background:#73D17D !important;color:#0f172a !important">BOD</th>
+    </tr>
+  </thead>
+  <tbody>`;
+  const usuario=getUsuarioActual(); 
+  
+  const visitas=JSON.parse(localStorage.getItem(getKeyVisitas(usuario, cliente))||'[]'); 
+  const hechas=new Set(visitas.map(v=>String(v.serie||'').toUpperCase()));
+
+  window._impresorasTemp.forEach(imp=>{ 
+    const isHecha=hechas.has(String(imp.serie).toUpperCase()); 
+    html+='<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px"><button id="btn-'+imp.serie+'" onclick="seleccionarImpresora(\''+imp.serie+'\')" style="background:'+(isHecha?'#dcfce7':'#0f172a')+';color:'+(isHecha?'#15803d':'#fff')+';border:0;border-radius:8px;padding:6px 12px;cursor:pointer" '+(isHecha?'disabled':'')+'>'+(isHecha?'✅ Hecha':'🔍 Seleccionar')+'</button></td><td style="padding:8px">'+imp.codigo+'</td><td style="padding:8px">'+imp.modelo+'</td><td style="padding:8px;font-weight:800">'+imp.serie+'</td><td style="padding:8px">'+imp.sucursal+'</td><td style="padding:8px">'+imp.area+'</td><td style="padding:8px">'+imp.ubicacion+'</td><td style="padding:8px">'+imp.bodega+'</td></tr>'; 
+  });
+  html+='</tbody></table></div>'; 
+  if(cont) cont.innerHTML=html;
+}
+
+function seleccionarImpresora(serie){ 
+  document.querySelectorAll('[id^="fila-"]').forEach(r=>r.classList.remove('fila-sel'));
+  document.getElementById('fila-'+serie)?.classList.add('fila-sel');  
+  
+    const imp = window._impresorasTemp.find(x=>String(x.serie).toUpperCase()===String(serie).toUpperCase()); 
+    if(!imp) return; 
+    impresoraSeleccionada = imp; 
+
+    mostrarFormularioVisita(); 
+
+    setTimeout(()=>{
+      const cont = document.getElementById('datosImpresoraSeleccionada');
+      if(!cont){ alert('No existe el div datosImpresoraSeleccionada'); return; }
+
+      const cli = getClienteActual(); // cliente actual C665 etc.
+
+      cont.innerHTML = `
+  <div style="margin-top:8px;background:#73D17D;border-radius:10px;padding:10px;text-align:left">
+    <b>🖨️ Datos de la impresora seleccionada </b> 
+  </div>
+  <div style="margin-top:12px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+    <div><small style="display:block;color:#64748b;font-size:11px">Código</small><strong>${esc(imp.codigo)}</strong></div>
+    <div><small style="display:block;color:#64748b;font-size:11px">Modelo</small><strong>${esc(imp.modelo)}</strong></div>
+    <div><small style="display:block;color:#64748b;font-size:11px">Serie</small><strong>${esc(imp.serie)}</strong></div>
+    <div><small style="display:block;color:#64748b;font-size:11px">Sucursal</small><strong>${esc(imp.sucursal || imp.sede)}</strong></div>
+    <div><small style="display:block;color:#64748b;font-size:11px">Área</small><strong>${esc(imp.area)}</strong></div>
+    <div><small style="display:block;color:#64748b;font-size:11px">Ubicación</small><strong>${esc(imp.ubicacion || imp.area)}</strong></div>
+    <div><small style="display:block;color:#64748b;font-size:11px">Bodega / IP</small><strong>${esc(imp.bodega || imp.ip)}</strong></div>
+    <div><small style="display:block;color:#64748b;font-size:11px">Cliente</small><strong>${esc(cli ? cli.nombre : imp.cliente)}</strong></div>
+  </div>
+`;
+
+      cont.scrollIntoView({behavior:'smooth'});
+    }, 150);  
+}
+
+window.filtrarImpresorasCliente = filtrarImpresorasCliente;
+window.seleccionarImpresora = seleccionarImpresora;
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const sel = document.getElementById('vCliente');
+  if(sel) sel.addEventListener('change', filtrarImpresorasCliente);
+});
+
+async function mostrarFormularioVisita(){
+  const hoy=new Date().toISOString().split('T')[0]; 
+  const ahora=new Date().toTimeString().slice(0,5); 
+
+  const tecRaw = (DB.tecnicos || []).map(t => {
+  const cod = (t.codigo || '').toString().trim();
+  const nom = (t.nombre || '').trim();
+  return `${cod};${nom}`;
+  });
+
+  const tecOptions = tecRaw.map(l => {
+  const p = l.split(';');
+  const cod = (p[0]||'').trim();
+  const nom = (p[1]||p[0]||'').trim();
+  return `<option value="${cod}">${cod} - ${nom}</option>`;
+  }).join('');
+
+
+
+  const trabRaw = (DB.trabajos || []).map(t => {
+  const cod = (t.codigo || '').toString().trim();
+  const nom = (t.nombre || '').trim();
+  return `${cod};${nom}`;
+  });
+
+  const trabOptions = trabRaw.map(l => {
+    const p = l.split(';');
+    const cod = (p[0]||'').trim();
+    const nom = (p[1]||p[0]||'').trim();
+    return `<option value="${cod}">${cod} - ${nom}</option>`;
+  }).join('');
+
+  document.getElementById('formDatosVisita').innerHTML=`
+    <div style="margin-top:12px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px">
+    <div style="padding:14px;background:#73D17D;display:flex;justify-content:space-between;align-items:center"><b>📑INGRESO DE DATOS VISITA TECNICA visitas</b></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="display:flex;flex-direction:column">
+              <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">FECHA</label>
+              <input id="vFecha" type="date" value="${hoy}" style="padding:8px;border:1px solid #e2e8f0;border-radius:8px">
+            </div>            
+            <div style="display:flex;flex-direction:column">
+              <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">HORA</label>
+              <input id="vHora" type="time" value="${ahora}" style="padding:8px;border:1px solid #e2e8f0;border-radius:8px">
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">TÉCNICO</label>
+              <select id="vTecnico" style="padding:8px;border-radius:8px;border:1px solid #e2e8f0">
+                 <option value="">Seleccione técnico</option>
+                 ${tecOptions}
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">TRABAJO REALIZADO</label>
+              <select id="vTrabajo" style="padding:8px;border-radius:8px;border:1px solid #e2e8f0">
+                <option value="">Seleccione trabajo</option>
+                  ${trabOptions}
+              </select>            
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">TIPO DE VISITA</label>
+              <select id="vTipo" style="padding:8px;border-radius:8px;border:1px solid #e2e8f0"><option>Preventiva</option><option>Correctiva</option></select>
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">ESTADO</label>
+              <select id="vEstado" style="padding:8px;border-radius:8px;border:1px solid #e2e8f0"><option>Finalizada</option><option>Pendiente</option></select>
+            </div>
+            <div style="display:flex;flex-direction:column;grid-column:1/-1">
+              <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">CONTADOR *</label>
+              <input id="vContador" type="number" placeholder="Ingrese contador" style="padding:8px;border:1.5px solid #22c55e;border-radius:8px;background:#f0fdf4;font-weight:800">
+            </div>
+            <div style="display:flex;flex-direction:column;grid-column:1/-1">
+              <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">DETALLE DEL TRABAJO</label>
+              <textarea id="vObs" rows="8" style="padding:10px;border-radius:8px;border:1px solid #e2e8f0;min-height:140px" placeholder="Escriba el detalle (8 líneas)"></textarea>
+            </div>
+          </div>
+
+
+        <div style="margin-top:10px;display:flex;gap:8px">
+            <input id="inputCamara" type="file" accept="image/*" capture="environment" style="display:none" onchange="procesarFotos(this.files)">
+            <input id="inputGaleria" type="file" accept="image/*" multiple style="display:none" onchange="procesarFotos(this.files)">
+            <button onclick="document.getElementById('inputCamara').click()" type="button" style="background:#0f172a;color:#fff;border-radius:8px;padding:8px 14px">📸 CÁMARA</button>
+            <button onclick="document.getElementById('inputGaleria').click()" type="button" style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px">🖼️ GALERÍA</button>
+            <button onclick="guardarVisita()" type="button" style="background:#22c55e;color:#000;border-radius:8px;padding:8px 16px;font-weight:800;margin-left:auto">💾 GUARDAR VISITA</button>
+        </div>
+        <div id="previewFotos" style="margin-top:10px"></div>
+    </div>`;
+  setTimeout(iniciarFirma,120);
+}
+
+function procesarFotos(files){ Array.from(files||[]).slice(0,15).forEach(f=>{const r=new FileReader(); r.onload=e=>{window.fotosVisita.push(e.target.result); renderPreview()}; r.readAsDataURL(f);}); }
+
+function renderPreview(){ const c=document.getElementById('previewFotos'); if(!c) return; if(!window.fotosVisita.length){c.innerHTML=''; return;} c.innerHTML=window.fotosVisita.map((s,i)=>'<div style="display:inline-block;position:relative;margin:4px"><img src="'+s+'" style="width:75px;height:75px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0"><span style="position:absolute;top:0;left:0;background:#0f172a;color:#22c55e;font-size:9px;font-weight:800;padding:2px 4px;border-radius:0 0 6px 0">#'+(i+1)+'</span><button onclick="window.fotosVisita.splice('+i+',1);renderPreview()" style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border:0;border-radius:50%;width:16px;height:16px;font-size:10px">x</button></div>').join(''); }
+
+function aplicarFirmaAHistorial(){
+  const canvas = document.getElementById('canvasFirma');
+  if(!canvas) return null; 
+  
+  // Verifica si está vacía
+  const ctx = canvas.getContext('2d');
+  const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
+  const esVacia = !pixelBuffer.some(color => color !== 0);
+  if(esVacia) return null; 
+
+
+  const firmaBase64 = canvas.toDataURL('image/png');
+  const nombreAutoriza = document.getElementById('vAutoriza')?.value || '';
+  const clienteCodigo = document.getElementById('vCliente')?.value || ''; // <- STRING, no .value después
+  const usuario = getUsuarioActual();
+  // Coge todas las visitas guardadas
+  const key = 'ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
+
+  let visitas = [];
+  try{ visitas = JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ visitas=[]; }
+
+  if(visitas.length===0){ alert('No hay visitas para firmar'); return null; }
+
+  // LES PONE LA FIRMA A TODAS
+  visitas = visitas.map(v => ({
+    ...v,
+    firma: firmaBase64,
+    autorizaNombre: nombreAutoriza || v.autorizaNombre || v.clienteNombre
+  }));
+
+  localStorage.setItem(key, JSON.stringify(visitas));
+  console.log('Firma aplicada a '+visitas.length+' visitas');
+  //alert('Firma aplicada a '+visitas.length+' visitas del historial');
+  return { firma: firmaBase64, visitas };
 }
 
 function guardarVisita(){
-  const c = selectedClientVisita();
-  const p = DB.visitaPrinter;
-  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value);
-  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value);
-  if(!c) return alert("Seleccione cliente");
-  if(!p) return alert("Seleccione impresora");
+  const fecha=document.getElementById('vFecha')?.value;
+  const hora=document.getElementById('vHora')?.value;
+  const tecnico=document.getElementById('vTecnico')?.value;
+  const trabajo=document.getElementById('vTrabajo')?.value; 
+  const contador=document.getElementById('vContador')?.value;
+  const clienteCodigo = document.getElementById('vCliente')?.value || ''; // STRING, no .value después
+  const usuario = getUsuarioActual();
 
-  const visita = {
-    id: Date.now(),
-    usuario: getUsuarioActual(), // <--- guarda quien la hizo
-    fecha: $("vtFecha").value,
-    hora: $("vtHora").value,
-    cliente: c.codigo,
-    clienteNombre: c.nombre,
-    codigo: p.codigo,
-    modelo: p.modelo,
-    serie: p.serie,
-    sede: p.sede,
-    ubicacion: p.ubicacion,
-    ip: p.ip,
-    bodega: p.bodega,
-    contador: $("vtContador").value,
-    tecnico: t.codigo,
-    tecnicoNombre: t.nombre,
-    trabajo: tr ? tr.codigo : "",
-    trabajoNombre: tr ? tr.nombre : "",
-    tipo: $("vtTipo").value,
-    estado: $("vtEstado").value,
-    email: $("vtEmail").value,
-    detalle: $("vtDetalle").value,
-    nombreFirma: $("vtNombreFirma").value,
-    fotos: [...FOTOS_DB.fotosVisita],
-    fotos2: [...FOTOS_DB.fotosVisita2]
-  };
+  
+  if(!fecha||!hora||!tecnico||!trabajo||!contador){alert('Falta Fecha, Hora, Técnico, Trabajo, Contador'); return;}
+  if(!clienteCodigo || clienteCodigo==='GENERAL'){ alert('Seleccione cliente'); return; }
+  if(!impresoraSeleccionada?.serie){ alert('Seleccione impresora'); return; }
 
-  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
-  const idx = hist.findIndex(h=>h.serie===p.serie && h.fecha===visita.fecha);
-  if(idx>=0){
-    if(!confirm(`Ya existe ${p.serie} el ${visita.fecha}. ¿Actualizar?`)) return;
-    hist[idx]=visita;
-  }else{
-    hist.push(visita);
+  //const cliente=getClienteActual();
+  const visita={
+    fecha: document.getElementById('vFecha').value,
+    hora: document.getElementById('vHora').value,
+    tecnico: document.getElementById('vTecnico').value,
+    trabajo: document.getElementById('vTrabajo').value,
+    tipo: document.getElementById('vTipo').value,
+    estado: document.getElementById('vEstado').value,
+    email: document.getElementById('vEmail').value,
+    contador: document.getElementById('vContador').value,
+    obs: document.getElementById('vObs').value,
+    autorizaNombre: document.getElementById('vAutoriza').value,
+    cliente: clienteCodigo,
+    clienteId: clienteCodigo,
+    firma: firmaBase64, // <-- 1 sola vez
+    fotos: [...(window.fotosVisita||[])],
+    fotosCount: (window.fotosVisita||[]).length,
+    serie: impresoraSeleccionada.serie,
+    codigo: impresoraSeleccionada.codigo,
+    modelo: impresoraSeleccionada.modelo,
+    sucursal: impresoraSeleccionada.sucursal,
+    area: impresoraSeleccionada.area,
+    ubicacion: impresoraSeleccionada.ubicacion,
+    usuario: usuario
+    };
+  // CAPTURA LA FIRMA DIRECTO DEL CANVAS AL GUARDAR
+  let firmaFinal = null;
+  const canvasFirm = document.getElementById('canvasFirma');
+  if(canvasFirm){
+    // verifica que no esté vacío
+    const blank = document.createElement('canvas');
+    blank.width = canvasFirm.width; blank.height = canvasFirm.height;
+    if(canvasFirm.toDataURL() !== blank.toDataURL()){
+      firmaFinal = canvasFirm.toDataURL('image/png');
+    }
   }
-  localStorage.setItem(keyVisita(), JSON.stringify(hist));
-  alert(`✅ [${getUsuarioActual()}] Guardada ${p.serie} - Total: ${hist.length}`);
-  FOTOS_DB.fotosVisita=[]; FOTOS_DB.fotosVisita2=[];
-  if($("vtFotosPreview")) $("vtFotosPreview").innerHTML="";
-  if($("vtFotos2Preview")) $("vtFotos2Preview").innerHTML="";
-  if($("vtContador")) $("vtContador").value="";
-  if($("vtDetalle")) $("vtDetalle").value = "";
-  
-  cargarTrabajosVisita();
-  actualizarVisitaHistorialTabla();
-  updateVisitaPrinterTable();
-}
+  firmaBase64 = firmaFinal;
 
-function actualizarVisitaHistorialTabla(){
-  const hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
-  if($("vtHistorialCount")) $("vtHistorialCount").textContent = `${hist.length} visitas`;
-  if(!$("vtHistorialBody")) return;
-  
-  if(hist.length===0){
-    $("vtHistorialBody").innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Sin visitas - Agrega equipos con el botón Guardar</td></tr>`;
+  const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo; 
+try{
+    const todas=JSON.parse(localStorage.getItem(key)||'[]'); 
+    todas.unshift(visita); 
+    localStorage.setItem(key,JSON.stringify(todas));
+    console.log('✅ VISITA GUARDADA', visita, 'Total:', todas.length);
+  }catch(e){
+    console.error('❌ ERROR GUARDANDO', e);
+    alert('No se pudo guardar, memoria llena. Borra visitas viejas. Error: '+e.message);
     return;
   }
-  
-  $("vtHistorialBody").innerHTML = hist.map((h,i)=>`
-    <tr>
-      <td><b>${esc(h.fecha||'')}</b></td>
-      <td><span class="pill-blue">${esc(h.serie)}</span></td>
-      <td><span class="pill-gray">${esc(h.sede||'Matriz')}</span></td>
-      <td><span class="pill-gray">${esc(h.ubicacion||'')}</span></td>
-      <td><input type="number" value="${esc(h.contador||'0')}" 
-           onchange="editarContadorHistorial(${h.id}, this.value)"
-           style="width:80px;border:1px solid #e2e8f0;border-radius:8px;padding:6px;font-weight:700;text-align:center"></td>
-      <td><span class="dot-blue"></span> ${esc(h.trabajoNombre||'MANTENIMIENTO PREVENTIVO')}</td>
-      <td><span class="fotos-badge">📷 ${ (h.fotos?.length||0)+(h.fotos2?.length||0) }</span></td>
-      <td style="display:flex;gap:6px">
-        <button onclick="editarVisitaHistorial(${h.id})" class="btn-edit" title="Editar">✎</button>
-        <button onclick="borrarVisitaHistorial(${h.id})" class="btn-x" title="Borrar">✕</button>
-      </td>
-    </tr>
-  `).join("");
-  updateVisitaPrinterTable(); // repinta marcadas
+  window.fotosVisita=[]; 
+  renderPreview(); 
+// OCULTAR DATOS DE LA IMPRESORA Y FORMULARIO AL GUARDAR
+const divDatos = document.getElementById('datosImpresoraSeleccionada');
+if(divDatos) divDatos.innerHTML = '';
+const divForm = document.getElementById('formDatosVisita');
+if(divForm) divForm.innerHTML = '';
+
+// LIMPIAR SELECCIÓN PARA QUE NO QUEDE PEGADA
+impresoraSeleccionada = null;
+if(typeof limpiarFirma === 'function') limpiarFirma();
+
+// ACTUALIZAR HISTORIAL Y LISTA DE IMPRESORAS (ya con ✅ Hecha)
+mostrarListaVisitasSesion();
+filtrarImpresorasCliente();
+// SUBIR AL HISTORIAL PARA QUE VEA QUE SÍ SE GUARDÓ
+setTimeout(()=>{
+  document.getElementById('listaVisitasSesion')?.scrollIntoView({behavior:'smooth'});
+}, 200);
 }
 
-function editarContadorHistorial(id, nuevoValor){
-  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
-  const idx = hist.findIndex(x=>x.id===id);
-  if(idx>=0){ 
-    hist[idx].contador = nuevoValor; 
-    localStorage.setItem(keyVisita(), JSON.stringify(hist));
-    toast(`Contador ${hist[idx].serie} actualizado a ${nuevoValor}`, "ok");
-  }
+function mostrarListaVisitasSesion(){
+  const usuario=getUsuarioActual();
+  const cliente=document.getElementById('vCliente'); 
+  if(!cliente) return;
+  const cont=document.getElementById('listaVisitasSesion'); 
+  if(!cont) return;
+
+  const key=getKeyVisitas(usuario, cliente.value);
+  const todas=JSON.parse(localStorage.getItem(key)||'[]');
+  const lista=cliente.value==='GENERAL'?[]:todas.filter(v=>norm(v.clienteId||v.cliente)===norm(cliente.value));
+  console.log('BUSCANDO EN:', key, 'Encontradas:', todas.length, 'FILTRADAS:', lista.length);
+
+  if(!lista.length){ cont.innerHTML= cliente.value==='GENERAL'?'':'<div style="margin-top:14px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;text-align:center;color:#94a3b8">📭 Sin visitas para '+cliente.id+'</div>'; return; }
+  let html='<div style="margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden"><div style="padding:14px;background:#73D17D;display:flex;justify-content:space-between;align-items:center"><b>📋 Historial '+cliente.value+' - '+lista.length+' visitas</b><span style="background:#0f172a;color:#fff;padding:6px 12px;border-radius:99px;font-size:11px">Sesión: '+usuario+'</span></div><div style="overflow:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr style="background:#fcfcfd"><th style="padding:8px">FECHA</th><th>SERIE</th><th>SUCURSAL</th><th>AREA</th><th>UBICACION</th><th>CONT</th><th>TRABAJO</th><th>FOTOS</th><th></th></tr>';
+  lista.forEach(v=>{ html+='<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px">'+v.fecha+' '+v.hora+'</td><td style="padding:8px"><b>'+v.serie+'</b></td><td style="padding:8px"><b>'+v.sucursal+'</b></td><td style="padding:8px"><b>'+v.area+'</b></td><td style="padding:8px"><b>'+v.ubicacion+'</b></td><td style="padding:8px">'+v.contador+'</td><td style="padding:8px">'+v.trabajo+'</td><td style="padding:8px">📸 '+v.fotosCount+'</td><td style="padding:8px"><button onclick="eliminarVisita('+v.id+')" style="background:#fff1f2;border:1px solid #fecaca;color:red;border-radius:6px;padding:2px 6px">✕</button></td></tr>'; });
+  html+='</table></div><div style="padding:14px;background:#f8fafc;display:flex;justify-content:center"><button onclick="generarPDFTodas()" style="background:#0f172a;color:#fff;border:0;border-radius:12px;padding:12px 24px;font-weight:800;cursor:pointer">📄 GENERAR REPORTE PDF DE TODAS LAS VISITAS - '+cliente.value+' ('+lista.length+')</button></div></div>';
+  cont.innerHTML=html;
 }
 
-function editarVisitaHistorial(id){
-  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
-  const h = hist.find(x=>x.id===id);
-  if(!h) return;
-  
-  // Carga los datos en el formulario para editar
-  if($("vtContador")) $("vtContador").value = h.contador;
-  if($("vtDetalle")) $("vtDetalle").value = h.detalle;
-  if($("vtTrabajo")) $("vtTrabajo").value = h.trabajo;
-  
-  // Selecciona la impresora
-  DB.visitaPrinter = DB.impresoras.find(x=>x.serie===h.serie) || null;
-  updateVisitaPrinterTable();
-  
-  // Scroll arriba
-  window.scrollTo({top:0, behavior:'smooth'});
-  
-  // Marca que está editando
-  if(confirm(`¿Editar visita ${h.serie} del ${h.fecha}?\nSe cargará en el formulario.\nDespués dale Guardar para actualizar.`)){
-    // Borra la vieja para que guardar cree la nueva actualizada
-    borrarVisitaHistorial(id);
-  }
+function eliminarVisita(id){
+  if(!confirm('¿Eliminar esta visita?')) return;
+  const usuario=getUsuarioActual();
+  const cliente=document.getElementById('vCliente')?.value || '';
+  const key='ecoloimp_visitas_'+usuario+'_'+cliente;
+  let todas=JSON.parse(localStorage.getItem(key)||'[]');
+  todas=todas.filter(v=>v.id != id);
+  localStorage.setItem(key, JSON.stringify(todas));
+  mostrarListaVisitasSesion();
 }
 
-function borrarVisitaHistorial(id){
-  if(!confirm("¿Borrar esta visita?")) return;
-  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
-  hist = hist.filter(h=>h.id!==id);
-  localStorage.setItem(keyVisita(), JSON.stringify(hist));
-  actualizarVisitaHistorialTabla();
-}
+function iniciarFirma(){
+  const canvas = document.getElementById('canvasFirma');
+  if(!canvas) return;
+  // Si está oculto, no inicializar aún
+  if(canvas.offsetParent === null){ setTimeout(iniciarFirma, 300); return; }
 
-function limpiarHistorialVisita(){
-  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
-  if(!confirm(`¿Borrar TODAS las ${hist.length} visitas de ${getUsuarioActual()}?`)) return;
-  localStorage.removeItem(keyVisita());
-  actualizarVisitaHistorialTabla();
-}
-
-// JUSTIFICAR TEXTO EN jsPDF - profesional
-function justificarTextoPDF(doc, texto, x, y, maxWidth, lineHeight = 5){
-  const parrafos = texto.split("\n");
-  let cy = y;
+  canvas.width = 600; canvas.height = 250;
+  ctxFirma = canvas.getContext('2d');
+  ctxFirma.lineWidth=4; ctxFirma.lineCap='round'; ctxFirma.lineJoin='round'; ctxFirma.strokeStyle='#000';
   
-  parrafos.forEach(parrafo => {
-    if(parrafo.trim() === ""){
-      cy += lineHeight; // salto de párrafo
-      return;
+  let dib=false;
+  const getPos = (e)=>{
+    const r=canvas.getBoundingClientRect();
+    const t=e.touches?e.touches[0]:e;
+    return {x:(t.clientX-r.left)*(canvas.width/r.width), y:(t.clientY-r.top)*(canvas.height/r.height)};
+  };
+  const s=(e)=>{ e.preventDefault(); dib=true; const p=getPos(e); ctxFirma.beginPath(); ctxFirma.moveTo(p.x,p.y); firmaDibujada=true; };
+  const m=(e)=>{ if(!dib) return; e.preventDefault(); const p=getPos(e); ctxFirma.lineTo(p.x,p.y); ctxFirma.stroke(); firmaDataURL=canvas.toDataURL('image/png'); firmaBase64=firmaDataURL; };
+  const e=(ev)=>{ if(dib){ dib=false; firmaDataURL=canvas.toDataURL('image/png'); firmaBase64=firmaDataURL; document.getElementById('estadoFirma').innerText='✅ Firma OK - '+firmaDataURL.length+' bytes'; document.getElementById('estadoFirma').style.color='green'; }};
+
+  canvas.addEventListener('mousedown',s); canvas.addEventListener('mousemove',m); canvas.addEventListener('mouseup',e); canvas.addEventListener('mouseleave',e);
+  canvas.addEventListener('touchstart',s,{passive:false}); canvas.addEventListener('touchmove',m,{passive:false}); canvas.addEventListener('touchend',e,{passive:false});
+}
+
+function limpiarFirma(){
+  const c=document.getElementById('canvasFirma'); if(!c) return;
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+  firmaDibujada=false; firmaDataURL=null; firmaBase64=null;
+  document.getElementById('estadoFirma').innerText='Si no firma aquí, quedará la línea para firmar a mano en el PDF';
+  document.getElementById('estadoFirma').style.color='#64748b';
+}
+
+
+function guardarFirma(){
+  const c=document.getElementById('canvasFirma'); if(!c) return;
+  firmaBase64=c.toDataURL('image/png');
+  document.getElementById('estadoFirma').innerText='✅ Firma guardada';
+  document.getElementById('estadoFirma').style.color='#16a34a';
+}
+
+async function enviarCorreoVisita(){
+  const gcorreo = "dennistigreros@gmail.com";
+  try{
+    const elEmail = document.getElementById("vEmail");
+    const elFecha = document.getElementById("vFecha");
+    const elMsg = document.getElementById("vMessage");
+    const nombreFirma = document.getElementById("vAutoriza")?.value || "Cliente";
+    const emailCliente = elEmail.value.trim()||'';
+    const {codigo, nombre} = obtenerCodigoYNombre();
+    const fechaVal = elFecha?.value || new Date().toLocaleDateString();
+    if(elMsg){ elMsg.style.color="#334155"; elMsg.textContent = "⏳ Generando PDF..."; }
+
+  const usuario=getUsuarioActual(); 
+  const cliente=document.getElementById('vCliente'); 
+
+      const clienteCodigo = cliente?.value || '';
+    if(!clienteCodigo || clienteCodigo==='GENERAL'){ alert('Seleccione cliente'); return; }
+
+    const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
+    const todas=JSON.parse(localStorage.getItem(key)||'[]');
+    const lista=todas.filter(v=>String(v.clienteId||v.cliente||'').trim().toUpperCase()===String(clienteCodigo||'').trim().toUpperCase());
+
+  if(!lista.length){ alert('No hay visitas para '+clienteCodigo); return; }
+  await cargarLogo();
+
+    const docpdf = await generarPDFConVisitas(lista, '');
+    if(!docpdf || typeof docpdf.output !== 'function'){
+      throw new Error('generarPDFConVisitas() no retorno PDF. Revisa que termine con return doc;');
     }
-    // Divide en lineas que caben en maxWidth
-    let lineas = doc.splitTextToSize(parrafo.trim(), maxWidth);
-    
-    lineas.forEach((linea, idx) => {
-      const esUltima = idx === lineas.length - 1;
-      const palabras = linea.trim().split(" ");
-      
-      if(palabras.length <= 1 || esUltima){
-        // Ultima linea o una sola palabra = alineada izquierda
-        doc.text(linea, x, cy);
-      } else {
-        // Justificar: calcula espacio extra entre palabras
-        const anchoTexto = doc.getTextWidth(linea);
-        const espacioExtra = (maxWidth - anchoTexto) / (palabras.length - 1);
-        let cx = x;
-        palabras.forEach(pal => {
-          doc.text(pal, cx, cy);
-          cx += doc.getTextWidth(pal + " ") + espacioExtra;
-        });
-      }
-      cy += lineHeight;
+
+    const tieneFirma = firmaDibujada && firmaDataURL;
+    const firmaTexto = tieneFirma ? "Sí, registrada en PDF" : "No registrada";
+    const pdfBase64 = docpdf.output('datauristring').split(',')[1];
+    const txt = generarVisitaTXT();
+    const txtBase64 = btoa(unescape(encodeURIComponent(txt)));
+    //const nombre = document.getElementById("vCliente").value;
+    const html = `
+    <div style="font-family:Arial,sans-serif;font-size:14px;color:#111;line-height:1.5">
+      <b>ECOLOIMP S.A.</b><br>
+      <b>REPORTE DE VISITA TÉCNICA</b><br>
+      ═════════════════════════<br><br>
+  <p style="margin:0 0 12px 0">Estimado cliente <b>${nombre} (${codigo})</b>,</p>
+  <p style="margin:0 0 12px 0">Se ha realizado la visita técnica con el siguente detalle.</b>
+  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin:14px 0">
+    <div style="font-weight:bold;margin-bottom:6px"> 📅 INFORMACIÓN DE VISITA</div>
+    <div>Cliente: <b>${nombre} (${codigo})</b></div>
+    <div>Fecha  : <b>${fechaVal}</b></div>
+  </div>
+  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin:14px 0">
+    <div style="font-weight:bold;margin-bottom:6px">✍️ CONFORMIDAD</div>
+    <div> Firmado por: <b>${nombreFirma}</b></div>
+    <div> Firma digital: <b>${firmaTexto}</b></div>
+  </div>
+
+  <div style="margin:14px 0">
+    Se adjuntan:<br>
+    - Reporte en PDF con firma<br>
+    - Respaldo en TXT
+  </div>
+
+  <div style="margin-top:16px">
+    Gracias por confiar en ECOLOIMP.<br><br>
+    Atentamente,<br>
+    <b>Departamento Técnico - ECOLOIMP S.A.</b><br>
+    <span style="color:#2563eb">www.ecoloimp.com</span>
+    ${gcorreo}
+  </div>
+</div>`;
+
+  elMsg.textContent = html;
+    // YA NO USO c - uso clienteVisita seguro
+
+    const nombreBase = `VT_${codigo}_${fechaVal}`.replace(/[^a-zA-Z0-9_\-]/g,"_");
+
+     fetch(URL_APPS_SCRIPT, {
+      method: "POST",
+      headers: {"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({
+        para: gcorreo,
+        cc: emailCliente,
+        asunto: `Visita Tecnica - ${fechaVal}`,
+        html: html,
+        pdfBase64: pdfBase64,
+        pdfNombre: nombreBase + ".pdf",
+        txtBase64: txtBase64,
+        txtNombre: nombreBase + ".txt"
+      })
     });
-    cy += 2; // espacio entre párrafos
-  });
-  
-  return cy; // retorna donde terminó para seguir dibujando
-}
 
-async function generarVisitaHistorialPDF(){
-  let hist = JSON.parse(localStorage.getItem(keyVisita())||"[]");
-  if(hist.length===0) throw new Error("No hay visitas guardadas");
-  
-  const c = DB.clientes.find(x=>x.codigo===hist[0].cliente) || {codigo:hist[0].cliente, nombre:hist[0].clienteNombre};
-  const usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
-  const logoBase64 = await getLogoBase64().catch(()=>null);
-  const firmaData = (()=>{ try{ return firmaDibujada? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })();
-  const firmaNombre = $("vtNombreFirma")?.value || hist[hist.length-1].nombreFirma || "Cliente";
-  
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({orientation:"portrait", unit:"mm", format:"a4"});
-  const pageW = 210, pageH = 297;
-  let y=30;
+    if(elMsg){ elMsg.style.color = "green"; elMsg.textContent = "✅ Enviado a Administracion y Servicio con copia a " + emailCliente; }
 
-  function drawHeader(){
-    let yh=10;
-    if(logoBase64){ try{ doc.addImage(logoBase64,"JPEG",10,yh,45,14); }catch{} }
-    doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.setTextColor(0);
-    doc.text("REPORTE DE VISITAS TECNICAS", 70, yh+5);
-    doc.setFontSize(10); doc.setTextColor(30,64,175);
-    doc.text(`Usuario: ${usuarioActual} | ${hist.length} visitas`, 195, yh+5, {align:"right"});
-    doc.setFontSize(7); doc.setTextColor(100);
-    doc.text(new Date().toLocaleString('es-EC'), 195, yh+9, {align:"right"});
-    doc.setTextColor(0); doc.line(10,27,200,27);
-    y=34;
+  }catch(err){
+    console.error(err);
+    alert("Error: " + err.message);
+    const elMsg = document.getElementById("vMessage");
+    if(elMsg){ elMsg.style.color = "red"; elMsg.textContent = "Error: " + err.message; }
   }
-
-  function drawTable(x,yy,w1,w2,h, rows){
-    doc.setDrawColor(180); doc.setLineWidth(0.3);
-    doc.rect(x, yy, w1+w2, h*rows.length);
-    let cy = yy;
-    rows.forEach((r,i)=>{
-      if(i>0){ doc.line(x, cy, x+w1+w2, cy); }
-      doc.line(x+w1, cy, x+w1, cy+h);
-      doc.setFontSize(9); doc.setFont(undefined,'bold');
-      doc.text(r[0], x+2, cy+5);
-      doc.setFont(undefined,'normal');
-      let lines = doc.splitTextToSize(r[1], w2-4);
-      doc.text(lines, x+w1+2, cy+5);
-      let lh = Math.max(h, lines.length*5+2);
-      cy += lh;
-    });
-    return cy;
-  }
-  
-  drawHeader();
-  doc.setFontSize(9); doc.setFont(undefined,'bold');
-  doc.text(`Cliente: ${c.codigo} - ${c.nombre} | Fecha: ${$("vtFecha").value} | Total equipos: ${hist.length}`,10,y); y+=8;
-
-  // TABLA RESUMEN
-  const colW=[28,22,22,28,18,22,20,30];
-  const headers=["SERIE","MODELO","BODEGA","SUCURSAL","CONT","TIPO","ESTADO","TRABAJO"];
-  
-  function drawTableHeader(yy){
-    let x=10; doc.setFontSize(7); doc.setFont(undefined,'bold');
-    headers.forEach((h,i)=>{ doc.setFillColor(230,230,230); doc.rect(x,yy,colW[i],7,"FD"); doc.text(h,x+1,yy+4.5); x+=colW[i]; });
-    return yy+7;
-  }
-  
-  y=drawTableHeader(y);
-  
-  hist.forEach(h=>{
-    if(y>270){ doc.addPage(); drawHeader(); y=drawTableHeader(30); }
-    let x=10; const vals=[h.serie,h.modelo,h.bodega||"",h.sede||"",h.contador,h.tipo||"",h.estado||"",h.trabajoNombre.substring(0,16)];
-    doc.setFont(undefined,'normal'); doc.setFontSize(6.5);
-    vals.forEach((v,i)=>{ doc.rect(x,y,colW[i],7); doc.text(String(v).substring(0,18),x+1,y+4.5); x+=colW[i]; });
-    y+=7;
-  });
-
-  // DETALLE POR VISITA
-  for(let idx=0; idx<hist.length; idx++){
-    const h=hist[idx];
-    doc.addPage(); drawHeader();
-    let rows1 = [
-      ["FECHA", $("vtFecha").value + " " + $("vtHora").value],
-      ["CLIENTE", `${c.codigo} - ${c.nombre}`],
-      ["EQUIPO", `${h.codigo} - ${h.modelo}`],
-      ["SERIE", `${h.serie}`],
-      ["SUCURSAL", `${h.sede}`],
-      ["AREA", `${h.ubicacion}`],
-      ["UBICACION", `${h.ip}`],
-      ["CONTADOR", `${h.contador}`],
-    ];
-    y = drawTable(10, y, 35, 145, 8, rows1) + 8;
-
-    let rows2 = [
-      ["TECNICO", `${h.tecnico} - ${h.tecnicoNombre}`],
-      ["TIPO VISITA", h.tipo || $("vtTipo").value],
-      ["TRABAJO", `${h.trabajo} - ${h.trabajoNombre}`],
-      ["ESTADO", `${h.estado}`],
-      ["EMAIL CLIENTE", h.email || "-"],
-      ["FIRMA DIGITAL", firmaDibujada? "SI" : "NO"],
-    ];
-    y = drawTable(10, y, 35, 145, 8, rows2) + 6;    
-
-  y+=6;
-  doc.setFont(undefined,'bold'); doc.setFontSize(10);
-  doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=4;
-  doc.setFont(undefined,'normal'); doc.setFontSize(9);
-
-  let detLines = doc.splitTextToSize(h.detalle||"(Sin detalle)", 165);
-  let alturaTexto = detLines.length * 5 + 12;
-  let alturaCuadro = Math.max(30, alturaTexto);
-  if(y + alturaCuadro > 275){ doc.addPage(); drawHeader(); }
-  doc.setDrawColor(180); doc.setLineWidth(0.3);
-  doc.rect(10, y, 180, alturaCuadro);
-  doc.setFontSize(9);
-  justificarTextoPDF(doc, h.detalle, 15, y+6, 165, 5);
-  y += alturaCuadro + 10;
-    
-    //doc.setFont(undefined,'bold'); doc.setFontSize(11);
-    //doc.text(`VISITA ${idx+1}/${hist.length} - ${h.serie} - ${h.modelo}`,10,y); y+=6;
-    //doc.setFontSize(8); doc.setFont(undefined,'normal');
-    //doc.text(`Sucursal: ${h.sede} | Area: ${h.ubicacion} | Contador: ${h.contador} | ${h.fecha} ${h.hora}`,10,y); y+=4;
-    //doc.text(`Trabajo: ${h.trabajoNombre} | Técnico: ${h.tecnicoNombre}`,10,y); y+=6;
-    
-    //let det = doc.splitTextToSize(h.detalle||"(Sin detalle)",180);
-    //let alt = Math.max(15, det.length*4+6);
-    //if(y+alt>270){ doc.addPage(); drawHeader(); }
-    //doc.rect(10,y,180,alt); doc.text(det,12,y+5); y+=alt+8;
-
-    // FOTOS 3x PAGINA (vertical centrada)
-    const todasFotos = [...h.fotos, ...h.fotos2];
-    if(todasFotos.length>0){
-      // Si no entran, nueva pagina de fotos
-      doc.addPage(); drawHeader();
-      let yFoto=36;
-      doc.setFont(undefined,'bold'); doc.setFontSize(11);
-      doc.text(`EVIDENCIA ${h.serie} (${todasFotos.length} fotos) - 3 x PAG`,10,yFoto); yFoto+=8;
-      
-      for(let i=0; i<todasFotos.length; i+=3){
-        if(i>0){ doc.addPage(); drawHeader(); yFoto=36; 
-          doc.text(`EVIDENCIA ${h.serie} (cont.) Pag ${Math.floor(i/3)+1}/${Math.ceil(todasFotos.length/3)}`,10,yFoto); yFoto+=8;
-        }
-        const hasta=Math.min(i+3,todasFotos.length);
-        for(let j=i;j<hasta;j++){
-          const fotoW=180, fotoH=70;
-          const x=(pageW-fotoW)/2;
-          try{
-            doc.addImage(todasFotos[j],"JPEG",x,yFoto,fotoW,fotoH);
-            doc.rect(x,yFoto,fotoW,fotoH);
-            doc.setFontSize(7); doc.text(`Foto ${j+1} - ${h.serie}`,x+2,yFoto+fotoH-2);
-          }catch{}
-          yFoto+=fotoH+8;
-        }
-      }
-    }
-  }
-
-  // FIRMA FINAL - SOLO 1 VEZ AL FINAL
-  doc.addPage(); drawHeader();
-  y=50;
-  doc.setFont(undefined,'bold'); doc.setFontSize(12);
-  doc.text("FIRMA DE CONFORMIDAD FINAL - TODO EL SERVICIO",10,y); y+=10;
-  doc.setFontSize(9); doc.setFont(undefined,'normal');
-  doc.text(`Cliente: ${c.codigo} - ${c.nombre}`,10,y); y+=5;
-  doc.text(`Total equipos atendidos: ${hist.length} | Fecha: ${$("vtFecha").value}`,10,y); y+=15;
-  
-  if(firmaData){
-    try{ doc.addImage(firmaData,"PNG",10,y,90,35); }catch{}
-    y+=40;
-  }
-  doc.line(10,y,100,y); y+=6;
-  doc.text(firmaNombre,10,y); y+=5;
-  doc.text(`CI/RUC: _______________________`,10,y);
-
-  // footer en todas
-  const totalPages=doc.internal.getNumberOfPages();
-  for(let i=1;i<=totalPages;i++){
-    doc.setPage(i);
-    doc.setFontSize(6); doc.setTextColor(100);
-    doc.text(`© 2026 DT - ${usuarioActual} - ${c.codigo} - ${hist.length} visitas - ${new Date().toLocaleString('es-EC')}`,105,290,{align:"center"});
-  }
-
-  doc.autoPrint();
-  window.open(doc.output('bloburl'), '_blank');
-  return doc;
 }
 
 function generarVisitaTXT(){
-  const c=DB.clientes.find(x=>x.codigo===$("vtCliente")?.value);
-  const p=DB.visitaPrinter;
-  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:""};
-  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:""};
-  const contador = $("vtContador")?.value || "0";
-  if(!c||!p||!t||!tr)throw new Error("Falta cliente/impresora/tecnico/trabajo");
-  return`${$("vtFecha").value};${$("vtHora").value};${c.codigo};${p.codigo};${p.serie};${p.sede};${p.ubicacion};${p.ip};${p.bodega};${contador};${t.codigo};${$("vtTipo").value};${tr.codigo};${$("vtEstado").value};${$("vtEmail")?.value||""};${$("vtNombreFirma")?.value||""};${($("vtDetalle").value||"").replace(/;/g,",").replace(/\n/g," ")}`;
+  const usuario=getUsuarioActual(); 
+  const cliente=document.getElementById('vCliente'); 
+  const clienteCodigo = cliente?.value || '';
+  const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
+  let visitas = [];
+  visitas = JSON.parse(localStorage.getItem(key)||'[]');
+  if(visitas.length===0){ alert('No hay visitas'); return; }
+
+  let txt = '';
+  // CABECERA
+  txt += 'FECHA;HORA;CLIENTE_ID;EQUIPO;SERIE;SUCURSAL;AREA;UBICACION;CONTADOR;TECNICO;TIPO;TRABAJO;ESTADO;DETALLE;AUTORIZA;TIENE_FIRMA;NUM_FOTOS\n';
+
+  visitas.forEach(v=>{
+    const limpiar = (s)=> String(s||'').replace(/;/g, ',').replace(/\n|\r/g, ' ').trim();
+    
+    const fila = [
+      limpiar(v.fecha),
+      limpiar(v.hora),
+      limpiar(v.cliente),
+      limpiar(v.codigo),
+      limpiar(v.serie),
+      limpiar(v.sucursal),
+      limpiar(v.area),
+      limpiar(v.ubicacion),
+      limpiar(v.contador),
+      limpiar(v.tecnico),
+      limpiar(v.tipo),
+      limpiar(v.trabajo),
+      limpiar(v.estado),
+      limpiar(v.obs),
+      limpiar(v.autorizaNombre),
+      v.firma ? 'SI' : 'NO',
+      v.fotos?.length||0
+    ].join(';');
+
+    txt += fila + '\n';
+  });
+ return txt;
+  //const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  //const url = URL.createObjectURL(blob);
+  //const a = document.createElement('a');
+  //a.href = url;
+  //a.download = 'VISITAS_'+ new Date().toISOString().slice(0,10) +'.txt';
+  //a.click();
+  //URL.revokeObjectURL(url);
 }
 
-function generarVisitaCON(){
-  const c=selectedClientVisita(); 
-  const p=DB.visitaPrinter;
-  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
-  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
+function getClienteDesc(codigo, visita){
+  if(visita?.clienteDesc) return visita.clienteDesc;
+  // Buscar en DB.tecnicos que ya cargaste de tecnicos.txt
+  const encontrado = (DB.clientes || []).find(c => String(c.codigo).trim() === String(codigo).trim());
+  if(encontrado) return `${encontrado.codigo} - ${encontrado.nombre}`;
+  return codigo;
+}
+
+function getTecnicoDesc(codigo, visita){
+  if(visita?.tecnicoDesc) return visita.tecnicoDesc;
+  // Buscar en DB.tecnicos que ya cargaste de tecnicos.txt
+  const encontrado = (DB.tecnicos || []).find(t => String(t.codigo).trim() === String(codigo).trim());
+  if(encontrado) return `${encontrado.codigo} - ${encontrado.nombre}`;
+  return codigo;
+}
+
+function getTrabajoDesc(codigo, visita){
+  if(visita?.trabajoDesc) return visita.trabajoDesc;
+  // Buscar en DB.tecnicos que ya cargaste de tecnicos.txt
+  const encontrado = (DB.trabajos || []).find(t => String(t.codigo).trim() === String(codigo).trim());
+  if(encontrado) return `${encontrado.codigo} - ${encontrado.nombre}`;
+  return codigo;
+}
+
+
+async function generarPDFTodas(){
+  aplicarFirmaAHistorial();
   
-  if(!c) throw new Error("Seleccione cliente");
-  if(!p) throw new Error("Seleccione impresora");
-  if(!t) throw new Error("Seleccione técnico");
-  if(!tr) throw new Error("Seleccione trabajo");
+  const usuario=getUsuarioActual(); 
+  const cliente=document.getElementById('vCliente'); 
+  const clienteCodigo = cliente?.value || '';
+  if(!clienteCodigo || clienteCodigo==='GENERAL'){ alert('Seleccione cliente'); return; }
 
-  return `ECOLOIMP S.A. - REPORTE DE VISITA TÉCNICA
-═══════════════════════════════════════════════════════════════════
+  // DEFINIMOS todas ANTES DE USARLA - ESTE ERA EL ERROR DE LA LÍNEA 671
+  const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
+  const todas=JSON.parse(localStorage.getItem(key)||'[]');
+  const lista=todas.filter(v=>String(v.clienteId||v.cliente||'').trim().toUpperCase()===String(clienteCodigo||'').trim().toUpperCase());
 
-Estimado cliente,
-
-Se ha realizado la visita técnica con el siguiente detalle:
-
-📅 INFORMACIÓN DE VISITA
-• Fecha: ${$("vtFecha").value} - ${$("vtHora").value}
-• Tipo: ${$("vtTipo").value}
-• Estado: ${$("vtEstado").value}
-
-🏢 CLIENTE
-• ${c.codigo} - ${c.nombre}
-
-🖨️ EQUIPO ATENDIDO
-• Código   : ${p.codigo}
-• Modelo   : ${p.modelo}
-• Serie    : ${p.serie}
-• Sucursal : ${p.sede}
-• Área     : ${p.ubicacion}
-• Ubicación: ${p.ip}
-• Bodega   : ${p.bodega}
-• Contador : ${$("vtContador").value}
-
-👨‍🔧 SERVICIO
-• Técnico: ${t.nombre} (${t.codigo})
-• Trabajo realizado: ${tr.nombre} (${tr.codigo})
-
-📝 DETALLE DEL TRABAJO REALIZADO:
-──────────────────────────────────────────────────────────────────────────
-${justificar($("vtDetalle").value || "(Sin detalle registrado)", 106)}
-──────────────────────────────────────────────────────────────────────────
-
-✍️ CONFORMIDAD
-• Firmado por: ${$("vtNombreFirma")?.value || "Cliente"}
-• Firma digital: ${firmaDibujada ? "Sí, registrada en PDF" : "No registrada"}
-
-Se adjuntan en la descarga automática:
-• Reporte en PDF con firma
-• Respaldo en TXT
-
-Gracias por confiar en ECOLOIMP.
-
-Atentamente,
-Departamento Técnico
-ECOLOIMP S.A.
-${$("pgCorreo")?.value || gcorreo}
-www.ecoloimp.com
-`;
+  console.log('PDF - Buscando en:', key, 'Encontradas:', todas.length, 'Filtradas:', lista.length);
+  if(!lista.length){ alert('No hay visitas para '+clienteCodigo); return; }
+  await cargarLogo();
+  const modo='ver';
+  generarPDFConVisitas(lista, modo);
 }
 
-async function generarVisitaPDF(){
-  const c=selectedClientVisita();
-  const p=DB.visitaPrinter;
-  const t = DB.tecnicos.find(x=>x.codigo===$("vtTecnico")?.value) || {codigo:"", nombre:""};
-  const tr = DB.trabajos.find(x=>x.codigo===$("vtTrabajo")?.value) || {codigo:"", nombre:""};
-  const fechaFile = $("vtFecha").value || new Date().toISOString().slice(0,10);
-  const firmaData = $("vtFirmaCanvas")?.toDataURL? (()=>{ try{ return firmaDibujada? $("vtFirmaCanvas").toDataURL("image/png") : null; }catch{return null;} })() : null;
-  const firmaNombre = $("vtNombreFirma")?.value || "";
-  const logoBase64 = await getLogoBase64().catch(()=>null);
-  let usuarioActual = localStorage.getItem('ecoloimp_session') || 'Invitado';
-  let y = 30; // <--- ESTE ES EL QUE TE FALTABA, DEFINIDO FUERA
+function generarPDFConVisitas(listaForzada, modo){
+  const usuario=getUsuarioActual(); 
+  const {codigo, nombre} = obtenerCodigoYNombre();
+  const cliente=document.getElementById('vCliente'); 
+  const clienteCodigo = cliente?.value || '';
 
-  if(!window.jspdf) return;
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const altoPagina = 297;
-  const margenInferior = 10;
-
-  function drawTable(x,yy,w1,w2,h, rows){
-    doc.setDrawColor(180); doc.setLineWidth(0.3);
-    doc.rect(x, yy, w1+w2, h*rows.length);
-    let cy = yy;
-    rows.forEach((r,i)=>{
-      if(i>0){ doc.line(x, cy, x+w1+w2, cy); }
-      doc.line(x+w1, cy, x+w1, cy+h);
-      doc.setFontSize(9); doc.setFont(undefined,'bold');
-      doc.text(r[0], x+2, cy+5);
-      doc.setFont(undefined,'normal');
-      let lines = doc.splitTextToSize(r[1], w2-4);
-      doc.text(lines, x+w1+2, cy+5);
-      let lh = Math.max(h, lines.length*5+2);
-      cy += lh;
-    });
-    return cy;
+  //todas.filter(v=>norm(v.clienteId||v.cliente)===norm(cliente))
+  //const visitas=todas.filter(v=>String(v.clienteId).toUpperCase()===codigo);
+  const visitas = listaForzada;
+  if(!visitas){
+    const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
+    const todas=JSON.parse(localStorage.getItem(key)||'[]');
+    visitas=todas.filter(v=>String(v.clienteId||v.cliente||'').trim().toUpperCase()===String(clienteCodigo||'').trim().toUpperCase());
   }
+  console.log('PDF - Generando con:', visitas.length, 'visitas de', clienteCodigo);
 
-  function drawHeader(){
-    let yh = 10;
-    if(logoBase64){
+  if(!visitas.length){ alert('No hay visitas para '+cliente.value); return; }
+  cargarLogo();
+  
+  const jsPDFLib=window.jspdf?.jsPDF||window.jsPDF; if(!jsPDFLib){alert('jsPDF no cargado'); return;}
+  const doc=new jsPDFLib('p','mm','a4');
+  const nombreU=getNombreUsuario();
+  const fechaImpresion=new Date().toLocaleString('es-EC', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
+
+  let totalPags=0; visitas.forEach(v=>{ totalPags+=1 + Math.ceil((v.fotos?.length||0)/3); });
+  let paginaActual=0;
+
+  const pie=(pg, tot)=>{
+    doc.setDrawColor(220); doc.line(10,282,200,282);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(0);
+    doc.text('© 2026 DT Soluciones Informáticas - Desarrollado para Ecoloimp S.A.', 10, 287);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(0);
+    doc.text('Página '+pg+' de '+tot, 200, 287, {align:'right'});
+  };
+
+  visitas.forEach((v)=>{
+    paginaActual++; if(paginaActual>1) doc.addPage();
+    if(LOGO_BASE64){ try{ doc.addImage(LOGO_BASE64,'PNG',10,5,55,14); }catch(e){} }
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(0);
+    doc.text('REPORTE DE VISITA TECNICA', 105, 12, {align:'center'});
+    doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.text('Usuario: '+usuario, 195, 6, {align:'right'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(nombreU, 195, 10, {align:'right'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(60);
+    doc.text(fechaImpresion, 195, 14, {align:'right'});
+    doc.setDrawColor(22,163,74); doc.setLineWidth(0.8); doc.line(10,22,200,22); doc.setLineWidth(0.2); doc.setDrawColor(0);
+
+    let y=26; const leftW=38; const tableX=10; const tableW=190; const rowH=7;
+    const drawRow=(l,val)=>{
+      doc.setFillColor(245,245,245); doc.rect(tableX, y, leftW, rowH, 'F');
+      doc.rect(tableX, y, tableW, rowH, 'S'); doc.line(tableX+leftW, y, tableX+leftW, y+rowH);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(0); doc.text(l.toUpperCase(), tableX+2, y+4.5);
+      doc.setFont('helvetica','normal'); doc.text(String(val||'-').substring(0,80), tableX+leftW+2, y+4.5);
+      y+=rowH;
+    };
+
+    let yG1=y;
+    drawRow('FECHA', v.fecha+' '+v.hora);
+    drawRow('CLIENTE', v.clienteId+' - '+nombre);
+    drawRow('EQUIPO', (v.codigo? v.codigo+' - ':'')+v.modelo);
+    drawRow('SERIE', v.serie);
+    drawRow('SUCURSAL', v.sucursal);
+    drawRow('AREA', v.area);
+    drawRow('UBICACION', v.ubicacion||v.bodega||'-');
+    drawRow('CONTADOR', v.contador||'-');
+    doc.setDrawColor(0); doc.setLineWidth(0.4); doc.rect(tableX, yG1, tableW, y-yG1, 'S'); doc.setLineWidth(0.2);
+
+    y+=3; 
+    //doc.setDrawColor(22,163,74); doc.setLineWidth(0.6); doc.line(tableX, y, tableX+tableW, y); doc.setLineWidth(0.2); doc.setDrawColor(0); y+=4;
+
+    let yG2=y;
+    drawRow('TECNICO', getTecnicoDesc(v.tecnico, v));
+    drawRow('TIPO DE VISITA', v.tipo||'correctiva');
+    drawRow('TRABAJO', getTrabajoDesc(v.trabajo, v));
+    drawRow('ESTADO', v.estado||'finalizada');
+    drawRow('EMAIL CLIENTE', v.email||'-');
+    drawRow('FIRMA DIGITAL', v.firma ? 'Si' : 'No');
+    doc.setDrawColor(0); doc.setLineWidth(0.4); doc.rect(tableX, yG2, tableW, y-yG2, 'S'); doc.setLineWidth(0.2);
+
+    y+=3;
+    doc.setFillColor(245,245,245); doc.rect(tableX, y, tableW, rowH, 'FD');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('DETALLE / TRABAJO REALIZADO:', tableX+2, y+4.5);
+    y+=rowH;
+    const detalleLines=doc.splitTextToSize(v.obs||'Sin observaciones', tableW-4);
+    const detalleH=Math.max(35, detalleLines.length*4 + 8);
+    doc.rect(tableX, y, tableW, detalleH, 'S');
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.text(detalleLines, tableX+2, y+5);
+
+    y += detalleH + 6;
+    const firmaH = 45;
+    if(y+firmaH > 270){ doc.addPage(); y=20; }
+// RECUADRO BIEN REMARCADO
+    doc.setDrawColor(0); doc.setLineWidth(0.8); // Borde exterior grueso
+    doc.rect(tableX, y, tableW, firmaH);
+    
+        // --- BLOQUE FIRMA DE CONFORMIDAD CENTRADA ---
+    // FIRMA CENTRADA
+    if(y + firmaH > 275){ doc.addPage(); y = 15; }
+
+    doc.setDrawColor(0); doc.setLineWidth(0.8);
+    doc.rect(tableX, y, tableW, firmaH);
+    doc.setFillColor(220,220,220);
+    doc.rect(tableX, y, tableW, 8, 'F');
+    doc.setDrawColor(0); doc.setLineWidth(0.5);
+    doc.line(tableX, y+8, tableX+tableW, y+8);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(0);
+    doc.text('FIRMA DE CONFORMIDAD - CLIENTE', tableX+3, y+5.5);
+
+    if(v.firma && v.firma.length > 100){
       try{
-        let props = doc.getImageProperties(logoBase64);
-        let w = 45; let h = (props.height * w) / props.width;
-        if(h > 14) { h = 14; w = (props.width * h) / props.height; }
-        doc.addImage(logoBase64,"JPEG",10,yh, w, h);
-      }catch(e){ try{ doc.addImage(logoBase64,"JPEG",10,yh,45,14); }catch{} }
+        let fmt = v.firma.includes('png') ? 'PNG' : 'JPEG';
+        let imgW = 60, imgH = 20;
+        let imgX = tableX + (tableW/2) - (imgW/2);
+        let imgY = y + 11;
+        doc.addImage(v.firma, fmt, imgX, imgY, imgW, imgH);
+      }catch(e){}
     }
-    doc.setFontSize(14); doc.setFont(undefined,'bold');
-    doc.text("REPORTE DE VISITA TECNICA", 70, yh+5);
-    doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(30,64,175);
-    doc.text(`Usuario: ${usuarioActual}`, 195, yh+5, {align:"right"});
-    doc.setFont(undefined,'normal'); doc.setFontSize(7); doc.setTextColor(100);
-    doc.text(new Date().toLocaleString('es-EC'), 195, yh+9, {align:"right"});
-    doc.setTextColor(0); doc.setLineWidth(0.6); doc.setDrawColor(15,23,42);
-    doc.line(10, 24, 200, 24);
-    y = 30; // resetea y afuera
-  }
-
-  drawHeader();
-
-  let rows1 = [
-    ["FECHA", $("vtFecha").value + " " + $("vtHora").value],
-    ["CLIENTE", `${c.codigo} - ${c.nombre}`],
-    ["EQUIPO", `${p.codigo} - ${p.modelo}`],
-    ["SERIE", `${p.serie}`],
-    ["SUCURSAL", `${p.sede}`],
-    ["AREA", `${p.ubicacion}`],
-    ["UBICACION", `${p.ip}`],
-    ["CONTADOR", $("vtContador").value],
-  ];
-  y = drawTable(10, y, 35, 145, 8, rows1) + 8;
-
-  let rows2 = [
-    ["TECNICO", `${t.codigo} - ${t.nombre}`],
-    ["TIPO VISITA", $("vtTipo").value],
-    ["TRABAJO", `${tr.codigo} - ${tr.nombre}`],
-    ["ESTADO", $("vtEstado").value],
-    ["EMAIL CLIENTE", $("vtEmail")?.value || "-"],
-    ["FIRMA DIGITAL", firmaDibujada? "SI" : "NO"],
-  ];
-  y = drawTable(10, y, 35, 145, 8, rows2) + 6;
-
-  y+=6;
-  doc.setFont(undefined,'bold'); doc.setFontSize(10);
-  doc.text("DETALLE / TRABAJO REALIZADO:", 10, y); y+=4;
-  doc.setFont(undefined,'normal'); doc.setFontSize(9);
-  let detLines = doc.splitTextToSize($("vtDetalle").value || "(Sin detalle)", 165);
-  let alturaTexto = detLines.length * 4.2 + 10;
-  let alturaCuadro = Math.max(25, alturaTexto);
-  if(y + alturaCuadro > 275){ doc.addPage(); drawHeader(); }
-  doc.setDrawColor(180); doc.setLineWidth(0.3);
-  doc.rect(10, y, 180, alturaCuadro);
-  doc.text(detLines, 15, y+6, {align:"left", maxWidth:165});
-  y += alturaCuadro + 10;
-
-  doc.setFont(undefined,'bold'); doc.text("FIRMA DE CONFORMIDAD", 10, y);
-  doc.setDrawColor(15,23,42); doc.setLineWidth(0.4);
-  y+=2;
-  if(firmaData){ try{ doc.addImage(firmaData,"PNG",10,y,70,25); }catch{} }
-  y+=21;
-  doc.line(10, y, 80, y); y+=5;
-  doc.text(firmaNombre || "Firma cliente", 10, y);
-  y+=10;
- 
-// ===== FUNCION CORREGIDA 3 x PAGINA VERTICAL =====
-  function agregarSeccionFotos(titulo, lista, fotosPorPagina){
-    if(!lista || lista.length===0) return;
+    const lineaW = 140;
+    const lineaX = tableX + (tableW/2) - (lineaW/2);
+    const lineaY = y + firmaH - 12;
+    doc.setDrawColor(0); doc.setLineWidth(0.3);
+    doc.line(lineaX, lineaY, lineaX+lineaW, lineaY);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8);
     
-    const fotosPorFila = fotosPorPagina === 1 ? 1 : 1; // 1 por fila para que queden una debajo de otra
-    const fotoW = fotosPorPagina === 1 ? 180 : 180;
-    const fotoH = fotosPorPagina === 1 ? 120 : 70; // 70mm *3 = 210mm entra perfecto en A4
-    const gapY = 8;
-    
-    const pageWidth = 210;
-    
-    for(let i=0; i<lista.length; i+= fotosPorPagina){
-      doc.addPage(); drawHeader();
-      let yFoto = 33;
-      doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(0);
-      doc.text(`${titulo} Pag ${Math.floor(i/fotosPorPagina)+1}/${Math.ceil(lista.length/fotosPorPagina)} (${lista.length} fotos)`, 10, yFoto);
-      yFoto+=8;
-      
-      const hasta = Math.min(i+fotosPorPagina, lista.length);
-      for(let j=i; j<hasta; j++){
-        const x = (pageWidth - fotoW) / 2; // centrado horizontal
-        try{
-          doc.addImage(lista[j],"JPEG",x,yFoto,fotoW,fotoH);
-          doc.setDrawColor(180); doc.setLineWidth(0.2); doc.rect(x,yFoto,fotoW,fotoH);
-          doc.setFontSize(7); doc.setTextColor(80);
-          doc.text(`Foto ${j+1} - ${p.serie}`, x+2, yFoto+fotoH-2);
-        }catch(e){ console.log("Error foto",j,e); }
-        yFoto+=fotoH+gapY;
+    y += firmaH + 10;
+
+    // NOMBRE CORREGIDO - USA v.autorizaNombre
+    const nombreFirmaFinal = (v.autorizaNombre || v.clienteNombre || '').substring(0,60);
+    doc.text(nombreFirmaFinal, 105, lineaY+5, {align:'center'});
+    y += firmaH + 4;
+
+    pie(paginaActual, totalPags);
+
+    if(v.fotos && v.fotos.length>0){
+      let fIdx=0;
+      while(fIdx < v.fotos.length){
+        doc.addPage(); paginaActual++;
+        if(LOGO_BASE64){ try{ doc.addImage(LOGO_BASE64,'PNG',10,5,55,14);}catch(e){} }
+        doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text('REPORTE DE VISITA TECNICA',105,12,{align:'center'});
+        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('Usuario: '+usuario,195,6,{align:'right'});
+        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.text(nombreU,195,10,{align:'right'});
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text(fechaImpresion,195,14,{align:'right'});
+        doc.setDrawColor(22,163,74); doc.setLineWidth(0.8); doc.line(10,22,200,22); doc.setLineWidth(0.2);
+        doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text('FOTOS - '+v.serie,10,28);
+        let yFoto=30;
+        const fotoH = 78; // Alto perfecto para 3 fotos
+        const gap = 4; // Espacio entre fotos
+        for(let k=0;k<3 && fIdx < v.fotos.length;k++){
+          try{
+            let fmt=v.fotos[fIdx].includes('png')?'PNG':'JPEG';
+            // Marco
+            doc.setDrawColor(180); doc.setLineWidth(0.3);
+            doc.rect(10, yFoto, 190, fotoH, 'S');
+            // Imagen ocupando 95% del marco
+            doc.addImage(v.fotos[fIdx], fmt, 11, yFoto+1, 188, fotoH-8);
+            // Texto
+            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(0);
+            doc.text('Foto '+(fIdx+1)+' - '+v.serie+' - '+(v.fecha||''), 12, yFoto+fotoH-2);
+            yFoto+=fotoH+gap;
+          }catch(e){ console.log(e); }
+          fIdx++;
+        }
+        pie(paginaActual, totalPags);
       }
     }
+  });
+  if(modo === 'ver'){
+     window.open(doc.output('bloburl'),'_blank');
   }
-  
-  agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (3 x PAG)", FOTOS_DB.fotosVisita,3);
-  agregarSeccionFotos("EVIDENCIA FOTOGRAFICA (1 x PAG)", FOTOS_DB.fotosVisita2,1);
-  
-  const texto = `© 2026 DT Soluciones Informaticas     Generado por: ${usuarioActual} | ${new Date().toLocaleString('es-EC')} desde Ecoloimp Web`;
-  doc.setFontSize(8);
-  const coordenadaY = altoPagina - margenInferior;
-  doc.setFontSize(6); doc.setTextColor(100);
-  doc.text(texto, 105, coordenadaY, { align: "center" });
-  
-  doc.autoPrint();
-  window.open(doc.output('bloburl'), '_blank');
-  return doc;  
+  return doc;
 }
+
+setTimeout(iniciarFirma,120);
+
+window.filtrarImpresorasCliente=filtrarImpresorasCliente; 
+window.seleccionarImpresora=seleccionarImpresora; 
+window.guardarVisita=guardarVisita; 
+window.eliminarVisita=eliminarVisita; 
+window.procesarFotos=procesarFotos; 
+window.generarPDFTodas=generarPDFTodas; 
+window.getNombreUsuario=getNombreUsuario;
+document.addEventListener('DOMContentLoaded', async()=>{ await cargarUsuariosTxt(); await cargarLogo(); const sel=document.getElementById('vCliente'); if(sel) sel.addEventListener('change', filtrarImpresorasCliente); mostrarListaVisitasSesion(); });
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(iniciarFirma, 500);
+  });
+window.limpiarFirma = limpiarFirma;
