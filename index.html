@@ -45,11 +45,11 @@
 
   <nav class="nav">
     <div id="menuPrincipal" class="menu"></div>    
-      <button data-p="bienvenida" class="active" onclick="showPage('bienvenida')">🏠 Bienvenida</button>
-      <button data-p="visitas" onclick="showPage('visitas')">🛠️ Visita Técnica</button>
-      <button data-p="conteo" onclick="showPage('conteo')">🖨️ Conteo de Impresiones</button>
-      <button data-p="inventarios" onclick="showPage('inventarios')">📦 Toma de Inventario</button>
-      <button data-p="salir" onclick="logout()">🚪 Salir</button>
+      <button data-p="bienvenida" class="active" onclick="showPage('bienvenida');toggleMenu(true)">🏠 Bienvenida</button>
+      <button data-p="visitas" onclick="showPage('visitas');toggleMenu(true)">🛠️ Visita Técnica</button>
+      <button data-p="conteo" onclick="showPage('conteo');toggleMenu(true)">🖨️ Conteo de Impresiones</button>
+      <button data-p="inventarios" onclick="showPage('inventarios');toggleMenu(true)">📦 Toma de Inventario</button>
+      <button data-p="salir" onclick="logout();toggleMenu(true)">🚪 Salir</button>
   </nav>
 
   <main>
