@@ -5,13 +5,6 @@ const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwhsoiMq7lPCBwW
 
 const esc=s=>(s??"").toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 
-function toggleMenu(cerrar){
-  const m = document.getElementById('menuPrincipal');
-  if(!m) return;
-  if(cerrar === true) m.classList.remove('abierto');
-  else m.classList.toggle('abierto');
-}
-
 async function cargarTxt(ruta){
   try{
     const r = await fetch(ruta+'?v='+Date.now());
@@ -173,3 +166,41 @@ function showPage(p){
 function logout(){ localStorage.removeItem('ecoloimp_usuario'); location.reload(); }
 
 document.addEventListener('DOMContentLoaded', initApp);
+
+// HAMBURGUESA SOLO CELULAR - se crea sola
+document.addEventListener('DOMContentLoaded', () => {
+  if(window.innerWidth > 768) return;
+  if(document.getElementById('btnHamburguesa')) return;
+
+  const header = document.querySelector('header') || document.querySelector('.header') || document.querySelector('.topbar');
+  const menu = document.querySelector('.tabs') || document.querySelector('.menu') || document.getElementById('menuPrincipal');
+  if(!header || !menu) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'btnHamburguesa';
+  btn.textContent = '☰';
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    menu.classList.toggle('abierto');
+  };
+  header.prepend(btn);
+
+  // Cerrar al elegir una opción
+  menu.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => menu.classList.remove('abierto'));
+  });
+
+  // Cerrar si toca fuera
+  document.addEventListener('click', (e) => {
+    if(!menu.contains(e.target) && e.target !== btn){
+      menu.classList.remove('abierto');
+    }
+  });
+});
+
+function toggleMenu(cerrar){
+  const menu = document.querySelector('.tabs') || document.querySelector('.menu');
+  if(!menu) return;
+  if(cerrar === true) menu.classList.remove('abierto');
+  else menu.classList.toggle('abierto');
+}
