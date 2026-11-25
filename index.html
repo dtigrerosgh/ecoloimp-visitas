@@ -47,19 +47,26 @@
 <nav class="nav">
   <!-- DRAWER - SOLO SE USA EN CELULAR -->
   <div id="fondoDrawer" onclick="cerrarDrawer()"></div>
-  <aside id="drawerMenu">
-    <div class="drawer-header">
-      <span>Menu</span>
-      <button type="button" onclick="cerrarDrawer()">✕</button>
+<aside id="drawerMenu">
+  <div class="drawer-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="img/logo.png" style="width:38px;height:38px;object-fit:contain;background:#fff;border-radius:8px;padding:2px">
+      <div style="line-height:1.1">
+        <div style="font-size:16px;font-weight:900;color:#fff">ECOLOIMP</div>
+        <small style="font-size:10px;color:#D1FAE5">ECOLOGIA EN IMPRESION S.A.</small>
+      </div>
     </div>
-    <div id="drawerLinks">
-      <button onclick="showPage('bienvenida');cerrarDrawer()">🏠 Bienvenida</button>
-      <button onclick="showPage('visitas');cerrarDrawer()">🛠️ Visita Técnica</button>
-      <button onclick="showPage('conteo');cerrarDrawer()">🖨️ Conteo de Impresiones</button>
-      <button onclick="showPage('inventarios');cerrarDrawer()">📦 Toma de Inventario</button>
-      <button onclick="logout();cerrarDrawer()">🚪 Salir</button>
-    </div>
-  </aside>
+    <button type="button" onclick="cerrarDrawer()">✕</button>
+  </div>
+  <div id="drawerLinks">
+    <button onclick="showPage('bienvenida');cerrarDrawer()">🏠 Bienvenida</button>
+    <button onclick="showPage('visitas');cerrarDrawer()">🛠️ Visita Técnica</button>
+    <button onclick="showPage('conteo');cerrarDrawer()">🖨️ Conteo de Impresiones</button>
+    <button onclick="showPage('inventarios');cerrarDrawer()">📦 Toma de Inventario</button>
+    <button onclick="logout();cerrarDrawer()">🚪 Salir</button>
+  </div>
+  <div style="margin-top:auto;padding:16px;text-align:center;color:#D1FAE5;font-size:11px">© 2026 DT Soluciones Informáticas</div>
+</aside>
 
   <!-- MENU PC - AHORA SÍ DENTRO DEL DIV -->
   <div id="menuPrincipal" class="menu">
@@ -98,7 +105,8 @@
     <div class="info-text blue">🔧 Selecciona cliente, elige impresora y registra la visita con fotos.</div>
     
     <label style="margin-top:12px">1️⃣ Seleccione Cliente</label>
-    <select id="vCliente" class="form-control" onchange="filtrarImpresorasCliente()"> 
+    <!-- <select id="vCliente" class="form-control" onchange="filtrarImpresorasCliente()"> -->
+    <select id="vCliente" class="form-control" onchange="filtrarImpresorasCliente()">         
       <option value="">-- Seleccione un cliente --</option>
     </select>
 
