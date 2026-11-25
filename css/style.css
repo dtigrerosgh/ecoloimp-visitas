@@ -267,8 +267,9 @@ tr:hover{background:#f8fafc}
   .app-footer,.login-footer{font-size:11px;padding:12px 8px}
 }
 
-/* DRAWER LIMPIO - SOLO CELULAR */
-#btnDrawer, #drawerMenu, #fondoDrawer{ display:none; }
+/* DRAWER FINAL */
+#btnDrawer{ display:none; }
+#drawerMenu, #fondoDrawer{ display:none; }
 
 @media (max-width: 768px){
   #btnDrawer{
@@ -279,6 +280,8 @@ tr:hover{background:#f8fafc}
     color:#1a7a3a !important;
     padding:0 6px 0 0 !important;
   }
+  /* En celular ocultamos el menú de PC */
+  #menuPrincipal{ display:none !important; }
 
   #fondoDrawer{
     display:none;
@@ -286,7 +289,7 @@ tr:hover{background:#f8fafc}
     background:rgba(0,0,0,0.5);
     z-index:9998;
   }
-  #fondoDrawer.visible{ display:block; }
+  #fondoDrawer.visible{ display:block !important; }
 
   #drawerMenu{
     display:flex !important;
@@ -316,9 +319,9 @@ tr:hover{background:#f8fafc}
     background:none !important;
     border:none !important;
     color:white !important;
-    font-size:20px !important;
+    font-size:22px !important;
   }
-
+  #drawerLinks{ display:flex !important; flex-direction:column !important; }
   #drawerLinks button{
     display:flex !important;
     width:100% !important;
