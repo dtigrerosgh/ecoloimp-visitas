@@ -267,56 +267,27 @@ tr:hover{background:#f8fafc}
   .app-footer,.login-footer{font-size:11px;padding:12px 8px}
 }
 
-/* DRAWER COMO LA FOTO - SOLO CELULAR */
+/* DRAWER LIMPIO - SOLO CELULAR */
 #btnDrawer, #drawerMenu, #fondoDrawer{ display:none; }
 
 @media (max-width: 768px){
-  /* Header verde azulado como la foto */
-  header, .header, .topbar{
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    background:#0e4a5a !important;
-    color:white !important;
-    padding:14px 16px !important;
-  }
-  header h1, .header h1{
-    color:white !important;
-    font-size:22px !important;
-    font-weight:700 !important;
-    margin:0 !important;
-    text-align:left !important;
-  }
-  header span{
-    color:white !important;
-    font-size:13px !important;
-  }
-
   #btnDrawer{
     display:block !important;
     background:none !important;
     border:none !important;
-    color:white !important;
     font-size:28px !important;
-    padding:0 !important;
+    color:#1a7a3a !important;
+    padding:0 6px 0 0 !important;
   }
 
-  /* Ocultar tu menú viejo en celular */
-  .tabs, .tab-bar, .menu, nav{
-    display:none !important;
-  }
-
-  /* Fondo oscuro atrás */
   #fondoDrawer{
     display:none;
-    position:fixed;
-    inset:0;
+    position:fixed; inset:0;
     background:rgba(0,0,0,0.5);
     z-index:9998;
   }
   #fondoDrawer.visible{ display:block; }
 
-  /* EL DRAWER - IGUAL A LA FOTO */
   #drawerMenu{
     display:flex !important;
     flex-direction:column !important;
@@ -325,12 +296,10 @@ tr:hover{background:#f8fafc}
     left:-85% !important;
     width:82% !important;
     max-width:300px !important;
-    height:100% !important;
     height:100dvh !important;
     background:#0e4a5a !important;
     z-index:9999 !important;
     transition:left 0.3s ease !important;
-    box-shadow:5px 0 20px rgba(0,0,0,0.4) !important;
   }
   #drawerMenu.abierto{ left:0 !important; }
 
@@ -338,7 +307,7 @@ tr:hover{background:#f8fafc}
     display:flex !important;
     justify-content:space-between !important;
     align-items:center !important;
-    padding:18px 18px 18px 22px !important;
+    padding:18px 22px !important;
     color:white !important;
     font-size:22px !important;
     font-weight:700 !important;
@@ -350,15 +319,8 @@ tr:hover{background:#f8fafc}
     font-size:20px !important;
   }
 
-  #drawerLinks{
-    display:flex !important;
-    flex-direction:column !important;
-  }
-
   #drawerLinks button{
     display:flex !important;
-    align-items:center !important;
-    gap:12px !important;
     width:100% !important;
     background:transparent !important;
     border:none !important;
@@ -367,8 +329,5 @@ tr:hover{background:#f8fafc}
     text-align:left !important;
     padding:18px 22px !important;
     font-size:17px !important;
-    border-radius:0 !important;
   }
-
-  #drawerLinks button:first-child{ border-top:1px solid rgba(255,255,255,0.15) !important; }
 }
