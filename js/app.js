@@ -167,7 +167,6 @@ function logout(){ localStorage.removeItem('ecoloimp_usuario'); location.reload(
 
 document.addEventListener('DOMContentLoaded', initApp);
 
-// DRAWER COMO LA FOTO
 function abrirDrawer(){
   document.getElementById('drawerMenu').classList.add('abierto');
   document.getElementById('fondoDrawer').classList.add('visible');
@@ -178,25 +177,31 @@ function cerrarDrawer(){
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Buscar tu menú viejo
+  const esCelular = window.innerWidth <= 768;
+  if(!esCelular) return;
+
   const botones = [...document.querySelectorAll('button')];
   const btnBienvenida = botones.find(b => b.textContent.includes('Bienvenida'));
   if(!btnBienvenida) return;
-  const menuViejo = btnBienvenida.parentElement;
-  const contenedor = document.getElementById('drawerLinks');
-  if(!contenedor || !menuViejo) return;
 
-  // Copiar tus botones al drawer con sus iconos
-  const iconos = ['🏠','🛠️','📦','📋','📊','⚙️'];
-  [...menuViejo.querySelectorAll('button')].forEach((btn, i) => {
+  const menuViejo = btnBienvenida.parentElement;
+  // OCULTAR EL MENU VIEJO DIRECTO, sin depender del CSS
+  menuViejo.style.display = 'none';
+  // También ocultar el padre si tiene el texto "Menu"
+  if(menuViejo.parentElement && menuViejo.parentElement.textContent.includes('Menu')){
+    menuViejo.parentElement.querySelectorAll(':scope > div').forEach(d => {
+      if(d.textContent.includes('Menu') && d !== menuViejo) d.style.display = 'none';
+    });
+  }
+
+  const contenedor = document.getElementById('drawerLinks');
+  if(!contenedor) return;
+  contenedor.innerHTML = '';
+
+  [...menuViejo.querySelectorAll('button')].forEach(btn => {
     const nuevo = document.createElement('button');
-    // Quitar emoji viejo y poner icono como en la foto
-    let texto = btn.textContent.trim().replace(/^[^\w\s]+\s*/, '');
-    nuevo.textContent = (iconos[i] || '•') + '  ' + texto;
-    nuevo.onclick = () => {
-      btn.click(); // Ejecuta tu función original mostrarSeccion(...)
-      cerrarDrawer();
-    };
+    nuevo.textContent = btn.textContent.trim();
+    nuevo.onclick = () => { btn.click(); cerrarDrawer(); };
     contenedor.appendChild(nuevo);
   });
 });
