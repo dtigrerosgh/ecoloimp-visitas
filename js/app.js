@@ -167,78 +167,13 @@ function logout(){ localStorage.removeItem('ecoloimp_usuario'); location.reload(
 
 document.addEventListener('DOMContentLoaded', initApp);
 
-// DRAWER COMPLETO - CREA TODO SOLO, NO NECESITA HTML NI CSS
-(function(){
-  // 1. Crear CSS si no existe
-  if(!document.getElementById('cssDrawer')){
-    const style = document.createElement('style');
-    style.id = 'cssDrawer';
-    style.textContent = `
-      @media (max-width: 768px){
-        #fondoDrawer{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; }
-        #fondoDrawer.visible{ display:block !important; }
-        #drawerMenu{ display:flex !important; flex-direction:column !important; position:fixed !important; top:0 !important; left:-85% !important; width:82% !important; max-width:300px !important; height:100dvh !important; background:#0e4a5a !important; z-index:9999 !important; transition:left 0.3s ease !important; }
-        #drawerMenu.abierto{ left:0 !important; }
-        .drawer-header{ display:flex !important; justify-content:space-between !important; align-items:center !important; padding:18px 22px !important; color:white !important; font-size:22px !important; font-weight:700 !important; }
-        .drawer-header button{ background:none !important; border:none !important; color:white !important; font-size:22px !important; }
-        #drawerLinks{ display:flex !important; flex-direction:column !important; }
-        #drawerLinks button{ display:flex !important; width:100% !important; background:transparent !important; border:none !important; border-bottom:1px solid rgba(255,255,255,0.15) !important; color:white !important; text-align:left !important; padding:18px 22px !important; font-size:17px !important; }
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  // 2. Crear drawer si no existe
-  if(!document.getElementById('drawerMenu')){
-    const fondo = document.createElement('div');
-    fondo.id = 'fondoDrawer';
-    document.body.appendChild(fondo);
-
-    const drawer = document.createElement('aside');
-    drawer.id = 'drawerMenu';
-    drawer.innerHTML = '<div class="drawer-header"><span>Menu</span><button id="btnCerrarDrawer">✕</button></div><div id="drawerLinks"></div>';
-    document.body.appendChild(drawer);
-
-    fondo.onclick = cerrarDrawer;
-    document.getElementById('btnCerrarDrawer').onclick = cerrarDrawer;
-  }
-
-  function abrirDrawer(){
-    document.getElementById('drawerMenu').classList.add('abierto');
-    document.getElementById('fondoDrawer').classList.add('visible');
-  }
-  function cerrarDrawer(){
-    document.getElementById('drawerMenu').classList.remove('abierto');
-    document.getElementById('fondoDrawer').classList.remove('visible');
-  }
-  window.abrirDrawer = abrirDrawer;
-  window.cerrarDrawer = cerrarDrawer;
-
-  // 3. Conectar el botón ☰ que ya tienes en la foto
-  document.addEventListener('DOMContentLoaded', () => {
-    // Buscar tu botón ☰ - es el primero del header
-    const btnMenu = document.querySelector('header button') || document.getElementById('btnDrawer') || document.getElementById('btnHamburguesa');
-    if(btnMenu){
-      btnMenu.onclick = (e) => { e.stopPropagation(); abrirDrawer(); };
-      console.log('Botón ☰ conectado');
-    }
-
-    // Buscar tu menú viejo y copiarlo al drawer
-    const botones = [...document.querySelectorAll('button')];
-    const btnBienvenida = botones.find(b => b.textContent.includes('Bienvenida'));
-    if(!btnBienvenida){ console.log('No encontré Bienvenida'); return; }
-
-    const menuViejo = btnBienvenida.parentElement;
-    menuViejo.style.display = 'none';
-
-    const contenedor = document.getElementById('drawerLinks');
-    contenedor.innerHTML = '';
-    [...menuViejo.querySelectorAll('button')].forEach(btn => {
-      const nuevo = document.createElement('button');
-      nuevo.textContent = btn.textContent.trim();
-      nuevo.onclick = () => { btn.click(); cerrarDrawer(); };
-      contenedor.appendChild(nuevo);
-    });
-    console.log('Drawer listo con', contenedor.children.length, 'botones');
-  });
-})();
+function abrirDrawer(){
+  document.getElementById('drawerMenu').classList.add('abierto');
+  document.getElementById('fondoDrawer').classList.add('visible');
+}
+function cerrarDrawer(){
+  document.getElementById('drawerMenu').classList.remove('abierto');
+  document.getElementById('fondoDrawer').classList.remove('visible');
+}
+// Para que no falle si algo llama a toggleMenu viejo
+function toggleMenu(){}
