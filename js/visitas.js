@@ -183,21 +183,37 @@ async function filtrarImpresorasCliente(){
   try{ visitas = JSON.parse(localStorage.getItem(getKeyVisitas(usuario, cliente)) || '[]'); }catch(e){ visitas = []; }
   const hechas = new Set(visitas.map(v => String(v.serie || '').toUpperCase()));
 
-  // CELULAR: TARJETAS
+  // CELULAR: TARJETAS   // ===== CELULAR: SOLO ACCION | MODELO | SERIE =====
   if(esCelular){
-    let html = `<div style="margin-top:12px"><div style="font-weight:800;font-size:13px;margin-bottom:8px">🖨️ ${window._impresorasTemp.length} impresoras - ${cliente}</div>`;
+    let html = `
+    <div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff">
+      <div style="font-weight:800;font-size:13px;padding:10px 12px;background:#f0fdf4;color:#15803d">🖨️ ${window._impresorasTemp.length} impresoras - ${cliente}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed">
+        <thead>
+          <tr style="background:#18A957">
+            <th style="padding:10px 6px;text-align:left;color:#fff;font-weight:800;font-size:11px;width:32%">ACCIÓN</th>
+            <th style="padding:10px 6px;text-align:left;color:#fff;font-weight:800;font-size:11px;width:38%">MODELO</th>
+            <th style="padding:10px 6px;text-align:left;color:#fff;font-weight:800;font-size:11px;width:30%">SERIE</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
     window._impresorasTemp.forEach(imp => {
       const isHecha = hechas.has(String(imp.serie).toUpperCase());
       html += `
-      <div style="border:1.5px solid ${isHecha ? '#bbf7d0' : '#e2e8f0'};border-radius:14px;padding:14px;margin-bottom:10px;background:${isHecha ? '#f0fdf4' : '#fff'}">
-        <b style="font-size:15px">🖨️ ${imp.modelo || ''}</b><br>
-        <small style="color:#64748b">Código: ${imp.codigo} | Serie: <b>${imp.serie}</b></small><br>
-        <small style="color:#64748b">${imp.sucursal || ''} ${imp.area ? '• '+imp.area : ''} ${imp.ubicacion ? '• '+imp.ubicacion : ''}</small>
-        <button onclick="seleccionarImpresora('${imp.serie}')" ${isHecha ? 'disabled' : ''} style="width:100%;margin-top:10px;background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:10px;padding:12px;font-weight:800"> ${isHecha ? '✅ Hecha' : '🔍 Seleccionar'} </button>
-      </div>`;
+        <tr style="border-bottom:1px solid #f1f5f9">
+          <td style="padding:8px 6px">
+            <button onclick="seleccionarImpresora('${imp.serie}')" ${isHecha ? 'disabled' : ''} style="background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:8px;padding:7px 8px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer">
+              ${isHecha ? '✅ Hecha' : '🔍 Seleccionar'}
+            </button>
+          </td>
+          <td style="padding:8px 6px;font-size:12px;line-height:1.2">${imp.modelo || ''}</td>
+          <td style="padding:8px 6px;font-weight:800;font-size:12px;word-break:break-all">${imp.serie}</td>
+        </tr>`;
     });
-    html += `</div>`;
-    cont.innerHTML = html;
+
+    html += `</tbody></table></div>`;
+    if(cont) cont.innerHTML = html;
     cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return;
   }
