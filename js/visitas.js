@@ -82,11 +82,9 @@ function selectedClientVisita(){
   return DB.clientes.find(c=>c.codigo===$("vCliente")?.value); 
 }
 
-function getTodasImpresoras(){ 
-  if(window.DB?.impresoras?.length) return window.DB.impresoras; 
-  if(cacheImp?.length) return cacheImp; 
-  try{ const loc=JSON.parse(localStorage.getItem('ecoloimp_impresoras')||'[]'); if(loc.length) return loc; }catch(e){} 
-  return []; 
+function getTodasImpresoras(){
+  if(window.DB && window.DB.impresoras && window.DB.impresoras.length > 0) return window.DB.impresoras;
+  try{ return JSON.parse(localStorage.getItem('ecoloimp_impresoras') || '[]'); }catch(e){ return []; }
 }
 
 async function cargaDirecta(){ 
