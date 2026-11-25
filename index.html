@@ -32,7 +32,8 @@
 </div>
 
 <div id="app">
-  <header>   
+  <header> 
+    <button id="btnDrawer" onclick="abrirDrawer()">☰</button>  
     <div class="header-logo"><img src="img/logo.png" alt="logo"><span></span></div>
     <div class="header-actions">
       <div style="text-align:right;line-height:1.2">
@@ -45,19 +46,6 @@
 
   <nav class="nav">
 <!-- MENU LATERAL ESTILO FOTO - SOLO CELULAR -->
-    <button id="btnDrawer" onclick="abrirDrawer()">☰</button> 
-    <div id="fondoDrawer" onclick="cerrarDrawer()"></div>
-
-<aside id="drawerMenu">
-  <div class="drawer-header">
-    <span>Menu</span>
-    <button onclick="cerrarDrawer()">✕</button>
-  </div>
-
-  <div id="drawerLinks">
-    <!-- Aquí se copian solos tus botones de Bienvenida, Visita, Conteo, etc. -->
-  </div>
-</aside>    
     <div id="menuPrincipal" class="menu"></div>    
       <button data-p="bienvenida" class="active" onclick="showPage('bienvenida');toggleMenu(true)">🏠 Bienvenida</button>
       <button data-p="visitas" onclick="showPage('visitas');toggleMenu(true)">🛠️ Visita Técnica</button>
