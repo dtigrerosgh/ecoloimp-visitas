@@ -44,15 +44,32 @@
     </div>
   </header>
 
-  <nav class="nav">
-<!-- MENU LATERAL ESTILO FOTO - SOLO CELULAR -->
-    <div id="menuPrincipal" class="menu"></div>    
-      <button data-p="bienvenida" class="active" onclick="showPage('bienvenida');toggleMenu(true)">🏠 Bienvenida</button>
-      <button data-p="visitas" onclick="showPage('visitas');toggleMenu(true)">🛠️ Visita Técnica</button>
-      <button data-p="conteo" onclick="showPage('conteo');toggleMenu(true)">🖨️ Conteo de Impresiones</button>
-      <button data-p="inventarios" onclick="showPage('inventarios');toggleMenu(true)">📦 Toma de Inventario</button>
-      <button data-p="salir" onclick="logout();toggleMenu(true)">🚪 Salir</button>
-  </nav>
+<nav class="nav">
+  <!-- DRAWER - SOLO SE USA EN CELULAR -->
+  <div id="fondoDrawer" onclick="cerrarDrawer()"></div>
+  <aside id="drawerMenu">
+    <div class="drawer-header">
+      <span>Menu</span>
+      <button type="button" onclick="cerrarDrawer()">✕</button>
+    </div>
+    <div id="drawerLinks">
+      <button onclick="showPage('bienvenida');cerrarDrawer()">🏠 Bienvenida</button>
+      <button onclick="showPage('visitas');cerrarDrawer()">🛠️ Visita Técnica</button>
+      <button onclick="showPage('conteo');cerrarDrawer()">🖨️ Conteo de Impresiones</button>
+      <button onclick="showPage('inventarios');cerrarDrawer()">📦 Toma de Inventario</button>
+      <button onclick="logout();cerrarDrawer()">🚪 Salir</button>
+    </div>
+  </aside>
+
+  <!-- MENU PC - AHORA SÍ DENTRO DEL DIV -->
+  <div id="menuPrincipal" class="menu">
+    <button data-p="bienvenida" class="active" onclick="showPage('bienvenida')">🏠 Bienvenida</button>
+    <button data-p="visitas" onclick="showPage('visitas')">🛠️ Visita Técnica</button>
+    <button data-p="conteo" onclick="showPage('conteo')">🖨️ Conteo de Impresiones</button>
+    <button data-p="inventarios" onclick="showPage('inventarios')">📦 Toma de Inventario</button>
+    <button data-p="salir" onclick="logout()">🚪 Salir</button>
+  </div>
+</nav>
 
   <main>
     <!-- 1 BIENVENIDA -->
@@ -159,7 +176,7 @@
   <footer class="app-footer">© 2026 DT Soluciones Informáticas - Desarrollado para ECOLOIMP S.A.</footer>
 </div>
 
-<script src="js/app.js?v=99"></script>
+<script src="js/app.js?v=141"></script>
 <script src="js/jspdf.min.js"></script>
 <script src="js/visita.js?v=101"></script>
 <script src="js/conteo.js"></script>
