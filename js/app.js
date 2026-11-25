@@ -167,50 +167,36 @@ function logout(){ localStorage.removeItem('ecoloimp_usuario'); location.reload(
 
 document.addEventListener('DOMContentLoaded', initApp);
 
-// HAMBURGUESA SOLO CELULAR - se crea sola
+// DRAWER COMO LA FOTO
+function abrirDrawer(){
+  document.getElementById('drawerMenu').classList.add('abierto');
+  document.getElementById('fondoDrawer').classList.add('visible');
+}
+function cerrarDrawer(){
+  document.getElementById('drawerMenu').classList.remove('abierto');
+  document.getElementById('fondoDrawer').classList.remove('visible');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  if(window.innerWidth > 768) return;
-  if(document.getElementById('btnHamburguesa')) return;
+  // Buscar tu menú viejo
+  const botones = [...document.querySelectorAll('button')];
+  const btnBienvenida = botones.find(b => b.textContent.includes('Bienvenida'));
+  if(!btnBienvenida) return;
+  const menuViejo = btnBienvenida.parentElement;
+  const contenedor = document.getElementById('drawerLinks');
+  if(!contenedor || !menuViejo) return;
 
-  const header = document.querySelector('header') || document.querySelector('.header') || document.querySelector('.topbar');
-  const menu = document.querySelector('.tabs') || document.querySelector('.menu') || document.getElementById('menuPrincipal');
-  if(!header || !menu) return;
-
-  const btn = document.createElement('button');
-  btn.id = 'btnHamburguesa';
-  btn.textContent = '☰';
-  btn.onclick = (e) => {
-    e.stopPropagation();
-    menu.classList.toggle('abierto');
-  };
-  header.prepend(btn);
-
-  // Cerrar al elegir una opción
-  menu.querySelectorAll('button').forEach(b => {
-    b.addEventListener('click', () => menu.classList.remove('abierto'));
-  });
-
-  // Cerrar si toca fuera
-  document.addEventListener('click', (e) => {
-    if(!menu.contains(e.target) && e.target !== btn){
-      menu.classList.remove('abierto');
-    }
+  // Copiar tus botones al drawer con sus iconos
+  const iconos = ['🏠','🛠️','📦','📋','📊','⚙️'];
+  [...menuViejo.querySelectorAll('button')].forEach((btn, i) => {
+    const nuevo = document.createElement('button');
+    // Quitar emoji viejo y poner icono como en la foto
+    let texto = btn.textContent.trim().replace(/^[^\w\s]+\s*/, '');
+    nuevo.textContent = (iconos[i] || '•') + '  ' + texto;
+    nuevo.onclick = () => {
+      btn.click(); // Ejecuta tu función original mostrarSeccion(...)
+      cerrarDrawer();
+    };
+    contenedor.appendChild(nuevo);
   });
 });
-
-function toggleMenu(cerrar){
-  const menu = document.querySelector('.tabs') || document.querySelector('.menu');
-  if(!menu) return;
-  if(cerrar === true) menu.classList.remove('abierto');
-  else menu.classList.toggle('abierto');
-}
-
-// FORZAR MODO CELULAR - no depende solo del CSS
-function aplicarModoCelular(){
-  const esCelular = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
-  document.body.classList.toggle('es-celular', esCelular);
-  console.log('Es celular?', esCelular, 'Ancho:', window.innerWidth);
-}
-window.addEventListener('resize', aplicarModoCelular);
-document.addEventListener('DOMContentLoaded', aplicarModoCelular);
-aplicarModoCelular();
