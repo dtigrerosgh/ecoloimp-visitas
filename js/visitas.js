@@ -113,110 +113,103 @@ async function cargaDirecta(){
 }
 
 async function filtrarImpresorasCliente(){
-  const sel = document.getElementById('vCliente'); 
+  const sel = document.getElementById('vCliente');
   const cont = document.getElementById('listaImpresoras');
   if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
 
-  const val = sel?.value?.trim(); 
+  const val = sel?.value?.trim();
   if(!val || val.toLowerCase().includes('seleccione') || val === ""){
-    if(cont) cont.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;border:1.5px dashed #cbd5e1;border-radius:14px">👆 Selecciona un cliente</div>'; 
+    if(cont) cont.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;border:1.5px dashed #cbd5e1;border-radius:14px">👆 Selecciona un cliente</div>';
     const d1 = document.getElementById('datosImpresoraSeleccionada'); if(d1) d1.innerHTML = '';
     const d2 = document.getElementById('formDatosVisita'); if(d2) d2.innerHTML = '';
-    return; 
+    return;
   }
-  
-  const cliente = val.split('-')[0].trim().toUpperCase(); 
+
+  const cliente = val.split('-')[0].trim().toUpperCase();
   const esCelular = window.innerWidth <= 768;
-  
   if(cont) cont.innerHTML = '<div style="padding:15px;text-align:center">⏳ Cargando impresoras de '+cliente+'...</div>';
 
+  // 1. INTENTAR DESDE DB
   let todas = [];
   try{ todas = getTodasImpresoras() || []; }catch(e){ todas = []; }
-  // Fallback celular: si DB está vacío, usar localStorage
+
+  // 2. SI ESTA VACIO EN CELULAR, DESDE LOCALSTORAGE
   if(todas.length === 0){
     try{ todas = JSON.parse(localStorage.getItem('ecoloimp_impresoras') || '[]'); }catch(e){ todas = []; }
   }
+
+  // 3. SI SIGUE VACIO, LEER EL TXT DIRECTO - ESTO ES LO QUE FALTABA EN CELULAR
   if(todas.length === 0){
-    try{ todas = await cargaDirecta(); }catch(e){ todas = []; }
+    try{
+      const urls = ['data/impresoras.txt?v='+Date.now(), './data/impresoras.txt?v='+Date.now(), '/data/impresoras.txt?v='+Date.now()];
+      let txt = '';
+      for(const u of urls){
+        try{
+          const r = await fetch(u);
+          if(r.ok){ txt = await r.text(); break; }
+        }catch(e){}
+      }
+      if(txt){
+        txt = txt.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        todas = txt.split('\n').map(s => s.trim()).filter(s => s && !s.startsWith('#')).map(l => {
+          const p = l.split(';').map(x => x.trim());
+          return { cliente: p[0], codigo: p[1], modelo: p[2], serie: p[3] || p[1], sucursal: p[4], area: p[5], ubicacion: p[6], bodega: p[7] };
+        }).filter(x => x.cliente && x.serie);
+        // Guardar para la próxima vez
+        localStorage.setItem('ecoloimp_impresoras', JSON.stringify(todas));
+        if(window.DB) window.DB.impresoras = todas;
+      }
+    }catch(e){ console.log('Error leyendo txt directo', e); }
   }
 
-  console.log('Cliente:', cliente, 'Total:', todas.length, 'Ejemplo:', todas[0]);
+  console.log('Cliente:', cliente, 'Total cargado:', todas.length, 'Ejemplo:', todas[0]);
 
-  // FILTRO TOLERANTE - quita espacios, guiones, mayúsculas
   const norm = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   const clienteNorm = norm(cliente);
 
-  window._impresorasTemp = todas.filter(i => 
-    norm(i.cliente) === clienteNorm || 
+  window._impresorasTemp = todas.filter(i =>
+    norm(i.cliente) === clienteNorm ||
     norm(i.cliente).includes(clienteNorm) ||
     norm(i.codigo) === clienteNorm
   );
 
   if(window._impresorasTemp.length === 0){
-    if(cont) cont.innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;border:1.5px dashed #fecaca;border-radius:14px">❌ No hay impresoras para '+cliente+'<br><small>Total en base: '+todas.length+'</small></div>';
+    if(cont) cont.innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;border:1.5px dashed #fecaca;border-radius:14px">❌ No hay impresoras para '+cliente+'<br><small>Total en base: '+todas.length+'<br>Primer cliente en base: '+(todas[0]?.cliente || 'NADA')+'</small></div>';
     return;
   }
 
-  const usuario = getUsuarioActual(); 
-  const visitas = JSON.parse(localStorage.getItem(getKeyVisitas(usuario, cliente)) || '[]'); 
+  const usuario = typeof getUsuarioActual === 'function' ? getUsuarioActual() : 'ADMIN';
+  let visitas = [];
+  try{ visitas = JSON.parse(localStorage.getItem(getKeyVisitas(usuario, cliente)) || '[]'); }catch(e){ visitas = []; }
   const hechas = new Set(visitas.map(v => String(v.serie || '').toUpperCase()));
 
-  // ===== CELULAR: TARJETAS, NO TABLA =====
+  // CELULAR: TARJETAS
   if(esCelular){
     let html = `<div style="margin-top:12px"><div style="font-weight:800;font-size:13px;margin-bottom:8px">🖨️ ${window._impresorasTemp.length} impresoras - ${cliente}</div>`;
     window._impresorasTemp.forEach(imp => {
       const isHecha = hechas.has(String(imp.serie).toUpperCase());
       html += `
       <div style="border:1.5px solid ${isHecha ? '#bbf7d0' : '#e2e8f0'};border-radius:14px;padding:14px;margin-bottom:10px;background:${isHecha ? '#f0fdf4' : '#fff'}">
-        <div style="display:flex;justify-content:space-between;align-items:start">
-          <div>
-            <b style="font-size:15px">🖨️ ${imp.modelo || ''}</b><br>
-            <small style="color:#64748b">Código: ${imp.codigo} | Serie: <b style="color:#0f172a">${imp.serie}</b></small><br>
-            <small style="color:#64748b">${imp.sucursal || ''} ${imp.area ? '• ' + imp.area : ''} ${imp.ubicacion ? '• ' + imp.ubicacion : ''}</small>
-          </div>
-          <span style="font-size:11px;background:#18A957;color:#fff;padding:3px 8px;border-radius:20px;white-space:nowrap">${imp.bodega || 'BOD'}</span>
-        </div>
-        <button onclick="seleccionarImpresora('${imp.serie}')" ${isHecha ? 'disabled' : ''} style="width:100%;margin-top:10px;background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:10px;padding:12px;font-weight:800;cursor:pointer">
-          ${isHecha ? '✅ Hecha' : '🔍 Seleccionar'}
-        </button>
+        <b style="font-size:15px">🖨️ ${imp.modelo || ''}</b><br>
+        <small style="color:#64748b">Código: ${imp.codigo} | Serie: <b>${imp.serie}</b></small><br>
+        <small style="color:#64748b">${imp.sucursal || ''} ${imp.area ? '• '+imp.area : ''} ${imp.ubicacion ? '• '+imp.ubicacion : ''}</small>
+        <button onclick="seleccionarImpresora('${imp.serie}')" ${isHecha ? 'disabled' : ''} style="width:100%;margin-top:10px;background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:10px;padding:12px;font-weight:800"> ${isHecha ? '✅ Hecha' : '🔍 Seleccionar'} </button>
       </div>`;
     });
     html += `</div>`;
-    if(cont) cont.innerHTML = html;
-    // Bajar el scroll hasta la lista para que se vea en celular
+    cont.innerHTML = html;
     cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return;
   }
 
-  // ===== PC: TU TABLA ORIGINAL, CON COLOR EMPRESA =====
-  let html = `
-  <style> 
-    .tabla-verde thead th{ background:#18A957 !important; color:#fff !important; }
-    .fila-sel{ background:#0f172a !important; transform:scale(1.01); box-shadow: 0 0 0 3px #18A957, 0 8px 20px rgba(0,0,0,.25) !important; border-left:6px solid #18A957 !important; position:relative; z-index:1; }
-    .fila-sel td{ color:#fff !important; font-weight:800 !important; background:transparent !important; }
-    .fila-sel td b{ color:#73D17D !important; }
-  </style>
-  <div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:auto;max-height:420px;background:#fff">
-  <table class="tabla-verde" style="width:100%;border-collapse:collapse;font-size:13px">
-  <thead style="position:sticky;top:0;z-index:2">
-    <tr>
-      <th style="padding:12px 10px;text-align:left;font-weight:800">ACCIÓN</th>
-      <th style="padding:12px 10px;text-align:left;font-weight:800">CÓDIGO</th>
-      <th style="padding:12px 10px;text-align:left;font-weight:800">MODELO</th>
-      <th style="padding:12px 10px;text-align:left;font-weight:800">SERIE</th>
-      <th style="padding:12px 10px;text-align:left;font-weight:800">SUCURSAL</th>
-      <th style="padding:12px 10px;text-align:left;font-weight:800">AREA</th>
-      <th style="padding:12px 10px;text-align:left;font-weight:800">UBICACION</th>
-      <th style="padding:12px 10px;text-align:left;font-weight:800">BOD</th>
-    </tr>
-  </thead><tbody>`;
-
-  window._impresorasTemp.forEach(imp => { 
-    const isHecha = hechas.has(String(imp.serie).toUpperCase()); 
-    html += '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px"><button id="btn-'+imp.serie+'" onclick="seleccionarImpresora(\''+imp.serie+'\')" style="background:'+(isHecha?'#dcfce7':'#18A957')+';color:'+(isHecha?'#15803d':'#fff')+';border:0;border-radius:8px;padding:6px 12px;cursor:pointer" '+(isHecha?'disabled':'')+'>'+(isHecha?'✅ Hecha':'🔍 Seleccionar')+'</button></td><td style="padding:8px">'+imp.codigo+'</td><td style="padding:8px">'+imp.modelo+'</td><td style="padding:8px;font-weight:800">'+imp.serie+'</td><td style="padding:8px">'+imp.sucursal+'</td><td style="padding:8px">'+imp.area+'</td><td style="padding:8px">'+imp.ubicacion+'</td><td style="padding:8px">'+imp.bodega+'</td></tr>'; 
+  // PC: TABLA (tu código original)
+  let html = `<div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:auto;max-height:420px;background:#fff"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead style="position:sticky;top:0;background:#18A957;color:#fff"><tr><th style="padding:12px 10px;text-align:left">ACCIÓN</th><th style="padding:12px 10px;text-align:left">CÓDIGO</th><th style="padding:12px 10px;text-align:left">MODELO</th><th style="padding:12px 10px;text-align:left">SERIE</th><th style="padding:12px 10px;text-align:left">SUCURSAL</th><th style="padding:12px 10px;text-align:left">AREA</th><th style="padding:12px 10px;text-align:left">UBICACION</th><th style="padding:12px 10px;text-align:left">BOD</th></tr></thead><tbody>`;
+  window._impresorasTemp.forEach(imp => {
+    const isHecha = hechas.has(String(imp.serie).toUpperCase());
+    html += `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px"><button onclick="seleccionarImpresora('${imp.serie}')" style="background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:8px;padding:6px 12px" ${isHecha ? 'disabled' : ''}>${isHecha ? '✅ Hecha' : '🔍 Seleccionar'}</button></td><td style="padding:8px">${imp.codigo}</td><td style="padding:8px">${imp.modelo}</td><td style="padding:8px;font-weight:800">${imp.serie}</td><td style="padding:8px">${imp.sucursal}</td><td style="padding:8px">${imp.area}</td><td style="padding:8px">${imp.ubicacion}</td><td style="padding:8px">${imp.bodega}</td></tr>`;
   });
-  html += '</tbody></table></div>'; 
-  if(cont) cont.innerHTML = html;
+  html += `</tbody></table></div>`;
+  cont.innerHTML = html;
 }
 
 function seleccionarImpresora(serie){ 
