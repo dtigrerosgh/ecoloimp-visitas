@@ -683,7 +683,7 @@ async function enviarCorreoVisita(){
 
     const nombreBase = `VT_${codigo}_${fechaVal}`.replace(/[^a-zA-Z0-9_\-]/g,"_");
 
-     fetch(URL_APPS_SCRIPT, {
+    const resp = await fetch(URL_APPS_SCRIPT, {
       method: "POST",
       headers: {"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({
@@ -698,7 +698,23 @@ async function enviarCorreoVisita(){
       })
     });
 
-    if(elMsg){ elMsg.style.color = "green"; elMsg.textContent = "✅ Enviado a Administracion y Servicio con copia a " + emailCliente; }
+    if(!resp.ok) throw new Error('El correo no se envió, código ' + resp.status);
+    //if(elMsg){ elMsg.style.color = "green"; elMsg.textContent = "✅ Enviado a Administracion y Servicio con copia a " + emailCliente; }
+    // ===== LIMPIAR MEMORIA DE ESTE CLIENTE, SOLO ESTE =====
+    const keyLimpiar = 'ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
+    const cantidad = lista.length;
+    localStorage.removeItem(keyLimpiar);
+
+    // Limpiar en pantalla
+    window.fotosVisita = [];
+    impresoraSeleccionada = null;
+    if(typeof limpiarFirma === 'function') limpiarFirma();
+    const d1 = document.getElementById('datosImpresoraSeleccionada'); if(d1) d1.innerHTML = '';
+    const d2 = document.getElementById('formDatosVisita'); if(d2) d2.innerHTML = '';
+    if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
+    if(typeof filtrarImpresorasCliente === 'function') filtrarImpresorasCliente();
+
+    alert('✅ Correo enviado. Se limpiaron ' + cantidad + ' visitas de ' + clienteCodigo + ' de la memoria. Ya puedes seguir con otro cliente.');
 
   }catch(err){
     console.error(err);
