@@ -129,7 +129,7 @@ async function filtrarImpresorasCliente(){
   if(debug) debug.innerHTML = 'Estás en: <b>' + (esCelular ? '📱 CELULAR' : '💻 PC') + '</b> - Ancho: ' + ancho + 'px';
 
 const elMsg = document.getElementById("vMessage");
-    if(elMsg){ elMsg.style.color = 'Estás en: <b>' + (esCelular ? '📱 CELULAR' : '💻 PC') + '</b> - Ancho: ' + ancho + 'px';
+    if(elMsg){ elMsg.style.color = 'Estás en: <b>' + (esCelular ? '📱 CELULAR' : '💻 PC') + '</b> - Ancho: ' + ancho + 'px';}
 
   const val = sel?.value?.trim();
   if(!val || val.toLowerCase().includes('seleccione') || val === ""){
