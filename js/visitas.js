@@ -113,8 +113,12 @@ async function cargaDirecta(){
 }
 
 async function filtrarImpresorasCliente(){
+
+alert('1. ENTRÓ A FILTRAR - valor: ' + document.getElementById('vCliente')?.value);
   const sel = document.getElementById('vCliente');
   const cont = document.getElementById('listaImpresoras');
+  alert('2. cont existe? ' + (cont ? 'SI' : 'NO - NO EXISTE EL DIV'));
+
   if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
 
   const val = sel?.value?.trim();
