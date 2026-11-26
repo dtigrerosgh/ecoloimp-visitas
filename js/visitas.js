@@ -115,7 +115,7 @@ async function cargaDirecta(){
 async function filtrarImpresorasCliente(){
   
   const sel = document.getElementById('vCliente');
-  const cont = document.getElementById('listaImpresoras');
+  //const cont = document.getElementById('listaImpresoras');
 
   if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
 
