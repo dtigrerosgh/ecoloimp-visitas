@@ -382,7 +382,28 @@ async function mostrarFormularioVisita(){
   setTimeout(iniciarFirma,120);
 }
 
-function procesarFotos(files){ Array.from(files||[]).slice(0,15).forEach(f=>{const r=new FileReader(); r.onload=e=>{window.fotosVisita.push(e.target.result); renderPreview()}; r.readAsDataURL(f);}); }
+function procesarFotos(files){
+  Array.from(files||[]).slice(0,5).forEach(f=>{
+    const img = new Image();
+    const url = URL.createObjectURL(f);
+    img.onload = ()=>{
+      // Comprime a máximo 800px de ancho
+      const max = 800;
+      let w = img.width, h = img.height;
+      if(w > max){ h = h * max / w; w = max; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      // JPEG calidad 0.6 = 90% más liviano
+      const comprimida = canvas.toDataURL('image/jpeg', 0.6);
+      window.fotosVisita.push(comprimida);
+      renderPreview();
+      URL.revokeObjectURL(url);
+      console.log('Foto original:', f.size, 'Comprimida:', comprimida.length);
+    };
+    img.src = url;
+  });
+}
 
 function renderPreview(){ const c=document.getElementById('previewFotos'); if(!c) return; if(!window.fotosVisita.length){c.innerHTML=''; return;} c.innerHTML=window.fotosVisita.map((s,i)=>'<div style="display:inline-block;position:relative;margin:4px"><img src="'+s+'" style="width:75px;height:75px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0"><span style="position:absolute;top:0;left:0;background:#0f172a;color:#22c55e;font-size:9px;font-weight:800;padding:2px 4px;border-radius:0 0 6px 0">#'+(i+1)+'</span><button onclick="window.fotosVisita.splice('+i+',1);renderPreview()" style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border:0;border-radius:50%;width:16px;height:16px;font-size:10px">x</button></div>').join(''); }
 
@@ -475,16 +496,28 @@ function guardarVisita(){
   firmaBase64 = firmaFinal;
 
   const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo; 
-try{
+  try{
     const todas=JSON.parse(localStorage.getItem(key)||'[]'); 
     todas.unshift(visita); 
     localStorage.setItem(key,JSON.stringify(todas));
     console.log('✅ VISITA GUARDADA', visita, 'Total:', todas.length);
   }catch(e){
     console.error('❌ ERROR GUARDANDO', e);
-    alert('No se pudo guardar, memoria llena. Borra visitas viejas. Error: '+e.message);
-    return;
+    // Si igual se llena, guarda sin fotos para no perder la visita
+    try{
+      visita.fotos = [];
+      visita.fotosCount = 0;
+      visita.obs = (visita.obs||'') + ' [FOTOS NO GUARDADAS POR MEMORIA LLENA]';
+      const todas2 = JSON.parse(localStorage.getItem(key)||'[]');
+      todas2.unshift(visita);
+      localStorage.setItem(key, JSON.stringify(todas2));
+      alert('⚠️ Memoria llena, se guardó la visita SIN fotos. Borra visitas viejas.');
+    }catch(e2){
+      alert('❌ Memoria llena de verdad. Toca GENERAR REPORTE PDF, envíalo, y luego borra el historial para seguir.');
+      return;
+    }
   }
+
   window.fotosVisita=[]; 
   renderPreview(); 
 // OCULTAR DATOS DE LA IMPRESORA Y FORMULARIO AL GUARDAR
