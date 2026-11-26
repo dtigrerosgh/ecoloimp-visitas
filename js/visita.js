@@ -678,7 +678,6 @@ async function enviarCorreoVisita(){
   </div>
 </div>`;
 
-  elMsg.textContent = html;
     // YA NO USO c - uso clienteVisita seguro
 
     const nombreBase = `VT_${codigo}_${fechaVal}`.replace(/[^a-zA-Z0-9_\-]/g,"_");
@@ -700,21 +699,46 @@ async function enviarCorreoVisita(){
 
     if(!resp.ok) throw new Error('El correo no se envió, código ' + resp.status);
     //if(elMsg){ elMsg.style.color = "green"; elMsg.textContent = "✅ Enviado a Administracion y Servicio con copia a " + emailCliente; }
-    // ===== LIMPIAR MEMORIA DE ESTE CLIENTE, SOLO ESTE =====
-    const keyLimpiar = 'ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
+    
+        // ===== LIMPIAR MEMORIA CON LA LLAVE ORIGINAL, ANTES DE BORRAR LA VARIABLE =====
     const cantidad = lista.length;
-    localStorage.removeItem(keyLimpiar);
+    localStorage.removeItem(key);
+    console.log('🧹 Limpieza:', key, cantidad, 'visitas');
 
-    // Limpiar en pantalla
+    // 1. Limpiar variables
     window.fotosVisita = [];
     impresoraSeleccionada = null;
-    if(typeof limpiarFirma === 'function') limpiarFirma();
-    const d1 = document.getElementById('datosImpresoraSeleccionada'); if(d1) d1.innerHTML = '';
-    const d2 = document.getElementById('formDatosVisita'); if(d2) d2.innerHTML = '';
-    if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
-    if(typeof filtrarImpresorasCliente === 'function') filtrarImpresorasCliente();
+    if(typeof clienteActual !== 'undefined') clienteActual = '';
+    // Si tienes una variable global clienteCodigo, límpiala aquí, pero NO la const de arriba
+    if(typeof window.clienteCodigo !== 'undefined') window.clienteCodigo = '';
 
-    alert('✅ Correo enviado. Se limpiaron ' + cantidad + ' visitas de ' + clienteCodigo + ' de la memoria. Ya puedes seguir con otro cliente.');
+    // 2. Dejar SIN cliente seleccionado
+    const selCliente = document.getElementById('vCliente');
+    if(selCliente){
+      selCliente.selectedIndex = 0;
+      selCliente.value = '';
+    }
+
+    // 3. Vaciar lista de impresoras
+    const divLista = document.getElementById('listaImpresoras');
+    if(divLista) divLista.innerHTML = '';
+
+    // 4. Vaciar datos de impresora y formulario
+    const d1 = document.getElementById('datosImpresoraSeleccionada');
+    if(d1) d1.innerHTML = '';
+    const d2 = document.getElementById('formDatosVisita');
+    if(d2) d2.innerHTML = '';
+
+    // 5. Limpiar email, autoriza y firma - CON LOS IDS REALES
+    if(elEmail) elEmail.value = '';
+    const inpAutoriza = document.getElementById('vAutoriza');
+    if(inpAutoriza) inpAutoriza.value = '';
+    if(typeof limpiarFirma === 'function') limpiarFirma();
+
+    // 6. Vaciar historial
+    if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
+
+    alert('✅ Correo enviado. Se limpiaron ' + cantidad + ' visitas de ' + clienteCodigoOriginal + ' de la memoria. Ya puedes seguir con otro cliente.');
 
   }catch(err){
     console.error(err);
