@@ -113,16 +113,20 @@ async function cargaDirecta(){
 }
 
 async function filtrarImpresorasCliente(){
-  // DETECTOR REAL
-  const ancho = window.innerWidth;
-  const esPorUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  const esCelular1 = esPorUserAgent || ancho <= 768;
-  alert('ANCHO: ' + ancho + 'px\nUserAgent: ' + (esPorUserAgent ? 'CELULAR' : 'PC') + '\nSe ejecutará como: ' + (esCelular1 ? 'CELULAR - 3 columnas' : 'PC - 8 columnas'));
   
   const sel = document.getElementById('vCliente');
   const cont = document.getElementById('listaImpresoras');
 
   if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
+
+  // UN SOLO DETECTOR
+  const ancho = window.innerWidth;
+  const esPorUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const esCelular = esPorUserAgent || ancho <= 768;
+
+  // Debug visible en pantalla, no alert
+  const debug = document.getElementById('debugDispositivo');
+  if(debug) debug.innerHTML = 'Estás en: <b>' + (esCelular ? '📱 CELULAR' : '💻 PC') + '</b> - Ancho: ' + ancho + 'px';
 
   const val = sel?.value?.trim();
   if(!val || val.toLowerCase().includes('seleccione') || val === ""){
@@ -133,7 +137,6 @@ async function filtrarImpresorasCliente(){
   }
 
   const cliente = val.split('-')[0].trim().toUpperCase();
-  const esCelular = window.innerWidth <= 768;
   if(cont) cont.innerHTML = '<div style="padding:15px;text-align:center">⏳ Cargando impresoras de '+cliente+'...</div>';
 
   // 1. INTENTAR DESDE DB
