@@ -115,10 +115,11 @@ async function cargaDirecta(){
 async function filtrarImpresorasCliente(){
   
   const sel = document.getElementById('vCliente');
-  //const cont = document.getElementById('listaImpresoras');
+
 
   if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
-
+  const cont = document.getElementById('listaImpresoras');
+  
   // UN SOLO DETECTOR
   const ancho = window.innerWidth;
   alert(ancho);
