@@ -128,6 +128,9 @@ async function filtrarImpresorasCliente(){
   const debug = document.getElementById('debugDispositivo');
   if(debug) debug.innerHTML = 'Estás en: <b>' + (esCelular ? '📱 CELULAR' : '💻 PC') + '</b> - Ancho: ' + ancho + 'px';
 
+const elMsg = document.getElementById("vMessage");
+    if(elMsg){ elMsg.style.color = 'Estás en: <b>' + (esCelular ? '📱 CELULAR' : '💻 PC') + '</b> - Ancho: ' + ancho + 'px';
+
   const val = sel?.value?.trim();
   if(!val || val.toLowerCase().includes('seleccione') || val === ""){
     if(cont) cont.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;border:1.5px dashed #cbd5e1;border-radius:14px">👆 Selecciona un cliente</div>';
