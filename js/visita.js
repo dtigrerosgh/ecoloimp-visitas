@@ -224,7 +224,7 @@ if(esCelular){
     const isHecha = hechas.has(String(imp.serie).toUpperCase());
     html += `
       <tr style="border-bottom:1px solid #f1f5f9">
-        <td style="padding:8px;white-space:nowrap"><button onclick="seleccionarImpresora('${imp.serie}')" ${isHecha ? 'disabled' : ''} style="background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:800;white-space:nowrap">${isHecha ? '✅ Hecha' : '🔍 Seleccionar'}</button></td>
+        <td style="padding:8px;white-space:nowrap"><button onclick="seleccionarImpresora('${imp.serie}')" ${isHecha ? 'disabled' : ''} style="background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:800;white-space:nowrap">${isHecha ? '✅ Hecha' : '🔍'}</button></td>
         <td style="padding:8px;white-space:nowrap">${imp.codigo || ''}</td>
         <td style="padding:8px;white-space:nowrap">${imp.modelo || ''}</td>
         <td style="padding:8px;font-weight:800;white-space:nowrap">${imp.serie}</td>
