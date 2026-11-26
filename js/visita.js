@@ -292,6 +292,9 @@ window.seleccionarImpresora = seleccionarImpresora;
 //});
 
 async function mostrarFormularioVisita(){
+  const esCelular = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  const cols = esCelular ? '1fr' : '1fr 1fr';
+
   const hoy=new Date().toISOString().split('T')[0]; 
   const ahora=new Date().toTimeString().slice(0,5); 
 
@@ -326,7 +329,7 @@ async function mostrarFormularioVisita(){
   document.getElementById('formDatosVisita').innerHTML=`
     <div style="margin-top:12px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px">
     <div style="padding:14px;background:#73D17D;display:flex;justify-content:space-between;align-items:center"><b>📑INGRESO DE DATOS VISITA TECNICA visitas</b></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="display:grid;grid-template-columns:${cols};gap:10px">
             <div style="display:flex;flex-direction:column">
               <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">FECHA</label>
               <input id="vFecha" type="date" value="${hoy}" style="padding:8px;border:1px solid #e2e8f0;border-radius:8px">
