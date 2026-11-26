@@ -11,6 +11,11 @@
   input, select, textarea, button{font-family:'Inter',system-ui,sans-serif !important; font-size:13px !important}
   table th{font-size:11px !important; letter-spacing:.5px !important; font-weight:800 !important}
   table td{font-size:12.5px !important; line-height:1.4 !important}
+  *{box-sizing:border-box !important}
+  @media (max-width:768px){
+      #bloqueAutoriza{grid-template-columns:1fr !important}
+   #bloqueAutoriza input{width:100% !important}
+  }
 </style>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -122,7 +127,7 @@
       <div style="border:2px solid #000;border-radius:12px;padding:12px;background:#f8fafc">
     
     <!-- TITULO A LA IZQ - BOTON LIMPIAR A LA DERECHA -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
       <b style="font-size:13px">✍️ FIRMA DE CONFORMIDAD - CLIENTE</b>
       <button onclick="limpiarFirma()" type="button" style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:5px 12px;font-weight:700;cursor:pointer">🧹 Limpiar</button>
     </div>
@@ -132,21 +137,19 @@
   </div>
 
   <!-- NOMBRE Y EMAIL EN UNA SOLA LINEA CON LABEL -->
-  <div style="display:flex; gap:12px; margin-top:10px; width:100%;">
-    <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
-      <label for="vAutoriza" style="font-size:11px;font-weight:800;color:#334155;margin-left:4px;">Nombre del cliente que autoriza</label>
-      <input id="vAutoriza" type="text" placeholder="Ej: Juan Perez" style="width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;box-sizing:border-box;">
+  <div id="bloqueAutoriza" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;width:100%;box-sizing:border-box">
+    <div style="width:100%;box-sizing:border-box">
+      <label style="display:block;font-weight:700;font-size:13px;margin-bottom:6px">Nombre del cliente que autoriza</label>
+      <input id="nombreAutoriza" placeholder="Ej: Juan Perez" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #e2e8f0;border-radius:8px">
     </div>
-    <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
-      <label for="vEmail" style="font-size:11px;font-weight:800;color:#334155;margin-left:4px;">Copia Email</label>
-      <input id="vEmail" type="email" placeholder="cliente@empresa.com" style="width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;box-sizing:border-box;">
+    <div style="width:100%;box-sizing:border-box">
+      <label style="display:block;font-weight:700;font-size:13px;margin-bottom:6px">Copia Email</label>
+      <input id="emailCliente" placeholder="cliente@empresa.com" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #e2e8f0;border-radius:8px">
     </div>
   </div>
 </div>
 
-   <div style="margin-top:15px">
-      <button onclick="enviarCorreoVisita()" type="button" style="background:#22c55e;color:#000;border:0;border-radius:6px;padding:4px 10px;font-weight:800; height:50px ;">✅ Graba Archivos y Envia Correo</button>
-   </div> 
+<button onclick="enviarCorreoVisita()" style="width:100%;box-sizing:border-box;padding:12px;border-radius:10px;font-weight:800">✅ Graba Archivos y Envia Correo</button>
 <div id="vMessage" style="margin-top:10px;font-size:13px;font-weight:700;"></div>
 </div>
 
