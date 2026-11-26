@@ -200,7 +200,6 @@ async function filtrarImpresorasCliente(){
 
   // CELULAR: TARJETAS   // ===== CELULAR: SOLO ACCION | MODELO | SERIE =====
   if(esCelular){
-    alert("es celular");
     let html = `
     <div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff">
       <div style="font-weight:800;font-size:13px;padding:10px 12px;background:#f0fdf4;color:#15803d">🖨️ ${window._impresorasTemp.length} impresoras - ${cliente}</div>
