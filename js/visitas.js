@@ -113,7 +113,12 @@ async function cargaDirecta(){
 }
 
 async function filtrarImpresorasCliente(){
-  alert(window.innerWidth);
+  // DETECTOR REAL
+  const ancho = window.innerWidth;
+  const esPorUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const esCelular1 = esPorUserAgent || ancho <= 768;
+  alert('ANCHO: ' + ancho + 'px\nUserAgent: ' + (esPorUserAgent ? 'CELULAR' : 'PC') + '\nSe ejecutará como: ' + (esCelular1 ? 'CELULAR - 3 columnas' : 'PC - 8 columnas'));
+  
   const sel = document.getElementById('vCliente');
   const cont = document.getElementById('listaImpresoras');
 
@@ -187,7 +192,7 @@ async function filtrarImpresorasCliente(){
 
   // CELULAR: TARJETAS   // ===== CELULAR: SOLO ACCION | MODELO | SERIE =====
   if(esCelular){
-        alert("es celular");
+    alert("es celular");
     let html = `
     <div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff">
       <div style="font-weight:800;font-size:13px;padding:10px 12px;background:#f0fdf4;color:#15803d">🖨️ ${window._impresorasTemp.length} impresoras - ${cliente}</div>
