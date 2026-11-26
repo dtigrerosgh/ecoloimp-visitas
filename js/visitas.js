@@ -229,7 +229,7 @@ async function filtrarImpresorasCliente(){
 
     html += `</tbody></table></div>`;
     if(cont) cont.innerHTML = html;
-    cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    //cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return;
   }
 
@@ -282,10 +282,10 @@ function seleccionarImpresora(serie){
 window.filtrarImpresorasCliente = filtrarImpresorasCliente;
 window.seleccionarImpresora = seleccionarImpresora;
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  const sel = document.getElementById('vCliente');
-  if(sel) sel.addEventListener('change', filtrarImpresorasCliente);
-});
+//document.addEventListener('DOMContentLoaded', ()=>{
+//  const sel = document.getElementById('vCliente');
+//  if(sel) sel.addEventListener('change', filtrarImpresorasCliente);
+//});
 
 async function mostrarFormularioVisita(){
   const hoy=new Date().toISOString().split('T')[0]; 
