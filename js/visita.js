@@ -238,10 +238,34 @@ if(esCelular){
   return;
 }
   // PC: TABLA (tu código original)
-  let html = `<div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:auto;max-height:420px;background:#fff"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead style="position:sticky;top:0;background:#18A957;color:#fff"><tr><th style="padding:12px 10px;text-align:left">ACCIÓN</th><th style="padding:12px 10px;text-align:left">CÓDIGO</th><th style="padding:12px 10px;text-align:left">MODELO</th><th style="padding:12px 10px;text-align:left">SERIE</th><th style="padding:12px 10px;text-align:left">SUCURSAL</th><th style="padding:12px 10px;text-align:left">AREA</th><th style="padding:12px 10px;text-align:left">UBICACION</th><th style="padding:12px 10px;text-align:left">BOD</th></tr></thead><tbody>`;
+  let html = `
+  <div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:auto;max-height:420px;background:#fff"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead style="position:sticky;top:0;background:#18A957;color:#fff">
+  <tr>
+    <th style="background:#18A957;color:#fff;padding:12px 10px;text-align:left">ACCIÓN</th>
+    <th style="background:#18A957;color:#fff;padding:12px 10px;text-align:left">CÓDIGO</th>
+    <th style="background:#18A957;color:#fff;padding:12px 10px;text-align:left">MODELO</th>
+    <th style="background:#18A957;color:#fff;padding:12px 10px;text-align:left">SERIE</th>
+    <th style="background:#18A957;color:#fff;padding:12px 10px;text-align:left">SUCURSAL</th>
+    <th style="background:#18A957;color:#fff;padding:12px 10px;text-align:left">AREA</th>
+    <th style="background:#18A957;color:#fff;padding:12px 10px;text-align:left">UBICACION</th>
+    <th style="background:#18A957;color:#fff;padding:12px 10px;text-align:left">BOD</th>
+  </tr>
+  </thead>
+  <tbody>`;
   window._impresorasTemp.forEach(imp => {
     const isHecha = hechas.has(String(imp.serie).toUpperCase());
-    html += `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px"><button onclick="seleccionarImpresora('${imp.serie}')" style="background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:8px;padding:6px 12px" ${isHecha ? 'disabled' : ''}>${isHecha ? '✅ Hecha' : '🔍 Seleccionar'}</button></td><td style="padding:8px">${imp.codigo}</td><td style="padding:8px">${imp.modelo}</td><td style="padding:8px;font-weight:800">${imp.serie}</td><td style="padding:8px">${imp.sucursal}</td><td style="padding:8px">${imp.area}</td><td style="padding:8px">${imp.ubicacion}</td><td style="padding:8px">${imp.bodega}</td></tr>`;
+    html += `
+    <tr style="border-bottom:1px solid #f1f5f9">
+      <td style="padding:8px"><button onclick="seleccionarImpresora('${imp.serie}')" style="background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:8px;padding:6px 12px" ${isHecha ? 'disabled' : ''}>${isHecha ? '✅ Hecha' : '🔍 Seleccionar'}</button></td>
+      <td style="padding:8px">${imp.codigo}</td>
+      <td style="padding:8px">${imp.modelo}</td>
+      <td style="padding:8px;font-weight:800">${imp.serie}</td>
+      <td style="padding:8px">${imp.sucursal}</td>
+      <td style="padding:8px">${imp.area}</td>
+      <td style="padding:8px">${imp.ubicacion}</td>
+      <td style="padding:8px">${imp.bodega}</td>
+  </tr>
+    `;
   });
   html += `</tbody></table></div>`;
   cont.innerHTML = html;
