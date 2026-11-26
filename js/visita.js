@@ -119,10 +119,10 @@ async function filtrarImpresorasCliente(){
 
   if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
   const cont = document.getElementById('listaImpresoras');
-  
+
   // UN SOLO DETECTOR
   const ancho = window.innerWidth;
-  alert(ancho);
+
   const esPorUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
   const esCelular = esPorUserAgent || ancho <= 768;
 
@@ -230,7 +230,7 @@ async function filtrarImpresorasCliente(){
 
     html += `</tbody></table></div>`;
     if(cont) cont.innerHTML = html;
-    //cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return;
   }
 
