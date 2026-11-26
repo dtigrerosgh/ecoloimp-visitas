@@ -327,8 +327,7 @@ async function mostrarFormularioVisita(){
   }).join('');
 
   document.getElementById('formDatosVisita').innerHTML=`
-    <div style="margin-top:12px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px">
-    <div style="padding:14px;background:#73D17D;display:flex;justify-content:space-between;align-items:center"><b>📑INGRESO DE DATOS VISITA TECNICA visitas</b></div>
+  <div style="margin-top:12px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:12px;width:100%;max-width:100%;box-sizing:border-box;overflow:hidden">    <div style="padding:14px;background:#73D17D;display:flex;justify-content:space-between;align-items:center"><b>📑INGRESO DE DATOS VISITA TECNICA visitas</b></div>
       <div style="display:grid;grid-template-columns:${cols};gap:10px">
             <div style="display:flex;flex-direction:column">
               <label style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">FECHA</label>
