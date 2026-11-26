@@ -199,40 +199,46 @@ async function filtrarImpresorasCliente(){
   const hechas = new Set(visitas.map(v => String(v.serie || '').toUpperCase()));
 
   // CELULAR: TARJETAS   // ===== CELULAR: SOLO ACCION | MODELO | SERIE =====
-  if(esCelular){
-    let html = `
-    <div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff">
-      <div style="font-weight:800;font-size:13px;padding:10px 12px;background:#f0fdf4;color:#15803d">🖨️ ${window._impresorasTemp.length} impresoras - ${cliente}</div>
-      <table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed">
-        <thead>
-          <tr style="background:#18A957">
-            <th style="padding:10px 6px;text-align:left;color:#fff;font-weight:800;font-size:11px;width:32%">ACCIÓN</th>
-            <th style="padding:10px 6px;text-align:left;color:#fff;font-weight:800;font-size:11px;width:38%">MODELO</th>
-            <th style="padding:10px 6px;text-align:left;color:#fff;font-weight:800;font-size:11px;width:30%">SERIE</th>
+// CELULAR: TABLA COMPLETA CON SCROLL HORIZONTAL Y CABECERA FIJA
+if(esCelular){
+  let html = `
+  <div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff">
+    <div style="font-weight:800;font-size:13px;padding:10px 12px;background:#f0fdf4;color:#15803d">🖨️ ${window._impresorasTemp.length} impresoras - ${cliente} <span style="font-weight:400;font-size:11px;color:#64748b">👉 Desliza → para ver más</span></div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px">
+        <thead style="position:sticky;top:0;z-index:2">
+          <tr>
+            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">ACCIÓN</th>
+            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">CÓDIGO</th>
+            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">MODELO</th>
+            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">SERIE</th>
+            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">SUCURSAL</th>
+            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">AREA</th>
+            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">UBICACION</th>
+            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">BOD</th>
           </tr>
         </thead>
         <tbody>`;
 
-    window._impresorasTemp.forEach(imp => {
-      const isHecha = hechas.has(String(imp.serie).toUpperCase());
-      html += `
-        <tr style="border-bottom:1px solid #f1f5f9">
-          <td style="padding:8px 6px">
-            <button onclick="seleccionarImpresora('${imp.serie}')" ${isHecha ? 'disabled' : ''} style="background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:8px;padding:7px 8px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer">
-              ${isHecha ? '✅ Hecha' : '🔍 Seleccionar'}
-            </button>
-          </td>
-          <td style="padding:8px 6px;font-size:12px;line-height:1.2">${imp.modelo || ''}</td>
-          <td style="padding:8px 6px;font-weight:800;font-size:12px;word-break:break-all">${imp.serie}</td>
-        </tr>`;
-    });
+  window._impresorasTemp.forEach(imp => {
+    const isHecha = hechas.has(String(imp.serie).toUpperCase());
+    html += `
+      <tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:8px;white-space:nowrap"><button onclick="seleccionarImpresora('${imp.serie}')" ${isHecha ? 'disabled' : ''} style="background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:800;white-space:nowrap">${isHecha ? '✅ Hecha' : '🔍 Seleccionar'}</button></td>
+        <td style="padding:8px;white-space:nowrap">${imp.codigo || ''}</td>
+        <td style="padding:8px;white-space:nowrap">${imp.modelo || ''}</td>
+        <td style="padding:8px;font-weight:800;white-space:nowrap">${imp.serie}</td>
+        <td style="padding:8px;white-space:nowrap">${imp.sucursal || ''}</td>
+        <td style="padding:8px;white-space:nowrap">${imp.area || ''}</td>
+        <td style="padding:8px;white-space:nowrap">${imp.ubicacion || ''}</td>
+        <td style="padding:8px;white-space:nowrap">${imp.bodega || ''}</td>
+      </tr>`;
+  });
 
-    html += `</tbody></table></div>`;
-    if(cont) cont.innerHTML = html;
-    cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    return;
-  }
-
+  html += `</tbody></table></div></div>`;
+  if(cont) cont.innerHTML = html;
+  return;
+}
   // PC: TABLA (tu código original)
   let html = `<div style="margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;overflow:auto;max-height:420px;background:#fff"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead style="position:sticky;top:0;background:#18A957;color:#fff"><tr><th style="padding:12px 10px;text-align:left">ACCIÓN</th><th style="padding:12px 10px;text-align:left">CÓDIGO</th><th style="padding:12px 10px;text-align:left">MODELO</th><th style="padding:12px 10px;text-align:left">SERIE</th><th style="padding:12px 10px;text-align:left">SUCURSAL</th><th style="padding:12px 10px;text-align:left">AREA</th><th style="padding:12px 10px;text-align:left">UBICACION</th><th style="padding:12px 10px;text-align:left">BOD</th></tr></thead><tbody>`;
   window._impresorasTemp.forEach(imp => {
