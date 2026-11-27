@@ -595,7 +595,10 @@ function mostrarListaVisitasSesion(){
 
   if(!lista.length){ cont.innerHTML= clienteCodigo==='GENERAL'?'':'<div style="margin-top:14px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;text-align:center;color:#94a3b8">📭 Sin visitas para '+clienteCodigo+'</div>'; return; }
   let html='<div style="margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden"><div style="padding:14px;background:#73D17D;display:flex;justify-content:space-between;align-items:center"><b>📋 Historial '+clienteCodigo+' - '+lista.length+' visitas</b><span style="background:#0f172a;color:#fff;padding:6px 12px;border-radius:99px;font-size:11px">Sesión: '+usuario+'</span></div><div style="overflow:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr style="background:#fcfcfd"><th style="padding:8px">FECHA</th><th>SERIE</th><th>SUCURSAL</th><th>AREA</th><th>UBICACION</th><th>CONT</th><th>TRABAJO</th><th>FOTOS</th><th></th></tr>';
-  lista.forEach(v=>{ html+='<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px">'+v.fecha+' '+v.hora+'</td><td style="padding:8px"><b>'+v.serie+'</b></td><td style="padding:8px"><b>'+v.sucursal+'</b></td><td style="padding:8px"><b>'+v.area+'</b></td><td style="padding:8px"><b>'+v.ubicacion+'</b></td><td style="padding:8px">'+v.contador+'</td><td style="padding:8px">'+v.trabajo+'</td><td style="padding:8px">📸 '+v.fotosCount+'</td><td style="padding:8px"><button onclick="eliminarVisita('+v.serie+')" style="background:#fff1f2;border:1px solid #fecaca;color:red;border-radius:6px;padding:2px 6px">🗑️</button></td></tr>'; });
+  lista.forEach(v=>{ 
+    var serieSegura = String(v.serie || '').replace(/"/g, '');
+    html+='<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px">'+v.fecha+' '+v.hora+'</td><td style="padding:8px"><b>'+v.serie+'</b></td><td style="padding:8px"><b>'+v.sucursal+'</b></td><td style="padding:8px"><b>'+v.area+'</b></td><td style="padding:8px"><b>'+v.ubicacion+'</b></td><td style="padding:8px">'+v.contador+'</td><td style="padding:8px">'+v.trabajo+'</td><td style="padding:8px">📸 '+v.fotosCount+'</td><td style="padding:8px"><button data-serie="' + serieSegura + '" onclick="eliminarVisita(this.dataset.serie)" style="background:#fff1f2;border:1px solid #fecaca;color:red;border-radius:6px;padding:2px 6px">🗑️</button></td></tr>'; 
+  });
   html+='</table></div><div style="padding:14px;background:#f8fafc;display:flex;justify-content:center"><button onclick="generarPDFTodas()" style="background:#0f172a;color:#fff;border:0;border-radius:12px;padding:12px 24px;font-weight:800;cursor:pointer">📄 GENERAR REPORTE PDF DE TODAS LAS VISITAS - '+clienteCodigo+' ('+lista.length+')</button></div></div>';
   cont.innerHTML=html;
 }
@@ -606,6 +609,54 @@ function eliminarVisita(serie){
   mostrarModalEliminar();
 }
 window.eliminarVisita = eliminarVisita;
+
+function cerrarModalEliminar(){
+  var m = document.getElementById('modalEliminarVisita');
+  if(m) m.remove();
+}
+window.cerrarModalEliminar = cerrarModalEliminar;
+
+function mostrarModalEliminar(){
+  cerrarModalEliminar();
+  var overlay = document.createElement('div');
+  overlay.id = 'modalEliminarVisita';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.onclick = function(){ cerrarModalEliminar(); };
+
+  var caja = document.createElement('div');
+  caja.style.cssText = 'background:#fff;border-radius:16px;width:100%;max-width:380px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.3)';
+  caja.onclick = function(e){ e.stopPropagation(); };
+
+  var titulo = document.createElement('div');
+  titulo.style.cssText = 'background:#18A957;color:#fff;padding:16px;font-weight:900;font-size:16px;text-align:center';
+  titulo.textContent = '🗑️ ECOLOIMP - Eliminar Visita';
+
+  var texto = document.createElement('div');
+  texto.style.cssText = 'padding:20px;text-align:center;font-size:15px;color:#334155';
+  texto.textContent = '¿Eliminar la visita de la serie ' + _serieAEliminar + '? Solo se borra esa impresora de este cliente.';
+
+  var botones = document.createElement('div');
+  botones.style.cssText = 'display:flex;gap:10px;padding:0 16px 16px';
+
+  var btnCancel = document.createElement('button');
+  btnCancel.style.cssText = 'flex:1;background:#e2e8f0;border:0;border-radius:10px;padding:12px;font-weight:800';
+  btnCancel.textContent = 'Cancelar';
+  btnCancel.onclick = function(){ cerrarModalEliminar(); };
+
+  var btnOk = document.createElement('button');
+  btnOk.style.cssText = 'flex:1;background:#ef4444;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:800';
+  btnOk.textContent = 'Sí, Eliminar';
+  btnOk.onclick = function(){ confirmarEliminarVisita(); };
+
+  botones.appendChild(btnCancel);
+  botones.appendChild(btnOk);
+  caja.appendChild(titulo);
+  caja.appendChild(texto);
+  caja.appendChild(botones);
+  overlay.appendChild(caja);
+  document.body.appendChild(overlay);
+}
+window.mostrarModalEliminar = mostrarModalEliminar;
 
 function confirmarEliminarVisita(){
   cerrarModalEliminar();
@@ -643,24 +694,8 @@ function confirmarEliminarVisita(){
     alert('❌ Error: ' + err.message);
   }
 }
+window.confirmarEliminarVisita = confirmarEliminarVisita;
 
-function mostrarModalEliminar(){
-  cerrarModalEliminar();
-  const div = document.createElement('div');
-  div.id = 'modalEliminarVisita';
-  div.innerHTML = `
-  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px" onclick="cerrarModalEliminar()">
-    <div style="background:#fff;border-radius:16px;width:100%;max-width:380px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.3)" onclick="event.stopPropagation()">
-      <div style="background:#18A957;color:#fff;padding:16px;font-weight:900;font-size:16px;text-align:center">🗑️ ECOLOIMP - Eliminar Visita</div>
-      <div style="padding:20px;text-align:center;font-size:15px;color:#334155">¿Eliminar la visita de la serie<br><b>${_serieAEliminar}</b>?<br><small style="color:#64748b">Solo se borra esa impresora de este cliente.</small></div>
-      <div style="display:flex;gap:10px;padding:0 16px 16px">
-        <button onclick="cerrarModalEliminar()" style="flex:1;background:#e2e8f0;border:0;border-radius:10px;padding:12px;font-weight:800">Cancelar</button>
-        <button onclick="confirmarEliminarVisita()" style="flex:1;background:#ef4444;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:800">Sí, Eliminar</button>
-      </div>
-    </div>
-  </div>`;
-  document.body.appendChild(div);
-}
 
  // if(!confirm('¿Eliminar esta visita?')) return;
  // const usuario=getUsuarioActual();
