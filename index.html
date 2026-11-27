@@ -128,8 +128,8 @@
     
     <!-- TITULO A LA IZQ - BOTON LIMPIAR A LA DERECHA -->
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-      <b style="font-size:13px">✍️ FIRMA DE CONFORMIDAD - CLIENTE</b>
-      <button onclick="limpiarFirma()" type="button" style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:5px 12px;font-weight:700;cursor:pointer">🧹 Limpiar</button>
+      <b style="font-size:13px">✍️ FIRMA DE CONFORMIDAD</b>
+      <button onclick="limpiarFirma()" type="button" style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:5px 12px;font-weight:700;cursor:pointer;align-items: end;">🧹 Limpiar</button>
     </div>
 
     <canvas id="canvasFirma" width="600" height="250" style="width:100%;height:180px;border:2px dashed #94a3b8;border-radius:8px;touch-action:none;background:#fff;display:block"></canvas>
@@ -140,11 +140,11 @@
   <div id="bloqueAutoriza" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;width:100%;box-sizing:border-box">
     <div style="width:100%;box-sizing:border-box">
       <label style="display:block;font-weight:700;font-size:13px;margin-bottom:6px">Nombre del cliente que autoriza</label>
-      <input id="nombreAutoriza" placeholder="Ej: Juan Perez" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #e2e8f0;border-radius:8px">
+      <input id="vAutoriza" placeholder="Ej: Juan Perez" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #e2e8f0;border-radius:8px">
     </div>
     <div style="width:100%;box-sizing:border-box">
       <label style="display:block;font-weight:700;font-size:13px;margin-bottom:6px">Copia Email</label>
-      <input id="emailCliente" placeholder="cliente@empresa.com" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #e2e8f0;border-radius:8px">
+      <input id="vEmail" placeholder="cliente@empresa.com" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #e2e8f0;border-radius:8px">
     </div>
   </div>
 </div>
