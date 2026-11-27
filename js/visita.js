@@ -121,7 +121,7 @@ async function cargaDirecta(){
 async function filtrarImpresorasCliente(){
   
   const sel = document.getElementById('vCliente');
-
+  const cliente = codigoClienteActual();
 
   if(typeof mostrarListaVisitasSesion === 'function') mostrarListaVisitasSesion();
   const cont = document.getElementById('listaImpresoras');
@@ -147,7 +147,7 @@ async function filtrarImpresorasCliente(){
     return;
   }
 
-  const cliente = val.split('-')[0].trim().toUpperCase();
+  //const cliente = val.split('-')[0].trim().toUpperCase();
   if(cont) cont.innerHTML = '<div style="padding:15px;text-align:center">⏳ Cargando impresoras de '+cliente+'...</div>';
 
   // 1. INTENTAR DESDE DB
