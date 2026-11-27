@@ -11,9 +11,11 @@ let ctxFirma = null;
 
 function getKeyVisitas(usuario, clienteCodigo){
   const u = String(usuario||getUsuarioActual()||'').trim().toUpperCase();
-  const c = String(clienteCodigo||document.getElementById('vCliente')?.value||'').trim().toUpperCase();
+  // Solo el código, sin nombre, sin espacios, en mayúsculas
+  const c = String(clienteCodigo||document.getElementById('vCliente')?.value||'').split('-')[0].trim().toUpperCase();
   return 'ecoloimp_visitas_'+u+'_'+c;
 }
+
 function norm(s){ return String(s||'').trim().toUpperCase(); }
 
 async function cargarLogo(){
@@ -61,6 +63,10 @@ function cargarTrabajosVisita(){
     DB.trabajos.map(tr=> `<option value="${esc(tr.codigo)}">${esc(tr.codigo)} - ${esc(tr.nombre)}</option>`).join("");
   // Deja en vacío para que obligue a elegir
   sel.value = "";
+}
+
+function codigoClienteActual(){
+  return (document.getElementById('vCliente')?.value||'').split('-')[0].trim().toUpperCase();
 }
 
 function getClienteActual(){ 
@@ -473,7 +479,7 @@ function guardarVisita(){
   const tecnico=document.getElementById('vTecnico')?.value;
   const trabajo=document.getElementById('vTrabajo')?.value; 
   const contador=document.getElementById('vContador')?.value;
-  const clienteCodigo = document.getElementById('vCliente')?.value || ''; // STRING, no .value después
+  const clienteCodigo = codigoClienteActual();
   const usuario = getUsuarioActual();
 
   
@@ -481,8 +487,8 @@ function guardarVisita(){
   if(!clienteCodigo || clienteCodigo==='GENERAL'){ alert('⚠️ Seleccione cliente'); return; }
   if(!impresoraSeleccionada?.serie){ alert('⚠️ Seleccione impresora'); return; }
 
-  if(!elTecnico?.value){ alert('⚠️ Falta el técnico'); return; }
-  if(!elTrabajo?.value){ alert('⚠️ Falta el trabajo realizado'); return; }
+  if(!tecnico?.value){ alert('⚠️ Falta el técnico'); return; }
+  if(!trabajo?.value){ alert('⚠️ Falta el trabajo realizado'); return; }
 
   //const cliente=getClienteActual();
   const visita={
@@ -522,7 +528,8 @@ function guardarVisita(){
   }
   firmaBase64 = firmaFinal;
 
-  const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo; 
+  const key = getKeyVisitas(usuario, clienteCodigo); 
+
   try{
     const todas=JSON.parse(localStorage.getItem(key)||'[]'); 
     todas.unshift(visita); 
@@ -568,14 +575,14 @@ setTimeout(()=>{
 
 function mostrarListaVisitasSesion(){
   const usuario=getUsuarioActual();
-  const cliente=document.getElementById('vCliente'); 
+  const clienteCodigo = codigoClienteActual();
+  const key = getKeyVisitas(usuario, clienteCodigo);
   if(!cliente) return;
   const cont=document.getElementById('listaVisitasSesion'); 
   if(!cont) return;
 
-  const key=getKeyVisitas(usuario, cliente.value);
   const todas=JSON.parse(localStorage.getItem(key)||'[]');
-  const lista=cliente.value==='GENERAL'?[]:todas.filter(v=>norm(v.clienteId||v.cliente)===norm(cliente.value));
+  const lista = clienteCodigo==='GENERAL' ? [] : todas;
   console.log('BUSCANDO EN:', key, 'Encontradas:', todas.length, 'FILTRADAS:', lista.length);
 
   if(!lista.length){ cont.innerHTML= cliente.value==='GENERAL'?'':'<div style="margin-top:14px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;text-align:center;color:#94a3b8">📭 Sin visitas para '+cliente.id+'</div>'; return; }
@@ -588,8 +595,8 @@ function mostrarListaVisitasSesion(){
 function eliminarVisita(id){
   if(!confirm('¿Eliminar esta visita?')) return;
   const usuario=getUsuarioActual();
-  const cliente=document.getElementById('vCliente')?.value || '';
-  const key='ecoloimp_visitas_'+usuario+'_'+cliente;
+  const clienteCodigo = codigoClienteActual();
+  const key = getKeyVisitas(usuario, clienteCodigo);
   let todas=JSON.parse(localStorage.getItem(key)||'[]');
   todas=todas.filter(v=>v.id != id);
   localStorage.setItem(key, JSON.stringify(todas));
@@ -648,13 +655,12 @@ async function enviarCorreoVisita(){
     const fechaVal = elFecha?.value || new Date().toLocaleDateString();
     if(elMsg){ elMsg.style.color="#334155"; elMsg.textContent = "⏳ Generando PDF..."; }
 
-  const usuario=getUsuarioActual(); 
-  const cliente=document.getElementById('vCliente'); 
+    const usuario=getUsuarioActual(); 
+    const clienteCodigo = codigoClienteActual();
 
-      const clienteCodigo = cliente?.value || '';
     if(!clienteCodigo || clienteCodigo==='GENERAL'){ alert('Seleccione cliente'); return; }
 
-    const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
+    const key = getKeyVisitas(usuario, clienteCodigo);
     const todas=JSON.parse(localStorage.getItem(key)||'[]');
     const lista=todas.filter(v=>String(v.clienteId||v.cliente||'').trim().toUpperCase()===String(clienteCodigo||'').trim().toUpperCase());
 
@@ -777,9 +783,8 @@ async function enviarCorreoVisita(){
 
 function generarVisitaTXT(){
   const usuario=getUsuarioActual(); 
-  const cliente=document.getElementById('vCliente'); 
-  const clienteCodigo = cliente?.value || '';
-  const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
+  const clienteCodigo = codigoClienteActual();
+  const key = getKeyVisitas(usuario, clienteCodigo);
   let visitas = [];
   visitas = JSON.parse(localStorage.getItem(key)||'[]');
   if(visitas.length===0){ alert('No hay visitas'); return; }
@@ -852,12 +857,11 @@ async function generarPDFTodas(){
   aplicarFirmaAHistorial();
   
   const usuario=getUsuarioActual(); 
-  const cliente=document.getElementById('vCliente'); 
-  const clienteCodigo = cliente?.value || '';
+  const clienteCodigo = codigoClienteActual();
+  const key = getKeyVisitas(usuario, clienteCodigo);
   if(!clienteCodigo || clienteCodigo==='GENERAL'){ alert('Seleccione cliente'); return; }
 
   // DEFINIMOS todas ANTES DE USARLA - ESTE ERA EL ERROR DE LA LÍNEA 671
-  const key='ecoloimp_visitas_'+usuario+'_'+clienteCodigo;
   const todas=JSON.parse(localStorage.getItem(key)||'[]');
   const lista=todas.filter(v=>String(v.clienteId||v.cliente||'').trim().toUpperCase()===String(clienteCodigo||'').trim().toUpperCase());
 
