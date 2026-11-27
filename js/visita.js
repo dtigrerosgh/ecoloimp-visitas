@@ -595,7 +595,7 @@ function mostrarListaVisitasSesion(){
 
   if(!lista.length){ cont.innerHTML= clienteCodigo==='GENERAL'?'':'<div style="margin-top:14px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;text-align:center;color:#94a3b8">📭 Sin visitas para '+clienteCodigo+'</div>'; return; }
   let html='<div style="margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden"><div style="padding:14px;background:#73D17D;display:flex;justify-content:space-between;align-items:center"><b>📋 Historial '+clienteCodigo+' - '+lista.length+' visitas</b><span style="background:#0f172a;color:#fff;padding:6px 12px;border-radius:99px;font-size:11px">Sesión: '+usuario+'</span></div><div style="overflow:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr style="background:#fcfcfd"><th style="padding:8px">FECHA</th><th>SERIE</th><th>SUCURSAL</th><th>AREA</th><th>UBICACION</th><th>CONT</th><th>TRABAJO</th><th>FOTOS</th><th></th></tr>';
-  lista.forEach(v=>{ html+='<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px">'+v.fecha+' '+v.hora+'</td><td style="padding:8px"><b>'+v.serie+'</b></td><td style="padding:8px"><b>'+v.sucursal+'</b></td><td style="padding:8px"><b>'+v.area+'</b></td><td style="padding:8px"><b>'+v.ubicacion+'</b></td><td style="padding:8px">'+v.contador+'</td><td style="padding:8px">'+v.trabajo+'</td><td style="padding:8px">📸 '+v.fotosCount+'</td><td style="padding:8px"><button onclick="eliminarVisita('+v.id+')" style="background:#fff1f2;border:1px solid #fecaca;color:red;border-radius:6px;padding:2px 6px">✕</button></td></tr>'; });
+  lista.forEach(v=>{ html+='<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px">'+v.fecha+' '+v.hora+'</td><td style="padding:8px"><b>'+v.serie+'</b></td><td style="padding:8px"><b>'+v.sucursal+'</b></td><td style="padding:8px"><b>'+v.area+'</b></td><td style="padding:8px"><b>'+v.ubicacion+'</b></td><td style="padding:8px">'+v.contador+'</td><td style="padding:8px">'+v.trabajo+'</td><td style="padding:8px">📸 '+v.fotosCount+'</td><td style="padding:8px"><button onclick="eliminarVisita('+v.id+')" style="background:#fff1f2;border:1px solid #fecaca;color:red;border-radius:6px;padding:2px 6px">🗑️</button></td></tr>'; });
   html+='</table></div><div style="padding:14px;background:#f8fafc;display:flex;justify-content:center"><button onclick="generarPDFTodas()" style="background:#0f172a;color:#fff;border:0;border-radius:12px;padding:12px 24px;font-weight:800;cursor:pointer">📄 GENERAR REPORTE PDF DE TODAS LAS VISITAS - '+clienteCodigo+' ('+lista.length+')</button></div></div>';
   cont.innerHTML=html;
 }
@@ -609,6 +609,7 @@ function eliminarVisita(id){
   todas=todas.filter(v=>v.id != id);
   localStorage.setItem(key, JSON.stringify(todas));
   mostrarListaVisitasSesion();
+  filtrarImpresorasCliente();
 }
 
 function iniciarFirma(){
