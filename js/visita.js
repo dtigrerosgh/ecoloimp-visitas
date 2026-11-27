@@ -226,8 +226,8 @@ if(esCelular){
         <thead style="position:sticky;top:0;z-index:2">
           <tr>
             <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">ACCIÓN</th>
-            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">MODELO</th>
             <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">SERIE</th>
+            <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">MODELO</th>
             <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">SUCURSAL</th>
             <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">AREA</th>
             <th style="background:#18A957;color:#fff;padding:10px 8px;text-align:left;font-size:11px;font-weight:800;white-space:nowrap;position:sticky;top:0">UBICACION</th>
@@ -241,11 +241,11 @@ if(esCelular){
     html += `
       <tr style="border-bottom:1px solid #f1f5f9">
         <td style="padding:8px;white-space:nowrap"><button onclick="seleccionarImpresora('${imp.serie}')" ${isHecha ? 'disabled' : ''} style="background:${isHecha ? '#dcfce7' : '#18A957'};color:${isHecha ? '#15803d' : '#fff'};border:0;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:800;white-space:nowrap">${isHecha ? '✅ Hecha' : '🔍'}</button></td>
-        <td style="padding:8px">${imp.modelo || ''}</td>
         <td style="padding:8px;font-weight:800;white-space:nowrap">${imp.serie}</td>
-        <td style="padding:8px">${imp.sucursal || ''}</td>
-        <td style="padding:8px">${imp.area || ''}</td>
-        <td style="padding:8px">${imp.ubicacion || ''}</td>
+        <td style="padding:8px">${imp.modelo || ''}</td>
+        <td style="padding:8px;white-space:nowrap">${imp.sucursal || ''}</td>
+        <td style="padding:8px;white-space:nowrap">${imp.area || ''}</td>
+        <td style="padding:8px;white-space:nowrap">${imp.ubicacion || ''}</td>
         <td style="padding:8px">${imp.bodega || ''}</td>
       </tr>`;
   });
