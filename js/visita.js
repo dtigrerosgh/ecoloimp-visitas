@@ -498,8 +498,8 @@ function guardarVisita(){
   if(!clienteCodigo || clienteCodigo==='GENERAL'){ alert('⚠️ Seleccione cliente'); return; }
   if(!impresoraSeleccionada?.serie){ alert('⚠️ Seleccione impresora'); return; }
 
-  if(!tecnico?.value){ alert('⚠️ Falta el técnico'); return; }
-  if(!trabajo?.value){ alert('⚠️ Falta el trabajo realizado'); return; }
+  if(!tecnico){ alert('⚠️ Falta el técnico'); return; }
+  if(!trabajo){ alert('⚠️ Falta el trabajo realizado'); return; }
 
   //const cliente=getClienteActual();
   const visita={
