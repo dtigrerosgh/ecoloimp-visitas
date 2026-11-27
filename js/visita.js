@@ -477,9 +477,12 @@ function guardarVisita(){
   const usuario = getUsuarioActual();
 
   
-  if(!fecha||!hora||!tecnico||!trabajo||!contador){alert('Falta Fecha, Hora, Técnico, Trabajo, Contador'); return;}
-  if(!clienteCodigo || clienteCodigo==='GENERAL'){ alert('Seleccione cliente'); return; }
-  if(!impresoraSeleccionada?.serie){ alert('Seleccione impresora'); return; }
+  if(!fecha||!hora||!tecnico||!trabajo||!contador){alert('⚠️ Falta Fecha, Hora, Técnico, Trabajo, Contador'); return;}
+  if(!clienteCodigo || clienteCodigo==='GENERAL'){ alert('⚠️ Seleccione cliente'); return; }
+  if(!impresoraSeleccionada?.serie){ alert('⚠️ Seleccione impresora'); return; }
+
+  if(!elTecnico?.value){ alert('⚠️ Falta el técnico'); return; }
+  if(!elTrabajo?.value){ alert('⚠️ Falta el trabajo realizado'); return; }
 
   //const cliente=getClienteActual();
   const visita={
