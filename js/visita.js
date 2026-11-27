@@ -846,7 +846,7 @@ async function enviarCorreoVisita(){
     // 1. Limpiar variables
     window.fotosVisita = [];
     impresoraSeleccionada = null;
-    if(typeof clienteActual !== 'undefined') clienteActual = '';
+
     // Si tienes una variable global clienteCodigo, límpiala aquí, pero NO la const de arriba
     if(typeof window.clienteCodigo !== 'undefined') window.clienteCodigo = '';
 
